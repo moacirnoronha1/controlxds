@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SaidasRouteImport } from './routes/saidas'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as EntradasRouteImport } from './routes/entradas'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SaidasRoute = SaidasRouteImport.update({
+  id: '/saidas',
+  path: '/saidas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProdutosRoute = ProdutosRouteImport.update({
   id: '/produtos',
   path: '/produtos',
@@ -33,34 +39,45 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/entradas': typeof EntradasRoute
   '/produtos': typeof ProdutosRoute
+  '/saidas': typeof SaidasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/entradas': typeof EntradasRoute
   '/produtos': typeof ProdutosRoute
+  '/saidas': typeof SaidasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/entradas': typeof EntradasRoute
   '/produtos': typeof ProdutosRoute
+  '/saidas': typeof SaidasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/entradas' | '/produtos'
+  fullPaths: '/' | '/entradas' | '/produtos' | '/saidas'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/entradas' | '/produtos'
-  id: '__root__' | '/' | '/entradas' | '/produtos'
+  to: '/' | '/entradas' | '/produtos' | '/saidas'
+  id: '__root__' | '/' | '/entradas' | '/produtos' | '/saidas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EntradasRoute: typeof EntradasRoute
   ProdutosRoute: typeof ProdutosRoute
+  SaidasRoute: typeof SaidasRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/saidas': {
+      id: '/saidas'
+      path: '/saidas'
+      fullPath: '/saidas'
+      preLoaderRoute: typeof SaidasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/produtos': {
       id: '/produtos'
       path: '/produtos'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EntradasRoute: EntradasRoute,
   ProdutosRoute: ProdutosRoute,
+  SaidasRoute: SaidasRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
