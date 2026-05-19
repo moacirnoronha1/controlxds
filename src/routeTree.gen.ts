@@ -13,6 +13,7 @@ import { Route as SaidasRouteImport } from './routes/saidas'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MovimentacoesRouteImport } from './routes/movimentacoes'
 import { Route as EntradasRouteImport } from './routes/entradas'
+import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SaidasRoute = SaidasRouteImport.update({
@@ -35,6 +36,11 @@ const EntradasRoute = EntradasRouteImport.update({
   path: '/entradas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlertasRoute = AlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alertas': typeof AlertasRoute
   '/entradas': typeof EntradasRoute
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alertas': typeof AlertasRoute
   '/entradas': typeof EntradasRoute
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alertas': typeof AlertasRoute
   '/entradas': typeof EntradasRoute
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
@@ -65,12 +74,25 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/entradas' | '/movimentacoes' | '/produtos' | '/saidas'
+  fullPaths:
+    | '/'
+    | '/alertas'
+    | '/entradas'
+    | '/movimentacoes'
+    | '/produtos'
+    | '/saidas'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/entradas' | '/movimentacoes' | '/produtos' | '/saidas'
+  to:
+    | '/'
+    | '/alertas'
+    | '/entradas'
+    | '/movimentacoes'
+    | '/produtos'
+    | '/saidas'
   id:
     | '__root__'
     | '/'
+    | '/alertas'
     | '/entradas'
     | '/movimentacoes'
     | '/produtos'
@@ -79,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlertasRoute: typeof AlertasRoute
   EntradasRoute: typeof EntradasRoute
   MovimentacoesRoute: typeof MovimentacoesRoute
   ProdutosRoute: typeof ProdutosRoute
@@ -115,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntradasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alertas': {
+      id: '/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AlertasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -127,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlertasRoute: AlertasRoute,
   EntradasRoute: EntradasRoute,
   MovimentacoesRoute: MovimentacoesRoute,
   ProdutosRoute: ProdutosRoute,
