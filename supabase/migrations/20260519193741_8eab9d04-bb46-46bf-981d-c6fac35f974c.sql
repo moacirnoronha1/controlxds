@@ -1,0 +1,1 @@
+ALTER FUNCTION public.aplicar_movimentacao() SET search_path = public;
