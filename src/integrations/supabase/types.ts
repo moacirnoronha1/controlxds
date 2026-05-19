@@ -14,7 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      movimentacoes: {
+        Row: {
+          barco: string | null
+          created_at: string
+          data_movimentacao: string
+          fornecedor: string | null
+          id: string
+          observacao: string | null
+          produto_id: string
+          quantidade: number
+          responsavel: string | null
+          tipo: string
+        }
+        Insert: {
+          barco?: string | null
+          created_at?: string
+          data_movimentacao?: string
+          fornecedor?: string | null
+          id?: string
+          observacao?: string | null
+          produto_id: string
+          quantidade: number
+          responsavel?: string | null
+          tipo: string
+        }
+        Update: {
+          barco?: string | null
+          created_at?: string
+          data_movimentacao?: string
+          fornecedor?: string | null
+          id?: string
+          observacao?: string | null
+          produto_id?: string
+          quantidade?: number
+          responsavel?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      produtos: {
+        Row: {
+          ativo: boolean
+          categoria: string
+          created_at: string
+          estoque_atual: number
+          estoque_inicial: number
+          estoque_minimo: number
+          id: string
+          nome: string
+          unidade_medida: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          estoque_atual?: number
+          estoque_inicial?: number
+          estoque_minimo?: number
+          id?: string
+          nome: string
+          unidade_medida?: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          estoque_atual?: number
+          estoque_inicial?: number
+          estoque_minimo?: number
+          id?: string
+          nome?: string
+          unidade_medida?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
