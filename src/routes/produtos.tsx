@@ -37,6 +37,7 @@ import {
   type Produto,
 } from "@/lib/estoque";
 import { Card } from "@/components/ui/card";
+import { ImportProdutos } from "@/components/import-produtos";
 
 export const Route = createFileRoute("/produtos")({
   component: ProdutosPage,
