@@ -37,6 +37,7 @@ import {
   type Produto,
 } from "@/lib/estoque";
 import { Card } from "@/components/ui/card";
+import { ImportProdutos } from "@/components/import-produtos";
 
 export const Route = createFileRoute("/produtos")({
   component: ProdutosPage,
@@ -90,9 +91,12 @@ function ProdutosPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Produtos</h1>
           <p className="text-sm text-muted-foreground">Cadastre e gerencie seus insumos.</p>
         </div>
-        <Button onClick={openNew}>
-          <Plus className="h-4 w-4 mr-1" /> Novo produto
-        </Button>
+        <div className="flex gap-2">
+          <ImportProdutos />
+          <Button onClick={openNew}>
+            <Plus className="h-4 w-4 mr-1" /> Novo produto
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
