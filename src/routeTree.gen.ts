@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SaidasRouteImport } from './routes/saidas'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MovimentacoesRouteImport } from './routes/movimentacoes'
+import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as EntradasRouteImport } from './routes/entradas'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +30,11 @@ const ProdutosRoute = ProdutosRouteImport.update({
 const MovimentacoesRoute = MovimentacoesRouteImport.update({
   id: '/movimentacoes',
   path: '/movimentacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapaRoute = MapaRouteImport.update({
+  id: '/mapa',
+  path: '/mapa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntradasRoute = EntradasRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/entradas': typeof EntradasRoute
+  '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
   '/saidas': typeof SaidasRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/entradas': typeof EntradasRoute
+  '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
   '/saidas': typeof SaidasRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/entradas': typeof EntradasRoute
+  '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
   '/saidas': typeof SaidasRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/entradas'
+    | '/mapa'
     | '/movimentacoes'
     | '/produtos'
     | '/saidas'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/entradas'
+    | '/mapa'
     | '/movimentacoes'
     | '/produtos'
     | '/saidas'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/entradas'
+    | '/mapa'
     | '/movimentacoes'
     | '/produtos'
     | '/saidas'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertasRoute: typeof AlertasRoute
   EntradasRoute: typeof EntradasRoute
+  MapaRoute: typeof MapaRoute
   MovimentacoesRoute: typeof MovimentacoesRoute
   ProdutosRoute: typeof ProdutosRoute
   SaidasRoute: typeof SaidasRoute
@@ -129,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/movimentacoes'
       fullPath: '/movimentacoes'
       preLoaderRoute: typeof MovimentacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mapa': {
+      id: '/mapa'
+      path: '/mapa'
+      fullPath: '/mapa'
+      preLoaderRoute: typeof MapaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entradas': {
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertasRoute: AlertasRoute,
   EntradasRoute: EntradasRoute,
+  MapaRoute: MapaRoute,
   MovimentacoesRoute: MovimentacoesRoute,
   ProdutosRoute: ProdutosRoute,
   SaidasRoute: SaidasRoute,
