@@ -7,6 +7,7 @@ import {
   History,
   AlertTriangle,
   Grid3x3,
+  TrendingUp,
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,6 +28,7 @@ const items = [
   { title: "Saídas", url: "/saidas", icon: ArrowUpFromLine },
   { title: "Movimentações", url: "/movimentacoes", icon: History },
   { title: "Mapa", url: "/mapa", icon: Grid3x3 },
+  { title: "Relatório", url: "/relatorio", icon: TrendingUp },
   { title: "Alertas", url: "/alertas", icon: AlertTriangle },
 ];
 

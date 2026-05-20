@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SaidasRouteImport } from './routes/saidas'
+import { Route as RelatorioRouteImport } from './routes/relatorio'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MovimentacoesRouteImport } from './routes/movimentacoes'
 import { Route as MapaRouteImport } from './routes/mapa'
@@ -20,6 +21,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const SaidasRoute = SaidasRouteImport.update({
   id: '/saidas',
   path: '/saidas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RelatorioRoute = RelatorioRouteImport.update({
+  id: '/relatorio',
+  path: '/relatorio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProdutosRoute = ProdutosRouteImport.update({
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
+  '/relatorio': typeof RelatorioRoute
   '/saidas': typeof SaidasRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
+  '/relatorio': typeof RelatorioRoute
   '/saidas': typeof SaidasRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
+  '/relatorio': typeof RelatorioRoute
   '/saidas': typeof SaidasRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/movimentacoes'
     | '/produtos'
+    | '/relatorio'
     | '/saidas'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/movimentacoes'
     | '/produtos'
+    | '/relatorio'
     | '/saidas'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/movimentacoes'
     | '/produtos'
+    | '/relatorio'
     | '/saidas'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   MapaRoute: typeof MapaRoute
   MovimentacoesRoute: typeof MovimentacoesRoute
   ProdutosRoute: typeof ProdutosRoute
+  RelatorioRoute: typeof RelatorioRoute
   SaidasRoute: typeof SaidasRoute
 }
 
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/saidas'
       fullPath: '/saidas'
       preLoaderRoute: typeof SaidasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/relatorio': {
+      id: '/relatorio'
+      path: '/relatorio'
+      fullPath: '/relatorio'
+      preLoaderRoute: typeof RelatorioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/produtos': {
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapaRoute: MapaRoute,
   MovimentacoesRoute: MovimentacoesRoute,
   ProdutosRoute: ProdutosRoute,
+  RelatorioRoute: RelatorioRoute,
   SaidasRoute: SaidasRoute,
 }
 export const routeTree = rootRouteImport
