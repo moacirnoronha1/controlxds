@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
   Select,
@@ -125,20 +125,18 @@ function MapaPage() {
               </tr>
               <tr>
                 {DIAS.map((d) => (
-                  <>
+                  <Fragment key={d}>
                     <th
-                      key={`${d}-in`}
                       className="border-b border-border px-1.5 py-1 text-center font-medium text-[10px] text-emerald-500 bg-muted/10"
                     >
                       IN
                     </th>
                     <th
-                      key={`${d}-out`}
                       className="border-b border-r border-border px-1.5 py-1 text-center font-medium text-[10px] text-rose-500 bg-muted/10"
                     >
                       OUT
                     </th>
-                  </>
+                  </Fragment>
                 ))}
               </tr>
             </thead>
@@ -165,20 +163,18 @@ function MapaPage() {
                     {DIAS.map((d) => {
                       const cell = row?.get(d);
                       return (
-                        <>
+                        <Fragment key={d}>
                           <td
-                            key={`${p.id}-${d}-in`}
                             className="border-b border-border px-1.5 py-1 text-center tabular-nums text-emerald-500"
                           >
                             {cell ? fmt(cell.in) : ""}
                           </td>
                           <td
-                            key={`${p.id}-${d}-out`}
                             className="border-b border-r border-border px-1.5 py-1 text-center tabular-nums text-rose-500"
                           >
                             {cell ? fmt(cell.out) : ""}
                           </td>
-                        </>
+                        </Fragment>
                       );
                     })}
                     <td
