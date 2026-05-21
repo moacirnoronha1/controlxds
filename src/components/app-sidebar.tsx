@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   Grid3x3,
   TrendingUp,
+  Users,
 } from "lucide-react";
 import {
   Sidebar,
@@ -20,20 +21,33 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useAuth, type AppRole } from "@/hooks/use-auth";
 
-const items = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Produtos", url: "/produtos", icon: Package },
-  { title: "Entradas", url: "/entradas", icon: ArrowDownToLine },
-  { title: "Saídas", url: "/saidas", icon: ArrowUpFromLine },
-  { title: "Movimentações", url: "/movimentacoes", icon: History },
-  { title: "Mapa", url: "/mapa", icon: Grid3x3 },
-  { title: "Relatório", url: "/relatorio", icon: TrendingUp },
-  { title: "Alertas", url: "/alertas", icon: AlertTriangle },
+type Item = {
+  title: string;
+  url: string;
+  icon: typeof LayoutDashboard;
+  roles: AppRole[];
+};
+
+const ALL: AppRole[] = ["admin", "estoquista", "leitor"];
+
+const items: Item[] = [
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: ALL },
+  { title: "Produtos", url: "/produtos", icon: Package, roles: ALL },
+  { title: "Entradas", url: "/entradas", icon: ArrowDownToLine, roles: ["admin", "estoquista"] },
+  { title: "Saídas", url: "/saidas", icon: ArrowUpFromLine, roles: ["admin", "estoquista"] },
+  { title: "Movimentações", url: "/movimentacoes", icon: History, roles: ALL },
+  { title: "Mapa", url: "/mapa", icon: Grid3x3, roles: ALL },
+  { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: ALL },
+  { title: "Alertas", url: "/alertas", icon: AlertTriangle, roles: ALL },
+  { title: "Usuários", url: "/usuarios", icon: Users, roles: ["admin"] },
 ];
 
 export function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
+  const { role } = useAuth();
+  const visible = items.filter((i) => !role || i.roles.includes(role));
 
   return (
     <Sidebar collapsible="icon">
@@ -53,7 +67,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Operação</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {visible.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={path === item.url}>
                     <Link to={item.url} className="flex items-center gap-2">

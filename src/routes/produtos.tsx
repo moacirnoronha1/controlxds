@@ -38,12 +38,15 @@ import {
 } from "@/lib/estoque";
 import { Card } from "@/components/ui/card";
 import { ImportProdutos } from "@/components/import-produtos";
+import { useAuth, can } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/produtos")({
   component: ProdutosPage,
 });
 
 function ProdutosPage() {
+  const { role } = useAuth();
+  const canEdit = can(role, "manageProducts");
   const { data: produtos = [], isLoading } = useProdutos();
   const save = useSaveProduto();
   const del = useDeleteProduto();
@@ -91,12 +94,14 @@ function ProdutosPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Produtos</h1>
           <p className="text-sm text-muted-foreground">Cadastre e gerencie seus insumos.</p>
         </div>
-        <div className="flex gap-2">
-          <ImportProdutos />
-          <Button onClick={openNew}>
-            <Plus className="h-4 w-4 mr-1" /> Novo produto
-          </Button>
-        </div>
+        {canEdit && (
+          <div className="flex gap-2">
+            <ImportProdutos />
+            <Button onClick={openNew}>
+              <Plus className="h-4 w-4 mr-1" /> Novo produto
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -177,20 +182,22 @@ function ProdutosPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1 justify-end">
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(p)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => {
-                          if (confirm(`Excluir ${p.nome}?`)) del.mutate(p.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
+                    {canEdit ? (
+                      <div className="flex gap-1 justify-end">
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(p)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => {
+                            if (confirm(`Excluir ${p.nome}?`)) del.mutate(p.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               );
