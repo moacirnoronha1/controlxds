@@ -30,9 +30,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { useAuth, can } from "@/hooks/use-auth";
+import { Card as InfoCard } from "@/components/ui/card";
+import { ShieldAlert } from "lucide-react";
+
 type Props = { tipo: "entrada" | "saida" };
 
 export function MovForm({ tipo }: Props) {
+  const { role } = useAuth();
+  const allowed = can(role, "createMovement");
   const { data: produtos = [] } = useProdutos();
   const reg = useRegistrarMovimentacao();
   const movs = useMovimentacoes(15);
