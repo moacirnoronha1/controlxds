@@ -70,6 +70,18 @@ export function MovForm({ tipo }: Props) {
   const recentes = (movs.data ?? []).filter((m) => m.tipo === tipo).slice(0, 8);
   const title = tipo === "entrada" ? "Registrar entrada" : "Registrar saída";
 
+  if (!allowed) {
+    return (
+      <InfoCard className="p-8 text-center">
+        <ShieldAlert className="h-8 w-8 text-destructive mx-auto mb-2" />
+        <h2 className="font-semibold">Acesso restrito</h2>
+        <p className="text-sm text-muted-foreground">
+          Seu papel ({role ?? "—"}) não permite lançar {tipo}s.
+        </p>
+      </InfoCard>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
