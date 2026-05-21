@@ -38,12 +38,15 @@ import {
 } from "@/lib/estoque";
 import { Card } from "@/components/ui/card";
 import { ImportProdutos } from "@/components/import-produtos";
+import { useAuth, can } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/produtos")({
   component: ProdutosPage,
 });
 
 function ProdutosPage() {
+  const { role } = useAuth();
+  const canEdit = can(role, "manageProducts");
   const { data: produtos = [], isLoading } = useProdutos();
   const save = useSaveProduto();
   const del = useDeleteProduto();
