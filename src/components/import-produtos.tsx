@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -80,6 +80,41 @@ function matchUnidade(v: string) {
   return UNIDADES.find((u) => norm(u) === n) ?? null;
 }
 
+function cellValue(v: unknown): string {
+  if (v == null) return "";
+  if (typeof v === "object") {
+    const o = v as { text?: string; result?: unknown; richText?: { text: string }[] };
+    if (Array.isArray(o.richText)) return o.richText.map((r) => r.text).join("");
+    if (typeof o.text === "string") return o.text;
+    if (o.result != null) return String(o.result);
+  }
+  return String(v);
+}
+
+async function readSheet(file: File): Promise<Record<string, unknown>[]> {
+  const buf = await file.arrayBuffer();
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(buf);
+  const ws = wb.worksheets[0];
+  if (!ws) return [];
+  const headerRow = ws.getRow(1);
+  const headers: string[] = [];
+  headerRow.eachCell({ includeEmpty: true }, (cell, col) => {
+    headers[col - 1] = cellValue(cell.value).trim();
+  });
+  const rows: Record<string, unknown>[] = [];
+  ws.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    if (rowNumber === 1) return;
+    const obj: Record<string, unknown> = {};
+    row.eachCell({ includeEmpty: true }, (cell, col) => {
+      const key = headers[col - 1];
+      if (key) obj[key] = cellValue(cell.value);
+    });
+    rows.push(obj);
+  });
+  return rows;
+}
+
 function parseRows(rows: Record<string, unknown>[]): Linha[] {
   return rows.map((r) => {
     const obj: Partial<Linha> = {};
@@ -125,24 +160,41 @@ export function ImportProdutos() {
 
   async function handleFile(file: File) {
     setFileName(file.name);
-    const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type: "array" });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
-    const parsed = parseRows(rows).filter((l) => l.nome);
-    setLinhas(parsed);
-    if (!parsed.length) toast.error("Nenhuma linha válida encontrada");
+    try {
+      const rows = await readSheet(file);
+      const parsed = parseRows(rows).filter((l) => l.nome);
+      setLinhas(parsed);
+      if (!parsed.length) toast.error("Nenhuma linha válida encontrada");
+    } catch (e) {
+      toast.error("Erro ao ler arquivo: " + (e as Error).message);
+    }
   }
 
-  function baixarModelo() {
-    const ws = XLSX.utils.json_to_sheet([
+  async function baixarModelo() {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Produtos");
+    ws.columns = [
+      { header: "nome", key: "nome", width: 30 },
+      { header: "categoria", key: "categoria", width: 15 },
+      { header: "unidade", key: "unidade", width: 12 },
+      { header: "estoque_inicial", key: "estoque_inicial", width: 16 },
+      { header: "estoque_minimo", key: "estoque_minimo", width: 16 },
+    ];
+    ws.addRows([
       { nome: "Arroz 5kg", categoria: "Secos", unidade: "pct", estoque_inicial: 10, estoque_minimo: 3 },
       { nome: "Coca-Cola 2L", categoria: "Bebidas", unidade: "un", estoque_inicial: 24, estoque_minimo: 6 },
       { nome: "Detergente", categoria: "Limpeza", unidade: "un", estoque_inicial: 5, estoque_minimo: 2 },
     ]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Produtos");
-    XLSX.writeFile(wb, "modelo-produtos-xica.xlsx");
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "modelo-produtos-xica.xlsx";
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   async function importar() {
@@ -206,7 +258,7 @@ export function ImportProdutos() {
                 <input
                   ref={fileRef}
                   type="file"
-                  accept=".xlsx,.xls,.csv"
+                  accept=".xlsx"
                   className="hidden"
                   onChange={(e) => {
                     const f = e.target.files?.[0];
