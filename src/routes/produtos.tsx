@@ -182,20 +182,22 @@ function ProdutosPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1 justify-end">
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(p)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => {
-                          if (confirm(`Excluir ${p.nome}?`)) del.mutate(p.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
+                    {canEdit ? (
+                      <div className="flex gap-1 justify-end">
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(p)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => {
+                            if (confirm(`Excluir ${p.nome}?`)) del.mutate(p.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               );
