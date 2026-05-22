@@ -9,7 +9,9 @@ import {
   Grid3x3,
   TrendingUp,
   Users,
+  ClipboardCheck,
 } from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
