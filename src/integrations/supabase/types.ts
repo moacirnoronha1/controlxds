@@ -14,6 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      inventario_itens: {
+        Row: {
+          contado_em: string | null
+          contado_por: string | null
+          contagem_fisica: number | null
+          created_at: string
+          diferenca: number | null
+          estoque_sistema: number
+          id: string
+          inventario_id: string
+          observacao: string | null
+          produto_id: string
+          updated_at: string
+        }
+        Insert: {
+          contado_em?: string | null
+          contado_por?: string | null
+          contagem_fisica?: number | null
+          created_at?: string
+          diferenca?: number | null
+          estoque_sistema?: number
+          id?: string
+          inventario_id: string
+          observacao?: string | null
+          produto_id: string
+          updated_at?: string
+        }
+        Update: {
+          contado_em?: string | null
+          contado_por?: string | null
+          contagem_fisica?: number | null
+          created_at?: string
+          diferenca?: number | null
+          estoque_sistema?: number
+          id?: string
+          inventario_id?: string
+          observacao?: string | null
+          produto_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_itens_inventario_id_fkey"
+            columns: ["inventario_id"]
+            isOneToOne: false
+            referencedRelation: "inventarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventarios: {
+        Row: {
+          created_at: string
+          criado_por: string | null
+          fechado_em: string | null
+          fechado_por: string | null
+          id: string
+          observacao: string | null
+          referencia: string
+          status: Database["public"]["Enums"]["inventario_status"]
+          tipo: Database["public"]["Enums"]["inventario_tipo"]
+          titulo: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criado_por?: string | null
+          fechado_em?: string | null
+          fechado_por?: string | null
+          id?: string
+          observacao?: string | null
+          referencia?: string
+          status?: Database["public"]["Enums"]["inventario_status"]
+          tipo?: Database["public"]["Enums"]["inventario_tipo"]
+          titulo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string | null
+          fechado_em?: string | null
+          fechado_por?: string | null
+          id?: string
+          observacao?: string | null
+          referencia?: string
+          status?: Database["public"]["Enums"]["inventario_status"]
+          tipo?: Database["public"]["Enums"]["inventario_tipo"]
+          titulo?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       movimentacoes: {
         Row: {
           barco: string | null
@@ -150,6 +249,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      criar_inventario: {
+        Args: {
+          _produto_ids?: string[]
+          _tipo: Database["public"]["Enums"]["inventario_tipo"]
+          _titulo: string
+        }
+        Returns: string
+      }
+      fechar_inventario: {
+        Args: { _inventario_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -160,6 +271,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "estoquista" | "leitor"
+      inventario_status: "aberto" | "em_conferencia" | "fechado"
+      inventario_tipo: "rapido" | "parcial" | "completo"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -288,6 +401,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "estoquista", "leitor"],
+      inventario_status: ["aberto", "em_conferencia", "fechado"],
+      inventario_tipo: ["rapido", "parcial", "completo"],
     },
   },
 } as const
