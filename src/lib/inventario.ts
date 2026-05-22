@@ -97,10 +97,11 @@ export function useCriarInventario() {
       const { data, error } = await supabase.rpc("criar_inventario", {
         _tipo: v.tipo,
         _titulo: v.titulo,
-        _produto_ids: v.produto_ids ?? null,
+        ...(v.produto_ids ? { _produto_ids: v.produto_ids } : {}),
       });
       if (error) throw error;
       return data as string;
+
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["inventarios"] });
