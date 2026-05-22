@@ -28,6 +28,7 @@ export const Route = createFileRoute("/inventario")({
   component: InventarioListPage,
 });
 
+
 const STATUS_VARIANT: Record<InventarioStatus, "default" | "secondary" | "outline"> = {
   aberto: "outline",
   em_conferencia: "secondary",
