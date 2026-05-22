@@ -24,7 +24,7 @@ import { useProdutos } from "@/lib/estoque";
 import { useAuth, can } from "@/hooks/use-auth";
 import { Checkbox } from "@/components/ui/checkbox";
 
-export const Route = createFileRoute("/inventario/")({
+export const Route = createFileRoute("/inventario")({
   component: InventarioListPage,
 });
 
