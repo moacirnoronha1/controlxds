@@ -19,6 +19,7 @@ import { Route as InventarioRouteImport } from './routes/inventario'
 import { Route as EntradasRouteImport } from './routes/entradas'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as InventarioIdRouteImport } from './routes/inventario_.$id'
 
 const UsuariosRoute = UsuariosRouteImport.update({
   id: '/usuarios',
@@ -70,6 +71,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InventarioIdRoute = InventarioIdRouteImport.update({
+  id: '/inventario_/$id',
+  path: '/inventario/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/relatorio': typeof RelatorioRoute
   '/saidas': typeof SaidasRoute
   '/usuarios': typeof UsuariosRoute
+  '/inventario/$id': typeof InventarioIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/relatorio': typeof RelatorioRoute
   '/saidas': typeof SaidasRoute
   '/usuarios': typeof UsuariosRoute
+  '/inventario/$id': typeof InventarioIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/relatorio': typeof RelatorioRoute
   '/saidas': typeof SaidasRoute
   '/usuarios': typeof UsuariosRoute
+  '/inventario_/$id': typeof InventarioIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/saidas'
     | '/usuarios'
+    | '/inventario/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/saidas'
     | '/usuarios'
+    | '/inventario/$id'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/saidas'
     | '/usuarios'
+    | '/inventario_/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   RelatorioRoute: typeof RelatorioRoute
   SaidasRoute: typeof SaidasRoute
   UsuariosRoute: typeof UsuariosRoute
+  InventarioIdRoute: typeof InventarioIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inventario_/$id': {
+      id: '/inventario_/$id'
+      path: '/inventario/$id'
+      fullPath: '/inventario/$id'
+      preLoaderRoute: typeof InventarioIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   RelatorioRoute: RelatorioRoute,
   SaidasRoute: SaidasRoute,
   UsuariosRoute: UsuariosRoute,
+  InventarioIdRoute: InventarioIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
