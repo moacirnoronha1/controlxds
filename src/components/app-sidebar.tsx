@@ -9,7 +9,9 @@ import {
   Grid3x3,
   TrendingUp,
   Users,
+  ClipboardCheck,
 } from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -40,6 +42,7 @@ const items: Item[] = [
   { title: "Movimentações", url: "/movimentacoes", icon: History, roles: ALL },
   { title: "Mapa", url: "/mapa", icon: Grid3x3, roles: ALL },
   { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: ALL },
+  { title: "Inventário", url: "/inventario", icon: ClipboardCheck, roles: ALL },
   { title: "Alertas", url: "/alertas", icon: AlertTriangle, roles: ALL },
   { title: "Usuários", url: "/usuarios", icon: Users, roles: ["admin"] },
 ];
