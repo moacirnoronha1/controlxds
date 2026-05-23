@@ -10,10 +10,24 @@ export type Produto = {
   estoque_inicial: number;
   estoque_atual: number;
   estoque_minimo: number;
+  codigo_barras: string | null;
   ativo: boolean;
   created_at: string;
   updated_at: string;
 };
+
+export async function findProdutoByCodigo(codigo: string): Promise<Produto | null> {
+  const c = codigo.trim();
+  if (!c) return null;
+  const { data, error } = await supabase
+    .from("produtos")
+    .select("*")
+    .eq("codigo_barras", c)
+    .eq("ativo", true)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as Produto | null) ?? null;
+}
 
 export type Movimentacao = {
   id: string;
