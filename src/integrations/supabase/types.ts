@@ -165,6 +165,7 @@ export type Database = {
           ativo: boolean
           categoria: string
           codigo_barras: string | null
+          codigo_caixa: string | null
           created_at: string
           estoque_atual: number
           estoque_inicial: number
@@ -172,12 +173,14 @@ export type Database = {
           id: string
           nome: string
           unidade_medida: string
+          unidades_por_caixa: number
           updated_at: string
         }
         Insert: {
           ativo?: boolean
           categoria?: string
           codigo_barras?: string | null
+          codigo_caixa?: string | null
           created_at?: string
           estoque_atual?: number
           estoque_inicial?: number
@@ -185,12 +188,14 @@ export type Database = {
           id?: string
           nome: string
           unidade_medida?: string
+          unidades_por_caixa?: number
           updated_at?: string
         }
         Update: {
           ativo?: boolean
           categoria?: string
           codigo_barras?: string | null
+          codigo_caixa?: string | null
           created_at?: string
           estoque_atual?: number
           estoque_inicial?: number
@@ -198,6 +203,7 @@ export type Database = {
           id?: string
           nome?: string
           unidade_medida?: string
+          unidades_por_caixa?: number
           updated_at?: string
         }
         Relationships: []

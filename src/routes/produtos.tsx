@@ -71,6 +71,8 @@ function ProdutosPage() {
       estoque_inicial: 0,
       estoque_minimo: 0,
       codigo_barras: null,
+      codigo_caixa: null,
+      unidades_por_caixa: 1,
       ativo: true,
     });
     setOpen(true);
@@ -276,7 +278,7 @@ function ProdutosPage() {
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label>Código de barras</Label>
+                <Label>Código de barras (unidade)</Label>
                 <Input
                   value={editing.codigo_barras ?? ""}
                   onChange={(e) =>
@@ -286,9 +288,37 @@ function ProdutosPage() {
                   className="font-mono"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Opcional. Usado para leitura rápida em Entradas e Saídas.
+                  Ao bipar este código, movimenta 1 unidade.
                 </p>
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label>Código da caixa</Label>
+                  <Input
+                    value={editing.codigo_caixa ?? ""}
+                    onChange={(e) =>
+                      setEditing({ ...editing, codigo_caixa: e.target.value.trim() || null })
+                    }
+                    placeholder="Opcional"
+                    className="font-mono"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Unidades por caixa</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={editing.unidades_por_caixa ?? 1}
+                    onChange={(e) =>
+                      setEditing({ ...editing, unidades_por_caixa: Number(e.target.value) || 1 })
+                    }
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground -mt-2">
+                Ao bipar o código da caixa, o sistema movimenta automaticamente N unidades.
+              </p>
             </div>
           )}
           <DialogFooter>
