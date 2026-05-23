@@ -70,6 +70,7 @@ function ProdutosPage() {
       unidade_medida: "un",
       estoque_inicial: 0,
       estoque_minimo: 0,
+      codigo_barras: null,
       ativo: true,
     });
     setOpen(true);
