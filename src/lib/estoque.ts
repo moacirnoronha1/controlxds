@@ -11,22 +11,44 @@ export type Produto = {
   estoque_atual: number;
   estoque_minimo: number;
   codigo_barras: string | null;
+  codigo_caixa: string | null;
+  unidades_por_caixa: number;
   ativo: boolean;
   created_at: string;
   updated_at: string;
 };
 
-export async function findProdutoByCodigo(codigo: string): Promise<Produto | null> {
+export type ScanMatch = {
+  produto: Produto;
+  tipo_codigo: "unidade" | "caixa";
+  multiplicador: number;
+};
+
+export async function findProdutoByCodigo(codigo: string): Promise<ScanMatch | null> {
   const c = codigo.trim();
   if (!c) return null;
-  const { data, error } = await supabase
+  const { data: porUnidade, error: e1 } = await supabase
     .from("produtos")
     .select("*")
     .eq("codigo_barras", c)
     .eq("ativo", true)
     .maybeSingle();
-  if (error) throw error;
-  return (data as Produto | null) ?? null;
+  if (e1) throw e1;
+  if (porUnidade) {
+    return { produto: porUnidade as Produto, tipo_codigo: "unidade", multiplicador: 1 };
+  }
+  const { data: porCaixa, error: e2 } = await supabase
+    .from("produtos")
+    .select("*")
+    .eq("codigo_caixa", c)
+    .eq("ativo", true)
+    .maybeSingle();
+  if (e2) throw e2;
+  if (porCaixa) {
+    const p = porCaixa as Produto;
+    return { produto: p, tipo_codigo: "caixa", multiplicador: Number(p.unidades_por_caixa) || 1 };
+  }
+  return null;
 }
 
 export type Movimentacao = {

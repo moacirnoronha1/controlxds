@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowDownToLine, ArrowUpFromLine, Barcode, CheckCircle2, ShieldAlert, XCircle } from "lucide-react";
 import { BarcodeScanner } from "@/components/barcode-scanner";
-import { findProdutoByCodigo, useRegistrarMovimentacao, type Produto } from "@/lib/estoque";
+import { findProdutoByCodigo, useRegistrarMovimentacao, type ScanMatch } from "@/lib/estoque";
 import { useAuth, can } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
@@ -23,17 +23,21 @@ function ScanPage() {
   const allowed = can(role, "createMovement");
   const [tipo, setTipo] = useState<Tipo>("entrada");
   const [codigo, setCodigo] = useState("");
-  const [produto, setProduto] = useState<Produto | null>(null);
-  const [qtd, setQtd] = useState<string>("1");
+  const [match, setMatch] = useState<ScanMatch | null>(null);
+  const [qtdLida, setQtdLida] = useState<string>("1");
   const [buscando, setBuscando] = useState(false);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const registrar = useRegistrarMovimentacao();
 
-  // Foco automático para leitores USB/bluetooth
+  const produto = match?.produto ?? null;
+  const multiplicador = match?.multiplicador ?? 1;
+  const isCaixa = match?.tipo_codigo === "caixa";
+  const totalUnidades = (Number(qtdLida) || 0) * multiplicador;
+
   useEffect(() => {
     inputRef.current?.focus();
-  }, [tipo, produto]);
+  }, [tipo, match]);
 
   async function buscar(code: string) {
     const c = code.trim();
@@ -41,12 +45,12 @@ function ScanPage() {
     setBuscando(true);
     setNaoEncontrado(false);
     try {
-      const p = await findProdutoByCodigo(c);
-      if (p) {
-        setProduto(p);
-        setQtd("1");
+      const m = await findProdutoByCodigo(c);
+      if (m) {
+        setMatch(m);
+        setQtdLida("1");
       } else {
-        setProduto(null);
+        setMatch(null);
         setNaoEncontrado(true);
       }
     } catch (e) {
@@ -58,26 +62,29 @@ function ScanPage() {
 
   function reset() {
     setCodigo("");
-    setProduto(null);
+    setMatch(null);
     setNaoEncontrado(false);
-    setQtd("1");
+    setQtdLida("1");
     setTimeout(() => inputRef.current?.focus(), 50);
   }
 
   async function confirmar() {
-    if (!produto) return;
-    const q = Number(qtd);
-    if (!q || q <= 0) {
+    if (!match) return;
+    const n = Number(qtdLida);
+    if (!n || n <= 0) {
       toast.error("Informe uma quantidade válida");
       return;
     }
+    const quantidadeFinal = n * multiplicador;
     try {
       await registrar.mutateAsync({
-        produto_id: produto.id,
+        produto_id: match.produto.id,
         tipo,
-        quantidade: q,
+        quantidade: quantidadeFinal,
         responsavel: displayName ?? undefined,
-        observacao: `Leitura por código de barras (${produto.codigo_barras ?? "—"})`,
+        observacao: isCaixa
+          ? `Leitura caixa ${n}× ${multiplicador} = ${quantidadeFinal} ${match.produto.unidade_medida}`
+          : `Leitura unidade (${quantidadeFinal} ${match.produto.unidade_medida})`,
       });
       reset();
     } catch {
