@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
+import { Route as ScanRouteImport } from './routes/scan'
 import { Route as SaidasRouteImport } from './routes/saidas'
 import { Route as RelatorioRouteImport } from './routes/relatorio'
 import { Route as ProdutosRouteImport } from './routes/produtos'
@@ -24,6 +25,11 @@ import { Route as InventarioIdRouteImport } from './routes/inventario_.$id'
 const UsuariosRoute = UsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SaidasRoute = SaidasRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/saidas': typeof SaidasRoute
+  '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
   '/inventario/$id': typeof InventarioIdRoute
 }
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/saidas': typeof SaidasRoute
+  '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
   '/inventario/$id': typeof InventarioIdRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/saidas': typeof SaidasRoute
+  '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
   '/inventario_/$id': typeof InventarioIdRoute
 }
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/relatorio'
     | '/saidas'
+    | '/scan'
     | '/usuarios'
     | '/inventario/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/relatorio'
     | '/saidas'
+    | '/scan'
     | '/usuarios'
     | '/inventario/$id'
   id:
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/relatorio'
     | '/saidas'
+    | '/scan'
     | '/usuarios'
     | '/inventario_/$id'
   fileRoutesById: FileRoutesById
@@ -169,6 +181,7 @@ export interface RootRouteChildren {
   ProdutosRoute: typeof ProdutosRoute
   RelatorioRoute: typeof RelatorioRoute
   SaidasRoute: typeof SaidasRoute
+  ScanRoute: typeof ScanRoute
   UsuariosRoute: typeof UsuariosRoute
   InventarioIdRoute: typeof InventarioIdRoute
 }
@@ -180,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/usuarios'
       fullPath: '/usuarios'
       preLoaderRoute: typeof UsuariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/saidas': {
@@ -265,9 +285,20 @@ const rootRouteChildren: RootRouteChildren = {
   ProdutosRoute: ProdutosRoute,
   RelatorioRoute: RelatorioRoute,
   SaidasRoute: SaidasRoute,
+  ScanRoute: ScanRoute,
   UsuariosRoute: UsuariosRoute,
   InventarioIdRoute: InventarioIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
