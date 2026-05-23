@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BrowserMultiFormatReader, type IScannerControls } from "@zxing/browser";
+type IScannerControls = { stop: () => void };
 import { Button } from "@/components/ui/button";
 import { Camera, X } from "lucide-react";
 
