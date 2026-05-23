@@ -70,6 +70,7 @@ function ProdutosPage() {
       unidade_medida: "un",
       estoque_inicial: 0,
       estoque_minimo: 0,
+      codigo_barras: null,
       ativo: true,
     });
     setOpen(true);
@@ -273,6 +274,20 @@ function ProdutosPage() {
                     }
                   />
                 </div>
+              </div>
+              <div className="grid gap-2">
+                <Label>Código de barras</Label>
+                <Input
+                  value={editing.codigo_barras ?? ""}
+                  onChange={(e) =>
+                    setEditing({ ...editing, codigo_barras: e.target.value.trim() || null })
+                  }
+                  placeholder="Ex: 7891234567890"
+                  className="font-mono"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Opcional. Usado para leitura rápida em Entradas e Saídas.
+                </p>
               </div>
             </div>
           )}
