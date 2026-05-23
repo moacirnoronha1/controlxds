@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Users,
   ClipboardCheck,
+  Barcode,
 } from "lucide-react";
 
 import {
