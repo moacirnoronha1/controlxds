@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BrowserMultiFormatReader, type IScannerControls } from "@zxing/browser";
+type IScannerControls = { stop: () => void };
 import { Button } from "@/components/ui/button";
 import { Camera, X } from "lucide-react";
 
@@ -11,10 +11,12 @@ export function BarcodeScanner({ onDetected }: { onDetected: (code: string) => v
 
   useEffect(() => {
     if (!active) return;
-    const reader = new BrowserMultiFormatReader();
     let cancelled = false;
     (async () => {
       try {
+        const { BrowserMultiFormatReader } = await import("@zxing/browser");
+        if (cancelled) return;
+        const reader = new BrowserMultiFormatReader();
         const devices = await BrowserMultiFormatReader.listVideoInputDevices();
         const back = devices.find((d) => /back|trás|rear|environment/i.test(d.label)) ?? devices[0];
         if (!back) throw new Error("Nenhuma câmera encontrada");
