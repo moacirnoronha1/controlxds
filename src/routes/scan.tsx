@@ -184,7 +184,14 @@ function ScanPage() {
               <h2 className="font-semibold text-lg leading-tight mt-1">{produto.nome}</h2>
               <div className="flex flex-wrap items-center gap-2 mt-2 text-xs">
                 <Badge variant="outline">{produto.categoria}</Badge>
-                <span className="text-muted-foreground font-mono">{produto.codigo_barras}</span>
+                {isCaixa ? (
+                  <Badge className="bg-primary/15 text-primary hover:bg-primary/20">
+                    Caixa = {multiplicador} {produto.unidade_medida}
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary">Unidade</Badge>
+                )}
+                <span className="text-muted-foreground font-mono">{codigo}</span>
               </div>
             </div>
             <div className="text-right">
@@ -197,20 +204,31 @@ function ScanPage() {
           </div>
 
           <div className="grid gap-2">
-            <Label>Quantidade ({tipo === "entrada" ? "entrar" : "sair"})</Label>
+            <Label>
+              {isCaixa
+                ? `Quantidade de caixas (${tipo === "entrada" ? "entrar" : "sair"})`
+                : `Quantidade (${tipo === "entrada" ? "entrar" : "sair"})`}
+            </Label>
             <Input
               type="number"
               inputMode="decimal"
               min="0"
               step="any"
-              value={qtd}
-              onChange={(e) => setQtd(e.target.value)}
+              value={qtdLida}
+              onChange={(e) => setQtdLida(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") confirmar();
               }}
               className="text-lg font-semibold"
             />
+            {isCaixa && (
+              <p className="text-xs text-muted-foreground">
+                Total: <span className="font-semibold text-foreground tabular-nums">{totalUnidades}</span>{" "}
+                {produto.unidade_medida} ({qtdLida || 0} × {multiplicador})
+              </p>
+            )}
           </div>
+
 
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={reset}>
