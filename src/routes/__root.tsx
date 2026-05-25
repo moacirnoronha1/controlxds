@@ -8,11 +8,8 @@ import {
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider, useAuth, ROLE_LABEL } from "@/hooks/use-auth";
+import { AuthProvider } from "@/hooks/use-auth";
 import { AuthGate } from "@/components/auth-gate";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -59,7 +56,6 @@ function RootComponent() {
 }
 
 function AppShell() {
-  const { displayName, role, signOut } = useAuth();
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
@@ -68,17 +64,6 @@ function AppShell() {
           <header className="h-14 flex items-center gap-3 border-b border-border px-4 sticky top-0 z-10 bg-background/80 backdrop-blur">
             <SidebarTrigger />
             <div className="text-sm text-muted-foreground hidden sm:block">Xica Estoque</div>
-            <div className="ml-auto flex items-center gap-2">
-              {role && (
-                <Badge variant={role === "admin" ? "default" : role === "estoquista" ? "secondary" : "outline"}>
-                  {ROLE_LABEL[role]}
-                </Badge>
-              )}
-              <span className="text-sm font-medium hidden md:block">{displayName}</span>
-              <Button size="sm" variant="ghost" onClick={signOut}>
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
           </header>
           <main className="flex-1 p-6 max-w-[1400px] w-full mx-auto">
             <Outlet />
@@ -88,3 +73,4 @@ function AppShell() {
     </SidebarProvider>
   );
 }
+
