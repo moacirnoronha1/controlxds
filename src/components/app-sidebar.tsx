@@ -46,7 +46,7 @@ const items: Item[] = [
   { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: ALL },
   { title: "Inventário", url: "/inventario", icon: ClipboardCheck, roles: ALL },
   { title: "Alertas", url: "/alertas", icon: AlertTriangle, roles: ALL },
-  { title: "Usuários", url: "/usuarios", icon: Users, roles: ["admin"] },
+  
 ];
 
 export function AppSidebar() {
