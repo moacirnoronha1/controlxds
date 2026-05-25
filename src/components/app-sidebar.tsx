@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   Grid3x3,
   TrendingUp,
-  Users,
   ClipboardCheck,
   Barcode,
 } from "lucide-react";
