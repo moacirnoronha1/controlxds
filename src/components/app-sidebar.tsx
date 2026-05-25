@@ -10,6 +10,7 @@ import {
   TrendingUp,
   ClipboardCheck,
   Barcode,
+  Settings,
 } from "lucide-react";
 
 import {
@@ -45,7 +46,7 @@ const items: Item[] = [
   { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: ALL },
   { title: "Inventário", url: "/inventario", icon: ClipboardCheck, roles: ALL },
   { title: "Alertas", url: "/alertas", icon: AlertTriangle, roles: ALL },
-  
+  { title: "Configurações", url: "/configuracoes", icon: Settings, roles: ALL },
 ];
 
 export function AppSidebar() {
