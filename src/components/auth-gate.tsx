@@ -1,4 +1,5 @@
-// Auth temporariamente desativada — acesso direto para desenvolvimento.
-export function AuthGate({ children }: { children: React.ReactNode }) {
+import type { ReactNode } from "react";
+
+export function AuthGate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
