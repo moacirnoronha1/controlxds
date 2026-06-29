@@ -232,6 +232,138 @@ export type Database = {
         }
         Relationships: []
       }
+      requisicao_itens: {
+        Row: {
+          codigo: string | null
+          created_at: string
+          id: string
+          produto_id: string
+          quantidade: number
+          requisicao_id: string
+        }
+        Insert: {
+          codigo?: string | null
+          created_at?: string
+          id?: string
+          produto_id: string
+          quantidade: number
+          requisicao_id: string
+        }
+        Update: {
+          codigo?: string | null
+          created_at?: string
+          id?: string
+          produto_id?: string
+          quantidade?: number
+          requisicao_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requisicao_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requisicao_itens_requisicao_id_fkey"
+            columns: ["requisicao_id"]
+            isOneToOne: false
+            referencedRelation: "requisicoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requisicoes: {
+        Row: {
+          cancelada_em: string | null
+          created_at: string
+          data: string
+          id: string
+          liberada_em: string | null
+          numero: number
+          observacao: string | null
+          requisitante: string
+          responsavel_liberacao: string | null
+          setor: string
+          status: Database["public"]["Enums"]["requisicao_status"]
+          updated_at: string
+        }
+        Insert: {
+          cancelada_em?: string | null
+          created_at?: string
+          data?: string
+          id?: string
+          liberada_em?: string | null
+          numero?: number
+          observacao?: string | null
+          requisitante: string
+          responsavel_liberacao?: string | null
+          setor: string
+          status?: Database["public"]["Enums"]["requisicao_status"]
+          updated_at?: string
+        }
+        Update: {
+          cancelada_em?: string | null
+          created_at?: string
+          data?: string
+          id?: string
+          liberada_em?: string | null
+          numero?: number
+          observacao?: string | null
+          requisitante?: string
+          responsavel_liberacao?: string | null
+          setor?: string
+          status?: Database["public"]["Enums"]["requisicao_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      responsaveis: {
+        Row: {
+          ativo: boolean
+          cargo: string | null
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          cargo?: string | null
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          cargo?: string | null
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      setores: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -258,6 +390,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancelar_requisicao: {
+        Args: { _requisicao_id: string }
+        Returns: undefined
+      }
       criar_inventario: {
         Args: {
           _produto_ids?: string[]
@@ -277,11 +413,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      liberar_requisicao: {
+        Args: { _requisicao_id: string; _responsavel: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "estoquista" | "leitor"
       inventario_status: "aberto" | "em_conferencia" | "fechado"
       inventario_tipo: "rapido" | "parcial" | "completo"
+      requisicao_status: "pendente" | "liberada" | "cancelada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -412,6 +553,7 @@ export const Constants = {
       app_role: ["admin", "estoquista", "leitor"],
       inventario_status: ["aberto", "em_conferencia", "fechado"],
       inventario_tipo: ["rapido", "parcial", "completo"],
+      requisicao_status: ["pendente", "liberada", "cancelada"],
     },
   },
 } as const

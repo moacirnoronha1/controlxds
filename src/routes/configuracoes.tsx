@@ -17,7 +17,11 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, KeyRound, RotateCcw } from "lucide-react";
+import { AlertTriangle, KeyRound, RotateCcw, Building2, UserCog, Plus, Trash2 } from "lucide-react";
+import {
+  useSetores, useSaveSetor, useDeleteSetor,
+  useResponsaveis, useSaveResponsavel, useDeleteResponsavel,
+} from "@/lib/requisicoes";
 
 export const Route = createFileRoute("/configuracoes")({
   component: ConfigPage,
@@ -101,13 +105,17 @@ function ConfigPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Configurações</h1>
         <p className="text-sm text-muted-foreground">
-          Senha de segurança e reset do sistema.
+          Setores, responsáveis, senha de reset e manutenção do sistema.
         </p>
       </div>
+
+      <SetoresCard />
+      <ResponsaveisCard />
+
 
       <Card className="p-5 space-y-4">
         <div className="flex items-center gap-2">
@@ -214,5 +222,78 @@ function ConfigPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+function SetoresCard() {
+  const { data: setores = [] } = useSetores();
+  const save = useSaveSetor();
+  const del = useDeleteSetor();
+  const [nome, setNome] = useState("");
+  return (
+    <Card className="p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <Building2 className="h-4 w-4 text-muted-foreground" />
+        <h2 className="font-semibold">Setores / destinos</h2>
+      </div>
+      <div className="flex gap-2">
+        <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Cozinha" />
+        <Button size="sm" onClick={async () => { if (!nome.trim()) return; await save.mutateAsync(nome.trim()); setNome(""); }}>
+          <Plus className="h-4 w-4 mr-1" /> Adicionar
+        </Button>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {setores.length === 0 && <p className="text-xs text-muted-foreground">Nenhum setor cadastrado.</p>}
+        {setores.map((s) => (
+          <div key={s.id} className="flex items-center gap-1 rounded-md border bg-muted/40 pl-3 pr-1 py-1 text-sm">
+            {s.nome}
+            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => del.mutate(s.id)}>
+              <Trash2 className="h-3 w-3 text-destructive" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function ResponsaveisCard() {
+  const { data: list = [] } = useResponsaveis();
+  const save = useSaveResponsavel();
+  const del = useDeleteResponsavel();
+  const [nome, setNome] = useState("");
+  const [cargo, setCargo] = useState("");
+  return (
+    <Card className="p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <UserCog className="h-4 w-4 text-muted-foreground" />
+        <h2 className="font-semibold">Responsáveis pela liberação</h2>
+      </div>
+      <div className="grid sm:grid-cols-[1fr_1fr_auto] gap-2">
+        <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome" />
+        <Input value={cargo} onChange={(e) => setCargo(e.target.value)} placeholder="Cargo (opcional)" />
+        <Button size="sm" onClick={async () => {
+          if (!nome.trim()) return;
+          await save.mutateAsync({ nome: nome.trim(), cargo: cargo.trim() || undefined });
+          setNome(""); setCargo("");
+        }}>
+          <Plus className="h-4 w-4 mr-1" /> Adicionar
+        </Button>
+      </div>
+      <div className="space-y-1">
+        {list.length === 0 && <p className="text-xs text-muted-foreground">Nenhum responsável cadastrado.</p>}
+        {list.map((r) => (
+          <div key={r.id} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+            <div>
+              <div>{r.nome}</div>
+              {r.cargo && <div className="text-xs text-muted-foreground">{r.cargo}</div>}
+            </div>
+            <Button size="icon" variant="ghost" onClick={() => del.mutate(r.id)}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
