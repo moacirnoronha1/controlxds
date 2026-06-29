@@ -105,13 +105,17 @@ function ConfigPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Configurações</h1>
         <p className="text-sm text-muted-foreground">
-          Senha de segurança e reset do sistema.
+          Setores, responsáveis, senha de reset e manutenção do sistema.
         </p>
       </div>
+
+      <SetoresCard />
+      <ResponsaveisCard />
+
 
       <Card className="p-5 space-y-4">
         <div className="flex items-center gap-2">
