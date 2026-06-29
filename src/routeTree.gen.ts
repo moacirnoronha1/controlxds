@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as SaidasRouteImport } from './routes/saidas'
+import { Route as RequisicoesRouteImport } from './routes/requisicoes'
 import { Route as RelatorioRouteImport } from './routes/relatorio'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MovimentacoesRouteImport } from './routes/movimentacoes'
@@ -21,6 +22,7 @@ import { Route as EntradasRouteImport } from './routes/entradas'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RequisicoesIdRouteImport } from './routes/requisicoes_.$id'
 import { Route as InventarioIdRouteImport } from './routes/inventario_.$id'
 
 const UsuariosRoute = UsuariosRouteImport.update({
@@ -36,6 +38,11 @@ const ScanRoute = ScanRouteImport.update({
 const SaidasRoute = SaidasRouteImport.update({
   id: '/saidas',
   path: '/saidas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequisicoesRoute = RequisicoesRouteImport.update({
+  id: '/requisicoes',
+  path: '/requisicoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RelatorioRoute = RelatorioRouteImport.update({
@@ -83,6 +90,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RequisicoesIdRoute = RequisicoesIdRouteImport.update({
+  id: '/requisicoes_/$id',
+  path: '/requisicoes/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InventarioIdRoute = InventarioIdRouteImport.update({
   id: '/inventario_/$id',
   path: '/inventario/$id',
@@ -99,10 +111,12 @@ export interface FileRoutesByFullPath {
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
+  '/requisicoes': typeof RequisicoesRoute
   '/saidas': typeof SaidasRoute
   '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
   '/inventario/$id': typeof InventarioIdRoute
+  '/requisicoes/$id': typeof RequisicoesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -114,10 +128,12 @@ export interface FileRoutesByTo {
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
+  '/requisicoes': typeof RequisicoesRoute
   '/saidas': typeof SaidasRoute
   '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
   '/inventario/$id': typeof InventarioIdRoute
+  '/requisicoes/$id': typeof RequisicoesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -130,10 +146,12 @@ export interface FileRoutesById {
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
+  '/requisicoes': typeof RequisicoesRoute
   '/saidas': typeof SaidasRoute
   '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
   '/inventario_/$id': typeof InventarioIdRoute
+  '/requisicoes_/$id': typeof RequisicoesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -147,10 +165,12 @@ export interface FileRouteTypes {
     | '/movimentacoes'
     | '/produtos'
     | '/relatorio'
+    | '/requisicoes'
     | '/saidas'
     | '/scan'
     | '/usuarios'
     | '/inventario/$id'
+    | '/requisicoes/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -162,10 +182,12 @@ export interface FileRouteTypes {
     | '/movimentacoes'
     | '/produtos'
     | '/relatorio'
+    | '/requisicoes'
     | '/saidas'
     | '/scan'
     | '/usuarios'
     | '/inventario/$id'
+    | '/requisicoes/$id'
   id:
     | '__root__'
     | '/'
@@ -177,10 +199,12 @@ export interface FileRouteTypes {
     | '/movimentacoes'
     | '/produtos'
     | '/relatorio'
+    | '/requisicoes'
     | '/saidas'
     | '/scan'
     | '/usuarios'
     | '/inventario_/$id'
+    | '/requisicoes_/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -193,10 +217,12 @@ export interface RootRouteChildren {
   MovimentacoesRoute: typeof MovimentacoesRoute
   ProdutosRoute: typeof ProdutosRoute
   RelatorioRoute: typeof RelatorioRoute
+  RequisicoesRoute: typeof RequisicoesRoute
   SaidasRoute: typeof SaidasRoute
   ScanRoute: typeof ScanRoute
   UsuariosRoute: typeof UsuariosRoute
   InventarioIdRoute: typeof InventarioIdRoute
+  RequisicoesIdRoute: typeof RequisicoesIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -220,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/saidas'
       fullPath: '/saidas'
       preLoaderRoute: typeof SaidasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/requisicoes': {
+      id: '/requisicoes'
+      path: '/requisicoes'
+      fullPath: '/requisicoes'
+      preLoaderRoute: typeof RequisicoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/relatorio': {
@@ -285,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/requisicoes_/$id': {
+      id: '/requisicoes_/$id'
+      path: '/requisicoes/$id'
+      fullPath: '/requisicoes/$id'
+      preLoaderRoute: typeof RequisicoesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inventario_/$id': {
       id: '/inventario_/$id'
       path: '/inventario/$id'
@@ -305,10 +345,12 @@ const rootRouteChildren: RootRouteChildren = {
   MovimentacoesRoute: MovimentacoesRoute,
   ProdutosRoute: ProdutosRoute,
   RelatorioRoute: RelatorioRoute,
+  RequisicoesRoute: RequisicoesRoute,
   SaidasRoute: SaidasRoute,
   ScanRoute: ScanRoute,
   UsuariosRoute: UsuariosRoute,
   InventarioIdRoute: InventarioIdRoute,
+  RequisicoesIdRoute: RequisicoesIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

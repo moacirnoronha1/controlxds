@@ -11,6 +11,7 @@ import {
   ClipboardCheck,
   Barcode,
   Settings,
+  ClipboardList,
 } from "lucide-react";
 
 import {
