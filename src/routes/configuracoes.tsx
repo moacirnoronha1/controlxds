@@ -17,7 +17,11 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, KeyRound, RotateCcw } from "lucide-react";
+import { AlertTriangle, KeyRound, RotateCcw, Building2, UserCog, Plus, Trash2 } from "lucide-react";
+import {
+  useSetores, useSaveSetor, useDeleteSetor,
+  useResponsaveis, useSaveResponsavel, useDeleteResponsavel,
+} from "@/lib/requisicoes";
 
 export const Route = createFileRoute("/configuracoes")({
   component: ConfigPage,
