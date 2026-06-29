@@ -42,6 +42,7 @@ const items: Item[] = [
   { title: "Entradas", url: "/entradas", icon: ArrowDownToLine, roles: ["admin", "estoquista"] },
   { title: "Saídas", url: "/saidas", icon: ArrowUpFromLine, roles: ["admin", "estoquista"] },
   { title: "Leitura rápida", url: "/scan", icon: Barcode, roles: ["admin", "estoquista"] },
+  { title: "Requisições", url: "/requisicoes", icon: ClipboardList, roles: ALL },
   { title: "Movimentações", url: "/movimentacoes", icon: History, roles: ALL },
   { title: "Mapa", url: "/mapa", icon: Grid3x3, roles: ALL },
   { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: ALL },
