@@ -49,8 +49,28 @@ function ScanPage() {
     try {
       const m = await findProdutoByCodigo(c);
       if (m) {
-        setMatch(m);
-        setQtdLida("1");
+        if (autoBip) {
+          const qtd = m.multiplicador;
+          const isCx = m.tipo_codigo === "caixa";
+          try {
+            await registrar.mutateAsync({
+              produto_id: m.produto.id,
+              tipo,
+              quantidade: qtd,
+              responsavel: displayName ?? undefined,
+              observacao: isCx
+                ? `Bip caixa: 1× ${m.multiplicador} = ${qtd} ${m.produto.unidade_medida}`
+                : `Bip unidade: ${qtd} ${m.produto.unidade_medida}`,
+            });
+            toast.success(`${tipo === "entrada" ? "+" : "−"}${qtd} ${m.produto.unidade_medida} · ${m.produto.nome}`);
+          } catch {
+            // toast handled by mutation
+          }
+          reset();
+        } else {
+          setMatch(m);
+          setQtdLida("1");
+        }
       } else {
         setMatch(null);
         setNaoEncontrado(true);
