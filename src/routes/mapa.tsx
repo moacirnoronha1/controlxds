@@ -118,11 +118,24 @@ function MapaPage() {
                 ))}
                 <th
                   rowSpan={2}
+                  className="border-b border-l border-border px-3 py-2 text-right font-semibold min-w-[80px] text-emerald-500 bg-muted/30"
+                >
+                  Total IN
+                </th>
+                <th
+                  rowSpan={2}
+                  className="border-b border-border px-3 py-2 text-right font-semibold min-w-[80px] text-rose-500 bg-muted/30"
+                >
+                  Total OUT
+                </th>
+                <th
+                  rowSpan={2}
                   className="sticky right-0 z-40 bg-card border-b border-l border-border px-3 py-2 text-right font-semibold min-w-[90px]"
                 >
                   Saldo
                 </th>
               </tr>
+
               <tr>
                 {DIAS.map((d) => (
                   <Fragment key={d}>
