@@ -92,11 +92,22 @@ function cellValue(v: unknown): string {
 }
 
 async function readSheet(file: File): Promise<Record<string, unknown>[]> {
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".xls")) {
+    throw new Error("Formato .xls não suportado. Salve como .xlsx no Excel (Arquivo → Salvar como → Pasta de Trabalho do Excel .xlsx).");
+  }
+  if (!name.endsWith(".xlsx")) {
+    throw new Error("Use um arquivo .xlsx.");
+  }
   const buf = await file.arrayBuffer();
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(buf);
-  const ws = wb.worksheets[0];
-  if (!ws) return [];
+  try {
+    await wb.xlsx.load(buf);
+  } catch {
+    throw new Error("Arquivo inválido ou corrompido. Reabra no Excel e salve novamente como .xlsx.");
+  }
+  const ws = wb.worksheets?.[0];
+  if (!ws) throw new Error("Planilha vazia ou sem abas legíveis.");
   const headerRow = ws.getRow(1);
   const headers: string[] = [];
   headerRow.eachCell({ includeEmpty: true }, (cell, col) => {
