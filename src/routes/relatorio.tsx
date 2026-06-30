@@ -55,9 +55,14 @@ function RelatorioPage() {
       const m30 = mediaPeriodo(arr, 30);
       const ref = m10 || m5 || m30;
       const previsao = ref > 0 ? p.estoque_atual / ref : Infinity;
-      return { p, m5, m10, m15, m20, m30, previsao };
+      const cobertura = 30; // dias-alvo
+      const necessidade = ref * cobertura;
+      const sugestaoBruta = necessidade - p.estoque_atual;
+      const sugestao = ref > 0 && sugestaoBruta > 0 ? Math.ceil(sugestaoBruta) : 0;
+      return { p, m5, m10, m15, m20, m30, previsao, sugestao };
     });
   }, [produtos, movs]);
+
 
   const filtradas = useMemo(
     () =>
@@ -120,18 +125,19 @@ function RelatorioPage() {
               <TableHead className="text-right">Média mensal</TableHead>
               <TableHead className="text-right">Estoque atual</TableHead>
               <TableHead className="text-right">Previsão</TableHead>
+              <TableHead className="text-right">Sugestão compra (30d)</TableHead>
               <TableHead>Consumo</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtradas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                   Nenhum produto encontrado.
                 </TableCell>
               </TableRow>
             ) : (
-              filtradas.map(({ p, m5, m10, m15, m20, m30, previsao }) => {
+              filtradas.map(({ p, m5, m10, m15, m20, m30, previsao, sugestao }) => {
                 const n = nivel(m30);
                 return (
                   <TableRow key={p.id}>
@@ -154,6 +160,15 @@ function RelatorioPage() {
                     <TableCell className="text-right tabular-nums">
                       {fmtPrev(previsao)}
                     </TableCell>
+                    <TableCell className="text-right tabular-nums font-semibold">
+                      {sugestao > 0 ? (
+                        <span className="text-amber-400">
+                          {sugestao} {p.unidade_medida}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={n.cls}>
                         {n.label}
@@ -162,6 +177,7 @@ function RelatorioPage() {
                   </TableRow>
                 );
               })
+
             )}
           </TableBody>
         </Table>

@@ -118,11 +118,24 @@ function MapaPage() {
                 ))}
                 <th
                   rowSpan={2}
+                  className="border-b border-l border-border px-3 py-2 text-right font-semibold min-w-[80px] text-emerald-500 bg-muted/30"
+                >
+                  Total IN
+                </th>
+                <th
+                  rowSpan={2}
+                  className="border-b border-border px-3 py-2 text-right font-semibold min-w-[80px] text-rose-500 bg-muted/30"
+                >
+                  Total OUT
+                </th>
+                <th
+                  rowSpan={2}
                   className="sticky right-0 z-40 bg-card border-b border-l border-border px-3 py-2 text-right font-semibold min-w-[90px]"
                 >
                   Saldo
                 </th>
               </tr>
+
               <tr>
                 {DIAS.map((d) => (
                   <Fragment key={d}>
@@ -143,6 +156,14 @@ function MapaPage() {
             <tbody>
               {produtosFiltrados.map((p, idx) => {
                 const row = grid.get(p.id);
+                let totalIn = 0;
+                let totalOut = 0;
+                if (row) {
+                  for (const c of row.values()) {
+                    totalIn += c.in;
+                    totalOut += c.out;
+                  }
+                }
                 return (
                   <tr
                     key={p.id}
@@ -177,6 +198,12 @@ function MapaPage() {
                         </Fragment>
                       );
                     })}
+                    <td className="border-b border-l border-border px-3 py-1.5 text-right tabular-nums font-semibold text-emerald-500 bg-muted/10">
+                      {fmt(totalIn)}
+                    </td>
+                    <td className="border-b border-border px-3 py-1.5 text-right tabular-nums font-semibold text-rose-500 bg-muted/10">
+                      {fmt(totalOut)}
+                    </td>
                     <td
                       className={`sticky right-0 z-20 border-b border-l border-border px-3 py-1.5 text-right font-semibold tabular-nums ${
                         p.estoque_atual <= p.estoque_minimo
@@ -192,13 +219,14 @@ function MapaPage() {
               {produtosFiltrados.length === 0 && (
                 <tr>
                   <td
-                    colSpan={DIAS.length * 2 + 2}
+                    colSpan={DIAS.length * 2 + 4}
                     className="text-center text-muted-foreground py-10"
                   >
                     Nenhum produto encontrado.
                   </td>
                 </tr>
               )}
+
             </tbody>
           </table>
         </div>
