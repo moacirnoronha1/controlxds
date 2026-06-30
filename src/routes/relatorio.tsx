@@ -55,9 +55,14 @@ function RelatorioPage() {
       const m30 = mediaPeriodo(arr, 30);
       const ref = m10 || m5 || m30;
       const previsao = ref > 0 ? p.estoque_atual / ref : Infinity;
-      return { p, m5, m10, m15, m20, m30, previsao };
+      const cobertura = 30; // dias-alvo
+      const necessidade = ref * cobertura;
+      const sugestaoBruta = necessidade - p.estoque_atual;
+      const sugestao = ref > 0 && sugestaoBruta > 0 ? Math.ceil(sugestaoBruta) : 0;
+      return { p, m5, m10, m15, m20, m30, previsao, sugestao };
     });
   }, [produtos, movs]);
+
 
   const filtradas = useMemo(
     () =>
