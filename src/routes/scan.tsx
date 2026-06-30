@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowDownToLine, ArrowUpFromLine, Barcode, CheckCircle2, ShieldAlert, XCircle } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, Barcode, CheckCircle2, ShieldAlert, XCircle, Zap } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { BarcodeScanner } from "@/components/barcode-scanner";
 import { findProdutoByCodigo, useRegistrarMovimentacao, type ScanMatch } from "@/lib/estoque";
 import { useAuth, can } from "@/hooks/use-auth";
@@ -27,6 +28,7 @@ function ScanPage() {
   const [qtdLida, setQtdLida] = useState<string>("1");
   const [buscando, setBuscando] = useState(false);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
+  const [autoBip, setAutoBip] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const registrar = useRegistrarMovimentacao();
 
@@ -47,8 +49,28 @@ function ScanPage() {
     try {
       const m = await findProdutoByCodigo(c);
       if (m) {
-        setMatch(m);
-        setQtdLida("1");
+        if (autoBip) {
+          const qtd = m.multiplicador;
+          const isCx = m.tipo_codigo === "caixa";
+          try {
+            await registrar.mutateAsync({
+              produto_id: m.produto.id,
+              tipo,
+              quantidade: qtd,
+              responsavel: displayName ?? undefined,
+              observacao: isCx
+                ? `Bip caixa: 1× ${m.multiplicador} = ${qtd} ${m.produto.unidade_medida}`
+                : `Bip unidade: ${qtd} ${m.produto.unidade_medida}`,
+            });
+            toast.success(`${tipo === "entrada" ? "+" : "−"}${qtd} ${m.produto.unidade_medida} · ${m.produto.nome}`);
+          } catch {
+            // toast handled by mutation
+          }
+          reset();
+        } else {
+          setMatch(m);
+          setQtdLida("1");
+        }
       } else {
         setMatch(null);
         setNaoEncontrado(true);
@@ -125,6 +147,20 @@ function ScanPage() {
           </TabsTrigger>
         </TabsList>
       </Tabs>
+
+      <div className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2">
+        <div className="flex items-center gap-2 text-sm">
+          <Zap className="h-4 w-4 text-primary" />
+          <div>
+            <p className="font-medium leading-tight">Bip automático</p>
+            <p className="text-xs text-muted-foreground">
+              Unidade = 1 · Caixa = multiplicador
+            </p>
+          </div>
+        </div>
+        <Switch checked={autoBip} onCheckedChange={setAutoBip} />
+      </div>
+
 
       <Card className="p-4 space-y-4">
         <div className="grid gap-2">
