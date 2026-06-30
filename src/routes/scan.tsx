@@ -28,6 +28,7 @@ function ScanPage() {
   const [qtdLida, setQtdLida] = useState<string>("1");
   const [buscando, setBuscando] = useState(false);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
+  const [autoBip, setAutoBip] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const registrar = useRegistrarMovimentacao();
 
