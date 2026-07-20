@@ -126,20 +126,6 @@ function ScanPage() {
         </TabsList>
       </Tabs>
 
-      <div className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2">
-        <div className="flex items-center gap-2 text-sm">
-          <Zap className="h-4 w-4 text-primary" />
-          <div>
-            <p className="font-medium leading-tight">Bip automático</p>
-            <p className="text-xs text-muted-foreground">
-              Unidade = 1 · Caixa = multiplicador
-            </p>
-          </div>
-        </div>
-        <Switch checked={autoBip} onCheckedChange={setAutoBip} />
-      </div>
-
-
       <Card className="p-4 space-y-4">
         <div className="grid gap-2">
           <Label>Código de barras</Label>
