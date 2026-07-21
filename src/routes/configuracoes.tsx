@@ -228,6 +228,50 @@ function ConfigPage() {
   );
 }
 
+function LocaisCard() {
+  const { data: locais = [] } = useLocais();
+  const save = useSaveLocal();
+  const del = useDeleteLocal();
+  const [nome, setNome] = useState("");
+  return (
+    <Card className="p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <MapPin className="h-4 w-4 text-muted-foreground" />
+        <h2 className="font-semibold">Locais de estoque</h2>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Onde o estoque fica fisicamente (ex: Estoque Principal, Estoque de Bebidas, Escritório Xica, Casa).
+      </p>
+      <div className="flex gap-2">
+        <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Depósito 2" />
+        <Button size="sm" onClick={async () => {
+          if (!nome.trim()) return;
+          await save.mutateAsync({ nome: nome.trim() });
+          setNome("");
+        }}>
+          <Plus className="h-4 w-4 mr-1" /> Adicionar
+        </Button>
+      </div>
+      <div className="space-y-1">
+        {locais.length === 0 && <p className="text-xs text-muted-foreground">Nenhum local cadastrado.</p>}
+        {locais.map((l) => (
+          <div key={l.id} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+            <div className="flex items-center gap-2">
+              {l.nome}
+              {!l.ativo && <span className="text-xs text-muted-foreground">(inativo)</span>}
+            </div>
+            <Button size="icon" variant="ghost" onClick={() => {
+              if (confirm(`Remover ${l.nome}?`)) del.mutate(l.id);
+            }}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 function SetoresCard() {
   const { data: setores = [] } = useSetores();
   const save = useSaveSetor();
