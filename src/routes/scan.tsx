@@ -22,12 +22,16 @@ type Tipo = "entrada" | "saida";
 function ScanPage() {
   const { role, displayName } = useAuth();
   const allowed = can(role, "createMovement");
+  const { data: locais = [] } = useLocais();
   const [tipo, setTipo] = useState<Tipo>("entrada");
   const [codigo, setCodigo] = useState("");
   const [match, setMatch] = useState<ScanMatch | null>(null);
   const [qtdLida, setQtdLida] = useState<string>("1");
   const [buscando, setBuscando] = useState(false);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
+  const [localId, setLocalId] = useState<string>("");
+  const [validade, setValidade] = useState<string>("");
+  const [custoUn, setCustoUn] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   const registrar = useRegistrarMovimentacao();
 
@@ -35,6 +39,13 @@ function ScanPage() {
   const multiplicador = match?.multiplicador ?? 1;
   const isCaixa = match?.tipo_codigo === "caixa";
   const totalUnidades = (Number(qtdLida) || 0) * multiplicador;
+
+  // Ao encontrar produto, pré-seleciona local padrão
+  useEffect(() => {
+    if (match?.produto.local_padrao_id) {
+      setLocalId(match.produto.local_padrao_id);
+    }
+  }, [match]);
 
   useEffect(() => {
     inputRef.current?.focus();
