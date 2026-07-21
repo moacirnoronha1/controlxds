@@ -298,7 +298,7 @@ export function useRegistrarSaidaFefo() {
     mutationFn: async (s: NovaSaidaFefo) => {
       const { error } = await supabase.rpc("registrar_saida_fefo", {
         _produto_id: s.produto_id,
-        _local_id: s.local_id ?? null,
+        _local_id: (s.local_id ?? null) as unknown as string,
         _quantidade: s.quantidade,
         _responsavel: s.responsavel ?? "",
         _observacao: s.observacao ?? "",
