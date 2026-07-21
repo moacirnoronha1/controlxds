@@ -34,6 +34,7 @@ import {
   useDeleteProduto,
   useProdutos,
   useSaveProduto,
+  useLocais,
   type Produto,
 } from "@/lib/estoque";
 import { Card } from "@/components/ui/card";
@@ -48,6 +49,7 @@ function ProdutosPage() {
   const { role } = useAuth();
   const canEdit = can(role, "manageProducts");
   const { data: produtos = [], isLoading } = useProdutos();
+  const { data: locais = [] } = useLocais();
   const save = useSaveProduto();
   const del = useDeleteProduto();
   const [q, setQ] = useState("");
