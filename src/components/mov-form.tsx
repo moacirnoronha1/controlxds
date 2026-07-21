@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -18,8 +18,10 @@ import {
 } from "@/components/ui/select";
 import {
   useProdutos,
-  useRegistrarMovimentacao,
   useMovimentacoes,
+  useLocais,
+  useCriarEntradaLote,
+  useRegistrarSaidaFefo,
 } from "@/lib/estoque";
 import {
   Table,
@@ -40,7 +42,10 @@ export function MovForm({ tipo }: Props) {
   const { role } = useAuth();
   const allowed = can(role, "createMovement");
   const { data: produtos = [] } = useProdutos();
-  const reg = useRegistrarMovimentacao();
+  const { data: locais = [] } = useLocais();
+  const entrada = useCriarEntradaLote();
+  const saida = useRegistrarSaidaFefo();
+  const pending = tipo === "entrada" ? entrada.isPending : saida.isPending;
   const movs = useMovimentacoes(15);
 
   const [form, setForm] = useState({
@@ -49,22 +54,55 @@ export function MovForm({ tipo }: Props) {
     observacao: "",
     responsavel: "",
     fornecedor: "",
-    barco: "",
+    local_id: "",
+    validade: "",
+    custo_unitario: "",
   });
+
+  // Ao trocar produto, se for entrada e o produto tiver local padrão, pré-seleciona
+  useEffect(() => {
+    if (!form.produto_id) return;
+    const p = produtos.find((x) => x.id === form.produto_id);
+    if (p?.local_padrao_id && !form.local_id) {
+      setForm((f) => ({ ...f, local_id: p.local_padrao_id ?? "" }));
+    }
+  }, [form.produto_id, produtos]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const qtd = Number(form.quantidade) || 0;
+  const custoUn = Number(form.custo_unitario) || 0;
+  const custoTotal = qtd * custoUn;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.produto_id || !form.quantidade) return;
-    await reg.mutateAsync({
-      tipo,
-      produto_id: form.produto_id,
-      quantidade: Number(form.quantidade),
-      observacao: form.observacao || undefined,
-      responsavel: form.responsavel || undefined,
-      fornecedor: tipo === "entrada" ? form.fornecedor || undefined : undefined,
-      barco: tipo === "entrada" ? form.barco || undefined : undefined,
+    if (tipo === "entrada") {
+      if (!form.local_id) return;
+      await entrada.mutateAsync({
+        produto_id: form.produto_id,
+        local_id: form.local_id,
+        quantidade: Number(form.quantidade),
+        validade: form.validade || null,
+        custo_unitario: form.custo_unitario ? Number(form.custo_unitario) : null,
+        fornecedor: form.fornecedor || undefined,
+        observacao: form.observacao || undefined,
+        responsavel: form.responsavel || undefined,
+      });
+    } else {
+      await saida.mutateAsync({
+        produto_id: form.produto_id,
+        local_id: form.local_id || null,
+        quantidade: Number(form.quantidade),
+        responsavel: form.responsavel || undefined,
+        observacao: form.observacao || undefined,
+      });
+    }
+    setForm({
+      ...form,
+      quantidade: "",
+      observacao: "",
+      validade: "",
+      custo_unitario: "",
     });
-    setForm({ ...form, quantidade: "", observacao: "" });
   }
 
   const recentes = (movs.data ?? []).filter((m) => m.tipo === tipo).slice(0, 8);
@@ -88,15 +126,17 @@ export function MovForm({ tipo }: Props) {
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         <p className="text-sm text-muted-foreground">
           {tipo === "entrada"
-            ? "Adicione produtos ao estoque."
-            : "Registre consumo e retiradas."}
+            ? "Cada entrada gera um lote com validade e custo próprios."
+            : "A saída consome dos lotes disponíveis (validade mais próxima primeiro)."}
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Nova movimentação</CardTitle>
+            <CardTitle className="text-base">
+              {tipo === "entrada" ? "Nova entrada (lote)" : "Nova saída"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={submit} className="grid gap-4">
@@ -116,19 +156,69 @@ export function MovForm({ tipo }: Props) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
-                <Label>Quantidade</Label>
-                <Input
-                  type="number"
-                  step="any"
-                  min="0"
-                  value={form.quantidade}
-                  onChange={(e) => setForm({ ...form, quantidade: e.target.value })}
-                  required
-                />
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label>Quantidade</Label>
+                  <Input
+                    type="number"
+                    step="any"
+                    min="0"
+                    value={form.quantidade}
+                    onChange={(e) => setForm({ ...form, quantidade: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>
+                    Local {tipo === "entrada" ? "" : "(opcional)"}
+                  </Label>
+                  <Select
+                    value={form.local_id}
+                    onValueChange={(v) => setForm({ ...form, local_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={tipo === "saida" ? "Todos os locais" : "Selecione"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locais.filter((l) => l.ativo).map((l) => (
+                        <SelectItem key={l.id} value={l.id}>{l.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+
               {tipo === "entrada" && (
-                <div className="grid grid-cols-2 gap-3">
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="grid gap-2">
+                      <Label>Validade do lote</Label>
+                      <Input
+                        type="date"
+                        value={form.validade}
+                        onChange={(e) => setForm({ ...form, validade: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Custo unitário (R$)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={form.custo_unitario}
+                        onChange={(e) => setForm({ ...form, custo_unitario: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  {custoTotal > 0 && (
+                    <p className="text-xs text-muted-foreground -mt-2">
+                      Custo total do lote:{" "}
+                      <span className="font-semibold text-foreground tabular-nums">
+                        R$ {custoTotal.toFixed(2)}
+                      </span>
+                    </p>
+                  )}
                   <div className="grid gap-2">
                     <Label>Fornecedor</Label>
                     <Input
@@ -136,15 +226,9 @@ export function MovForm({ tipo }: Props) {
                       onChange={(e) => setForm({ ...form, fornecedor: e.target.value })}
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label>Barco</Label>
-                    <Input
-                      value={form.barco}
-                      onChange={(e) => setForm({ ...form, barco: e.target.value })}
-                    />
-                  </div>
-                </div>
+                </>
               )}
+
               <div className="grid gap-2">
                 <Label>Responsável</Label>
                 <Input
@@ -160,8 +244,8 @@ export function MovForm({ tipo }: Props) {
                   rows={2}
                 />
               </div>
-              <Button type="submit" disabled={reg.isPending}>
-                {reg.isPending ? "Registrando..." : `Registrar ${tipo}`}
+              <Button type="submit" disabled={pending}>
+                {pending ? "Registrando..." : `Registrar ${tipo}`}
               </Button>
             </form>
           </CardContent>
@@ -177,6 +261,7 @@ export function MovForm({ tipo }: Props) {
                 <TableRow>
                   <TableHead>Data</TableHead>
                   <TableHead>Produto</TableHead>
+                  <TableHead>Local</TableHead>
                   <TableHead className="text-right">Qtd</TableHead>
                 </TableRow>
               </TableHeader>
@@ -187,6 +272,9 @@ export function MovForm({ tipo }: Props) {
                       {new Date(m.data_movimentacao).toLocaleString("pt-BR")}
                     </TableCell>
                     <TableCell>{m.produtos?.nome}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {m.locais_estoque?.nome ?? "—"}
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {m.quantidade} {m.produtos?.unidade_medida}
                     </TableCell>
@@ -194,7 +282,7 @@ export function MovForm({ tipo }: Props) {
                 ))}
                 {recentes.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
+                    <TableCell colSpan={4} className="text-center text-muted-foreground py-6">
                       Sem registros.
                     </TableCell>
                   </TableRow>

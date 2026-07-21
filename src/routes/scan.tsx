@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowDownToLine, ArrowUpFromLine, Barcode, CheckCircle2, ShieldAlert, XCircle } from "lucide-react";
 import { BarcodeScanner } from "@/components/barcode-scanner";
-import { findProdutoByCodigo, useRegistrarMovimentacao, type ScanMatch } from "@/lib/estoque";
+import { findProdutoByCodigo, useRegistrarMovimentacao, useLocais, type ScanMatch } from "@/lib/estoque";
 import { useAuth, can } from "@/hooks/use-auth";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/scan")({
@@ -21,12 +22,16 @@ type Tipo = "entrada" | "saida";
 function ScanPage() {
   const { role, displayName } = useAuth();
   const allowed = can(role, "createMovement");
+  const { data: locais = [] } = useLocais();
   const [tipo, setTipo] = useState<Tipo>("entrada");
   const [codigo, setCodigo] = useState("");
   const [match, setMatch] = useState<ScanMatch | null>(null);
   const [qtdLida, setQtdLida] = useState<string>("1");
   const [buscando, setBuscando] = useState(false);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
+  const [localId, setLocalId] = useState<string>("");
+  const [validade, setValidade] = useState<string>("");
+  const [custoUn, setCustoUn] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   const registrar = useRegistrarMovimentacao();
 
@@ -34,6 +39,13 @@ function ScanPage() {
   const multiplicador = match?.multiplicador ?? 1;
   const isCaixa = match?.tipo_codigo === "caixa";
   const totalUnidades = (Number(qtdLida) || 0) * multiplicador;
+
+  // Ao encontrar produto, pré-seleciona local padrão
+  useEffect(() => {
+    if (match?.produto.local_padrao_id) {
+      setLocalId(match.produto.local_padrao_id);
+    }
+  }, [match]);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -65,6 +77,8 @@ function ScanPage() {
     setMatch(null);
     setNaoEncontrado(false);
     setQtdLida("1");
+    setValidade("");
+    setCustoUn("");
     setTimeout(() => inputRef.current?.focus(), 50);
   }
 
@@ -75,6 +89,10 @@ function ScanPage() {
       toast.error("Informe uma quantidade válida");
       return;
     }
+    if (tipo === "entrada" && !localId) {
+      toast.error("Selecione o local de estoque");
+      return;
+    }
     const quantidadeFinal = n * multiplicador;
     try {
       await registrar.mutateAsync({
@@ -82,6 +100,9 @@ function ScanPage() {
         tipo,
         quantidade: quantidadeFinal,
         responsavel: displayName ?? undefined,
+        local_id: localId || null,
+        validade: tipo === "entrada" ? (validade || null) : null,
+        custo_unitario: tipo === "entrada" && custoUn ? Number(custoUn) : null,
         observacao: isCaixa
           ? `Leitura caixa ${n}× ${multiplicador} = ${quantidadeFinal} ${match.produto.unidade_medida}`
           : `Leitura unidade (${quantidadeFinal} ${match.produto.unidade_medida})`,
@@ -228,6 +249,44 @@ function ScanPage() {
               </p>
             )}
           </div>
+
+          <div className="grid gap-2">
+            <Label>Local {tipo === "saida" ? "(opcional)" : ""}</Label>
+            <Select value={localId} onValueChange={setLocalId}>
+              <SelectTrigger>
+                <SelectValue placeholder={tipo === "saida" ? "Todos os locais" : "Selecione"} />
+              </SelectTrigger>
+              <SelectContent>
+                {locais.filter((l) => l.ativo).map((l) => (
+                  <SelectItem key={l.id} value={l.id}>{l.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {tipo === "entrada" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label>Validade</Label>
+                <Input
+                  type="date"
+                  value={validade}
+                  onChange={(e) => setValidade(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Custo un. (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={custoUn}
+                  onChange={(e) => setCustoUn(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
 
 
           <div className="flex gap-2">
