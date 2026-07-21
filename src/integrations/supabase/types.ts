@@ -113,6 +113,87 @@ export type Database = {
         }
         Relationships: []
       }
+      locais_estoque: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lotes: {
+        Row: {
+          created_at: string
+          custo_unitario: number | null
+          fornecedor: string | null
+          id: string
+          local_id: string
+          observacao: string | null
+          produto_id: string
+          quantidade_inicial: number
+          saldo: number
+          updated_at: string
+          validade: string | null
+        }
+        Insert: {
+          created_at?: string
+          custo_unitario?: number | null
+          fornecedor?: string | null
+          id?: string
+          local_id: string
+          observacao?: string | null
+          produto_id: string
+          quantidade_inicial: number
+          saldo: number
+          updated_at?: string
+          validade?: string | null
+        }
+        Update: {
+          created_at?: string
+          custo_unitario?: number | null
+          fornecedor?: string | null
+          id?: string
+          local_id?: string
+          observacao?: string | null
+          produto_id?: string
+          quantidade_inicial?: number
+          saldo?: number
+          updated_at?: string
+          validade?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lotes_local_id_fkey"
+            columns: ["local_id"]
+            isOneToOne: false
+            referencedRelation: "locais_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lotes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movimentacoes: {
         Row: {
           barco: string | null
@@ -120,6 +201,8 @@ export type Database = {
           data_movimentacao: string
           fornecedor: string | null
           id: string
+          local_id: string | null
+          lote_id: string | null
           observacao: string | null
           produto_id: string
           quantidade: number
@@ -132,6 +215,8 @@ export type Database = {
           data_movimentacao?: string
           fornecedor?: string | null
           id?: string
+          local_id?: string | null
+          lote_id?: string | null
           observacao?: string | null
           produto_id: string
           quantidade: number
@@ -144,6 +229,8 @@ export type Database = {
           data_movimentacao?: string
           fornecedor?: string | null
           id?: string
+          local_id?: string | null
+          lote_id?: string | null
           observacao?: string | null
           produto_id?: string
           quantidade?: number
@@ -151,6 +238,20 @@ export type Database = {
           tipo?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "movimentacoes_local_id_fkey"
+            columns: ["local_id"]
+            isOneToOne: false
+            referencedRelation: "locais_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "movimentacoes_produto_id_fkey"
             columns: ["produto_id"]
@@ -171,6 +272,7 @@ export type Database = {
           estoque_inicial: number
           estoque_minimo: number
           id: string
+          local_padrao_id: string | null
           nome: string
           unidade_medida: string
           unidades_por_caixa: number
@@ -186,6 +288,7 @@ export type Database = {
           estoque_inicial?: number
           estoque_minimo?: number
           id?: string
+          local_padrao_id?: string | null
           nome: string
           unidade_medida?: string
           unidades_por_caixa?: number
@@ -201,12 +304,21 @@ export type Database = {
           estoque_inicial?: number
           estoque_minimo?: number
           id?: string
+          local_padrao_id?: string | null
           nome?: string
           unidade_medida?: string
           unidades_por_caixa?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "produtos_local_padrao_id_fkey"
+            columns: ["local_padrao_id"]
+            isOneToOne: false
+            referencedRelation: "locais_estoque"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -394,6 +506,19 @@ export type Database = {
         Args: { _requisicao_id: string }
         Returns: undefined
       }
+      criar_entrada_lote: {
+        Args: {
+          _custo_unitario: number
+          _fornecedor: string
+          _local_id: string
+          _observacao: string
+          _produto_id: string
+          _quantidade: number
+          _responsavel: string
+          _validade: string
+        }
+        Returns: string
+      }
       criar_inventario: {
         Args: {
           _produto_ids?: string[]
@@ -415,6 +540,16 @@ export type Database = {
       }
       liberar_requisicao: {
         Args: { _requisicao_id: string; _responsavel: string }
+        Returns: undefined
+      }
+      registrar_saida_fefo: {
+        Args: {
+          _local_id: string
+          _observacao: string
+          _produto_id: string
+          _quantidade: number
+          _responsavel: string
+        }
         Returns: undefined
       }
     }
