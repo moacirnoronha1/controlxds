@@ -77,6 +77,8 @@ function ScanPage() {
     setMatch(null);
     setNaoEncontrado(false);
     setQtdLida("1");
+    setValidade("");
+    setCustoUn("");
     setTimeout(() => inputRef.current?.focus(), 50);
   }
 
@@ -87,6 +89,10 @@ function ScanPage() {
       toast.error("Informe uma quantidade válida");
       return;
     }
+    if (tipo === "entrada" && !localId) {
+      toast.error("Selecione o local de estoque");
+      return;
+    }
     const quantidadeFinal = n * multiplicador;
     try {
       await registrar.mutateAsync({
@@ -94,6 +100,9 @@ function ScanPage() {
         tipo,
         quantidade: quantidadeFinal,
         responsavel: displayName ?? undefined,
+        local_id: localId || null,
+        validade: tipo === "entrada" ? (validade || null) : null,
+        custo_unitario: tipo === "entrada" && custoUn ? Number(custoUn) : null,
         observacao: isCaixa
           ? `Leitura caixa ${n}× ${multiplicador} = ${quantidadeFinal} ${match.produto.unidade_medida}`
           : `Leitura unidade (${quantidadeFinal} ${match.produto.unidade_medida})`,
