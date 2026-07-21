@@ -75,6 +75,13 @@ function ConfigPage() {
         .not("id", "is", null);
       if (e1) throw e1;
 
+      // Limpar lotes
+      const { error: e1b } = await supabase
+        .from("lotes")
+        .delete()
+        .not("id", "is", null);
+      if (e1b) throw e1b;
+
       // Limpar itens de inventário e inventários
       const { error: e2 } = await supabase
         .from("inventario_itens")
