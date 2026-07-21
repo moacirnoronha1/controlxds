@@ -250,6 +250,44 @@ function ScanPage() {
             )}
           </div>
 
+          <div className="grid gap-2">
+            <Label>Local {tipo === "saida" ? "(opcional)" : ""}</Label>
+            <Select value={localId} onValueChange={setLocalId}>
+              <SelectTrigger>
+                <SelectValue placeholder={tipo === "saida" ? "Todos os locais" : "Selecione"} />
+              </SelectTrigger>
+              <SelectContent>
+                {locais.filter((l) => l.ativo).map((l) => (
+                  <SelectItem key={l.id} value={l.id}>{l.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {tipo === "entrada" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label>Validade</Label>
+                <Input
+                  type="date"
+                  value={validade}
+                  onChange={(e) => setValidade(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Custo un. (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={custoUn}
+                  onChange={(e) => setCustoUn(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+
 
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={reset}>
