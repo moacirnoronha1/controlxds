@@ -259,17 +259,6 @@ function ProdutosPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-2">
-                  <Label>{editing.id ? "Estoque inicial (ref.)" : "Estoque inicial"}</Label>
-                  <Input
-                    type="number"
-                    value={editing.estoque_inicial ?? 0}
-                    onChange={(e) =>
-                      setEditing({ ...editing, estoque_inicial: Number(e.target.value) })
-                    }
-                    disabled={!!editing.id}
-                  />
-                </div>
-                <div className="grid gap-2">
                   <Label>Estoque mínimo</Label>
                   <Input
                     type="number"
@@ -278,6 +267,20 @@ function ProdutosPage() {
                       setEditing({ ...editing, estoque_minimo: Number(e.target.value) })
                     }
                   />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Local de estoque padrão</Label>
+                  <Select
+                    value={editing.local_padrao_id ?? ""}
+                    onValueChange={(v) => setEditing({ ...editing, local_padrao_id: v })}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      {locais.filter((l) => l.ativo).map((l) => (
+                        <SelectItem key={l.id} value={l.id}>{l.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid gap-2">
