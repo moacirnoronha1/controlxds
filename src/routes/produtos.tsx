@@ -66,15 +66,16 @@ function ProdutosPage() {
   }, [produtos, q, cat]);
 
   function openNew() {
+    const defaultLocal = locais.find((l) => l.nome === "Estoque Principal") ?? locais[0];
     setEditing({
       nome: "",
       categoria: "Secos",
       unidade_medida: "un",
-      estoque_inicial: 0,
       estoque_minimo: 0,
       codigo_barras: null,
       codigo_caixa: null,
       unidades_por_caixa: 1,
+      local_padrao_id: defaultLocal?.id ?? null,
       ativo: true,
     });
     setOpen(true);
