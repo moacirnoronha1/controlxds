@@ -114,8 +114,10 @@ function ConfigPage() {
         </p>
       </div>
 
+      <LocaisCard />
       <SetoresCard />
       <ResponsaveisCard />
+
 
 
       <Card className="p-5 space-y-4">
