@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowDownToLine, ArrowUpFromLine, Barcode, CheckCircle2, ShieldAlert, XCircle } from "lucide-react";
 import { BarcodeScanner } from "@/components/barcode-scanner";
-import { findProdutoByCodigo, useRegistrarMovimentacao, type ScanMatch } from "@/lib/estoque";
+import { findProdutoByCodigo, useRegistrarMovimentacao, useLocais, type ScanMatch } from "@/lib/estoque";
 import { useAuth, can } from "@/hooks/use-auth";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/scan")({
