@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Package,
   ArrowDownToLine,
-  ArrowUpFromLine,
   History,
   AlertTriangle,
   Grid3x3,
@@ -12,6 +11,7 @@ import {
   Barcode,
   Settings,
   ClipboardList,
+  Repeat,
 } from "lucide-react";
 
 import {
