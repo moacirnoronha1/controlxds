@@ -23,7 +23,7 @@ function ScanPage() {
   const { role, displayName } = useAuth();
   const allowed = can(role, "createMovement");
   const { data: locais = [] } = useLocais();
-  const [tipo, setTipo] = useState<Tipo>("entrada");
+  const [tipo] = useState<Tipo>("entrada");
   const [codigo, setCodigo] = useState("");
   const [match, setMatch] = useState<ScanMatch | null>(null);
   const [qtdLida, setQtdLida] = useState<string>("1");
