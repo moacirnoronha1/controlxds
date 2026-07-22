@@ -18,6 +18,7 @@ import { Route as MovimentacoesRouteImport } from './routes/movimentacoes'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as InventarioRouteImport } from './routes/inventario'
 import { Route as EntradasRouteImport } from './routes/entradas'
+import { Route as EmprestimosRouteImport } from './routes/emprestimos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
@@ -69,6 +70,11 @@ const EntradasRoute = EntradasRouteImport.update({
   path: '/entradas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmprestimosRoute = EmprestimosRouteImport.update({
+  id: '/emprestimos',
+  path: '/emprestimos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   id: '/configuracoes',
   path: '/configuracoes',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/emprestimos': typeof EmprestimosRoute
   '/entradas': typeof EntradasRoute
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/emprestimos': typeof EmprestimosRoute
   '/entradas': typeof EntradasRoute
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/emprestimos': typeof EmprestimosRoute
   '/entradas': typeof EntradasRoute
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/configuracoes'
+    | '/emprestimos'
     | '/entradas'
     | '/inventario'
     | '/mapa'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/configuracoes'
+    | '/emprestimos'
     | '/entradas'
     | '/inventario'
     | '/mapa'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/configuracoes'
+    | '/emprestimos'
     | '/entradas'
     | '/inventario'
     | '/mapa'
@@ -199,6 +211,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertasRoute: typeof AlertasRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
+  EmprestimosRoute: typeof EmprestimosRoute
   EntradasRoute: typeof EntradasRoute
   InventarioRoute: typeof InventarioRoute
   MapaRoute: typeof MapaRoute
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntradasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/emprestimos': {
+      id: '/emprestimos'
+      path: '/emprestimos'
+      fullPath: '/emprestimos'
+      preLoaderRoute: typeof EmprestimosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/configuracoes': {
       id: '/configuracoes'
       path: '/configuracoes'
@@ -319,6 +339,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertasRoute: AlertasRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
+  EmprestimosRoute: EmprestimosRoute,
   EntradasRoute: EntradasRoute,
   InventarioRoute: InventarioRoute,
   MapaRoute: MapaRoute,
