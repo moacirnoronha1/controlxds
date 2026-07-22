@@ -23,7 +23,8 @@ export type RequisicaoItem = {
   requisicao_id: string;
   produto_id: string;
   codigo: string | null;
-  quantidade: number;
+  quantidade_solicitada: number;
+  quantidade_liberada: number | null;
   produtos?: { nome: string; unidade_medida: string; codigo_barras: string | null } | null;
 };
 
@@ -130,7 +131,7 @@ export function useRequisicao(id: string | undefined) {
         .select("*, produtos(nome, unidade_medida, codigo_barras)")
         .eq("requisicao_id", id!);
       if (e2) throw e2;
-      return { requisicao: req as Requisicao, itens: (itens ?? []) as RequisicaoItem[] };
+      return { requisicao: req as Requisicao, itens: (itens ?? []) as unknown as RequisicaoItem[] };
     },
   });
 }
@@ -142,7 +143,7 @@ export function useCriarRequisicao() {
       requisitante: string;
       setor: string;
       observacao?: string;
-      itens: { produto_id: string; codigo?: string | null; quantidade: number }[];
+      itens: { produto_id: string; codigo?: string | null; quantidade_solicitada: number }[];
     }) => {
       const { data: req, error } = await supabase
         .from("requisicoes")
@@ -170,10 +171,15 @@ export function useCriarRequisicao() {
 export function useLiberarRequisicao() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: { id: string; responsavel: string }) => {
+    mutationFn: async (p: {
+      id: string;
+      responsavel: string;
+      liberacoes: Record<string, number>;
+    }) => {
       const { error } = await supabase.rpc("liberar_requisicao", {
         _requisicao_id: p.id,
         _responsavel: p.responsavel,
+        _liberacoes: p.liberacoes,
       });
       if (error) throw error;
     },
@@ -182,7 +188,8 @@ export function useLiberarRequisicao() {
       qc.invalidateQueries({ queryKey: ["requisicao", v.id] });
       qc.invalidateQueries({ queryKey: ["produtos"] });
       qc.invalidateQueries({ queryKey: ["movimentacoes"] });
-      toast.success("Requisição liberada, estoque baixado");
+      qc.invalidateQueries({ queryKey: ["lotes"] });
+      toast.success("Requisição liberada, estoque baixado (FEFO)");
     },
     onError: (e: Error) => toast.error(e.message),
   });
