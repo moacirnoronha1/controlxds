@@ -136,13 +136,10 @@ function ScanPage() {
         </p>
       </div>
 
-      <Tabs value={tipo} onValueChange={(v) => { setTipo(v as Tipo); reset(); }}>
-        <TabsList className="grid grid-cols-2 w-full">
+      <Tabs value={tipo}>
+        <TabsList className="grid grid-cols-1 w-full">
           <TabsTrigger value="entrada" className="data-[state=active]:bg-success/15 data-[state=active]:text-success">
             <ArrowDownToLine className="h-4 w-4 mr-2" /> Entrada
-          </TabsTrigger>
-          <TabsTrigger value="saida" className="data-[state=active]:bg-destructive/15 data-[state=active]:text-destructive">
-            <ArrowUpFromLine className="h-4 w-4 mr-2" /> Saída
           </TabsTrigger>
         </TabsList>
       </Tabs>
