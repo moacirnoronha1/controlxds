@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      emprestimos: {
+        Row: {
+          created_at: string
+          data_devolucao: string | null
+          data_emprestimo: string
+          destino: string | null
+          id: string
+          observacao: string | null
+          origem: string | null
+          previsao_devolucao: string | null
+          produto_id: string | null
+          produto_nome: string
+          quantidade: number
+          responsavel: string | null
+          status: Database["public"]["Enums"]["emprestimo_status"]
+          tipo: Database["public"]["Enums"]["emprestimo_tipo"]
+          unidade_medida: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_devolucao?: string | null
+          data_emprestimo?: string
+          destino?: string | null
+          id?: string
+          observacao?: string | null
+          origem?: string | null
+          previsao_devolucao?: string | null
+          produto_id?: string | null
+          produto_nome: string
+          quantidade: number
+          responsavel?: string | null
+          status?: Database["public"]["Enums"]["emprestimo_status"]
+          tipo: Database["public"]["Enums"]["emprestimo_tipo"]
+          unidade_medida?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_devolucao?: string | null
+          data_emprestimo?: string
+          destino?: string | null
+          id?: string
+          observacao?: string | null
+          origem?: string | null
+          previsao_devolucao?: string | null
+          produto_id?: string | null
+          produto_nome?: string
+          quantidade?: number
+          responsavel?: string | null
+          status?: Database["public"]["Enums"]["emprestimo_status"]
+          tipo?: Database["public"]["Enums"]["emprestimo_tipo"]
+          unidade_medida?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emprestimos_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventario_itens: {
         Row: {
           contado_em: string | null
@@ -350,7 +415,8 @@ export type Database = {
           created_at: string
           id: string
           produto_id: string
-          quantidade: number
+          quantidade_liberada: number | null
+          quantidade_solicitada: number
           requisicao_id: string
         }
         Insert: {
@@ -358,7 +424,8 @@ export type Database = {
           created_at?: string
           id?: string
           produto_id: string
-          quantidade: number
+          quantidade_liberada?: number | null
+          quantidade_solicitada: number
           requisicao_id: string
         }
         Update: {
@@ -366,7 +433,8 @@ export type Database = {
           created_at?: string
           id?: string
           produto_id?: string
-          quantidade?: number
+          quantidade_liberada?: number | null
+          quantidade_solicitada?: number
           requisicao_id?: string
         }
         Relationships: [
@@ -539,7 +607,11 @@ export type Database = {
         Returns: boolean
       }
       liberar_requisicao: {
-        Args: { _requisicao_id: string; _responsavel: string }
+        Args: {
+          _liberacoes?: Json
+          _requisicao_id: string
+          _responsavel: string
+        }
         Returns: undefined
       }
       registrar_saida_fefo: {
@@ -555,6 +627,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "estoquista" | "leitor"
+      emprestimo_status: "pendente" | "devolvido" | "atrasado"
+      emprestimo_tipo: "emprestamos" | "tomamos_emprestado"
       inventario_status: "aberto" | "em_conferencia" | "fechado"
       inventario_tipo: "rapido" | "parcial" | "completo"
       requisicao_status: "pendente" | "liberada" | "cancelada"
@@ -686,6 +760,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "estoquista", "leitor"],
+      emprestimo_status: ["pendente", "devolvido", "atrasado"],
+      emprestimo_tipo: ["emprestamos", "tomamos_emprestado"],
       inventario_status: ["aberto", "em_conferencia", "fechado"],
       inventario_tipo: ["rapido", "parcial", "completo"],
       requisicao_status: ["pendente", "liberada", "cancelada"],

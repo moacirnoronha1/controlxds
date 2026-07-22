@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -37,12 +38,33 @@ function RequisicaoDetalhe() {
   const liberar = useLiberarRequisicao();
   const cancelar = useCancelarRequisicao();
   const [respSelecionado, setRespSelecionado] = useState("");
+  const [liberacoes, setLiberacoes] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (q.data?.itens) {
+      const init: Record<string, string> = {};
+      for (const it of q.data.itens) {
+        init[it.id] = String(it.quantidade_liberada ?? it.quantidade_solicitada);
+      }
+      setLiberacoes(init);
+    }
+  }, [q.data?.requisicao?.id]);
 
   if (q.isLoading) return <p className="text-muted-foreground">Carregando...</p>;
   if (!q.data?.requisicao) return <p className="text-muted-foreground">Requisição não encontrada.</p>;
 
   const { requisicao: r, itens } = q.data;
   const podeAgir = r.status === "pendente";
+
+  function payloadLiberacoes(): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const it of itens) {
+      const raw = liberacoes[it.id];
+      const n = Number(raw);
+      out[it.id] = Number.isFinite(n) && n > 0 ? n : 0;
+    }
+    return out;
+  }
 
   return (
     <div className="space-y-6">
@@ -80,7 +102,8 @@ function RequisicaoDetalhe() {
               <TableHead className="w-12">#</TableHead>
               <TableHead>Código</TableHead>
               <TableHead>Produto</TableHead>
-              <TableHead className="text-right">Qtd.</TableHead>
+              <TableHead className="text-right">Solicitado</TableHead>
+              <TableHead className="text-right w-40">Liberar</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -89,7 +112,25 @@ function RequisicaoDetalhe() {
                 <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                 <TableCell className="font-mono text-xs">{it.codigo || it.produtos?.codigo_barras || "—"}</TableCell>
                 <TableCell>{it.produtos?.nome}</TableCell>
-                <TableCell className="text-right tabular-nums">{it.quantidade} {it.produtos?.unidade_medida}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {it.quantidade_solicitada} {it.produtos?.unidade_medida}
+                </TableCell>
+                <TableCell className="text-right">
+                  {podeAgir ? (
+                    <Input
+                      type="number" min="0" step="any"
+                      className="w-28 ml-auto text-right"
+                      value={liberacoes[it.id] ?? ""}
+                      onChange={(e) =>
+                        setLiberacoes((s) => ({ ...s, [it.id]: e.target.value }))
+                      }
+                    />
+                  ) : (
+                    <span className="tabular-nums">
+                      {it.quantidade_liberada ?? 0} {it.produtos?.unidade_medida}
+                    </span>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -127,12 +168,20 @@ function RequisicaoDetalhe() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Confirmar liberação?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Será registrada uma saída de estoque para cada item. Esta ação não pode ser desfeita pela tela.
+                    O sistema baixará somente a quantidade liberada de cada item, priorizando os lotes com validade mais próxima (FEFO).
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => liberar.mutate({ id: r.id, responsavel: respSelecionado })}>
+                  <AlertDialogAction
+                    onClick={() =>
+                      liberar.mutate({
+                        id: r.id,
+                        responsavel: respSelecionado,
+                        liberacoes: payloadLiberacoes(),
+                      })
+                    }
+                  >
                     Liberar
                   </AlertDialogAction>
                 </AlertDialogFooter>

@@ -62,7 +62,7 @@ function RequisicoesPage() {
         const p = produtos.data?.find((pp) => pp.id === i.produto_id);
         return {
           produto_id: i.produto_id,
-          quantidade: Number(i.quantidade),
+          quantidade_solicitada: Number(i.quantidade),
           codigo: p?.codigo_barras ?? null,
         };
       });

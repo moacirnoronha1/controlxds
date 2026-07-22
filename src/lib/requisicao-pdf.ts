@@ -52,21 +52,23 @@ export function gerarRequisicaoPDF(req: Requisicao, itens: RequisicaoItem[]) {
   // Items
   autoTable(doc, {
     startY: 58,
-    head: [["#", "Código", "Produto", "Unid.", "Qtd."]],
+    head: [["#", "Código", "Produto", "Unid.", "Solic.", "Liber."]],
     body: itens.map((it, i) => [
       String(i + 1),
       it.codigo || it.produtos?.codigo_barras || "—",
       it.produtos?.nome ?? "—",
       it.produtos?.unidade_medida ?? "",
-      String(it.quantidade),
+      String(it.quantidade_solicitada),
+      it.quantidade_liberada != null ? String(it.quantidade_liberada) : "—",
     ]),
     styles: { fontSize: 9, cellPadding: 2 },
     headStyles: { fillColor: [40, 40, 40], textColor: 255 },
     columnStyles: {
       0: { cellWidth: 10, halign: "center" },
-      1: { cellWidth: 36 },
-      3: { cellWidth: 18, halign: "center" },
-      4: { cellWidth: 20, halign: "right" },
+      1: { cellWidth: 32 },
+      3: { cellWidth: 16, halign: "center" },
+      4: { cellWidth: 18, halign: "right" },
+      5: { cellWidth: 18, halign: "right" },
     },
   });
 
