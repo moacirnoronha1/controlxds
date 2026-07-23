@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useProdutos, useMovimentacoes } from "@/lib/estoque";
+import { useProdutos, useMovimentacoes, useLotes } from "@/lib/estoque";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, DollarSign, MapPin, Package } from "lucide-react";
 
 export const Route = createFileRoute("/relatorio")({
   component: RelatorioPage,
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/relatorio")({
 function RelatorioPage() {
   const { data: produtos = [] } = useProdutos();
   const { data: movs = [] } = useMovimentacoes();
+  const { data: lotes = [] } = useLotes();
   const [search, setSearch] = useState("");
 
   const linhas = useMemo(() => {

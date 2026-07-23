@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ValidadeCustoRouteImport } from './routes/validade-custo'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as RequisicoesRouteImport } from './routes/requisicoes'
@@ -25,6 +26,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as RequisicoesIdRouteImport } from './routes/requisicoes_.$id'
 import { Route as InventarioIdRouteImport } from './routes/inventario_.$id'
 
+const ValidadeCustoRoute = ValidadeCustoRouteImport.update({
+  id: '/validade-custo',
+  path: '/validade-custo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UsuariosRoute = UsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/requisicoes': typeof RequisicoesRoute
   '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
+  '/validade-custo': typeof ValidadeCustoRoute
   '/inventario/$id': typeof InventarioIdRoute
   '/requisicoes/$id': typeof RequisicoesIdRoute
 }
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/requisicoes': typeof RequisicoesRoute
   '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
+  '/validade-custo': typeof ValidadeCustoRoute
   '/inventario/$id': typeof InventarioIdRoute
   '/requisicoes/$id': typeof RequisicoesIdRoute
 }
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/requisicoes': typeof RequisicoesRoute
   '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
+  '/validade-custo': typeof ValidadeCustoRoute
   '/inventario_/$id': typeof InventarioIdRoute
   '/requisicoes_/$id': typeof RequisicoesIdRoute
 }
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/requisicoes'
     | '/scan'
     | '/usuarios'
+    | '/validade-custo'
     | '/inventario/$id'
     | '/requisicoes/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/requisicoes'
     | '/scan'
     | '/usuarios'
+    | '/validade-custo'
     | '/inventario/$id'
     | '/requisicoes/$id'
   id:
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '/requisicoes'
     | '/scan'
     | '/usuarios'
+    | '/validade-custo'
     | '/inventario_/$id'
     | '/requisicoes_/$id'
   fileRoutesById: FileRoutesById
@@ -221,12 +233,20 @@ export interface RootRouteChildren {
   RequisicoesRoute: typeof RequisicoesRoute
   ScanRoute: typeof ScanRoute
   UsuariosRoute: typeof UsuariosRoute
+  ValidadeCustoRoute: typeof ValidadeCustoRoute
   InventarioIdRoute: typeof InventarioIdRoute
   RequisicoesIdRoute: typeof RequisicoesIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/validade-custo': {
+      id: '/validade-custo'
+      path: '/validade-custo'
+      fullPath: '/validade-custo'
+      preLoaderRoute: typeof ValidadeCustoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/usuarios': {
       id: '/usuarios'
       path: '/usuarios'
@@ -349,19 +369,10 @@ const rootRouteChildren: RootRouteChildren = {
   RequisicoesRoute: RequisicoesRoute,
   ScanRoute: ScanRoute,
   UsuariosRoute: UsuariosRoute,
+  ValidadeCustoRoute: ValidadeCustoRoute,
   InventarioIdRoute: InventarioIdRoute,
   RequisicoesIdRoute: RequisicoesIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
