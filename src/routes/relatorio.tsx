@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useProdutos, useMovimentacoes } from "@/lib/estoque";
+import { useProdutos, useMovimentacoes, useLotes } from "@/lib/estoque";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, DollarSign, MapPin, Package } from "lucide-react";
 
 export const Route = createFileRoute("/relatorio")({
   component: RelatorioPage,
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/relatorio")({
 function RelatorioPage() {
   const { data: produtos = [] } = useProdutos();
   const { data: movs = [] } = useMovimentacoes();
+  const { data: lotes = [] } = useLotes();
   const [search, setSearch] = useState("");
 
   const linhas = useMemo(() => {
@@ -92,6 +94,60 @@ function RelatorioPage() {
     if (d > 365) return ">1 ano";
     return `${Math.round(d)} dias`;
   };
+
+  const fmtMoney = (n: number) =>
+    n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  // Custos por lote/categoria/local (a partir dos lotes com saldo > 0 e custo definido)
+  const custos = useMemo(() => {
+    const produtoById = new Map(produtos.map((p) => [p.id, p]));
+    const porCategoria = new Map<string, number>();
+    const porLocal = new Map<string, number>();
+    type LinhaLote = {
+      id: string;
+      produto: string;
+      categoria: string;
+      local: string;
+      validade: string | null;
+      saldo: number;
+      custoUnit: number;
+      custoTotal: number;
+    };
+    const porLote: LinhaLote[] = [];
+    let totalGeral = 0;
+
+    for (const l of lotes) {
+      const saldo = Number(l.saldo);
+      if (saldo <= 0 || l.custo_unitario == null) continue;
+      const cu = Number(l.custo_unitario);
+      const total = cu * saldo;
+      const p = produtoById.get(l.produto_id);
+      const cat = p?.categoria ?? "—";
+      const loc = l.locais_estoque?.nome ?? "—";
+      porCategoria.set(cat, (porCategoria.get(cat) ?? 0) + total);
+      porLocal.set(loc, (porLocal.get(loc) ?? 0) + total);
+      porLote.push({
+        id: l.id,
+        produto: p?.nome ?? "—",
+        categoria: cat,
+        local: loc,
+        validade: l.validade,
+        saldo,
+        custoUnit: cu,
+        custoTotal: total,
+      });
+      totalGeral += total;
+    }
+
+    porLote.sort((a, b) => b.custoTotal - a.custoTotal);
+
+    return {
+      totalGeral,
+      porCategoria: Array.from(porCategoria.entries()).sort((a, b) => b[1] - a[1]),
+      porLocal: Array.from(porLocal.entries()).sort((a, b) => b[1] - a[1]),
+      porLote,
+    };
+  }, [lotes, produtos]);
 
   return (
     <div className="space-y-4">
@@ -182,6 +238,98 @@ function RelatorioPage() {
           </TableBody>
         </Table>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="p-0 overflow-hidden">
+          <div className="px-4 py-3 border-b flex items-center gap-2">
+            <Package className="h-4 w-4 text-muted-foreground" />
+            <span className="font-semibold text-sm">Custo total por categoria</span>
+            <Badge variant="outline" className="ml-auto">{fmtMoney(custos.totalGeral)}</Badge>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Categoria</TableHead>
+                <TableHead className="text-right">Custo total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {custos.porCategoria.length === 0 ? (
+                <TableRow><TableCell colSpan={2} className="text-center py-6 text-muted-foreground">Sem lotes com custo informado</TableCell></TableRow>
+              ) : custos.porCategoria.map(([cat, v]) => (
+                <TableRow key={cat}>
+                  <TableCell>{cat}</TableCell>
+                  <TableCell className="text-right tabular-nums font-medium">{fmtMoney(v)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+
+        <Card className="p-0 overflow-hidden">
+          <div className="px-4 py-3 border-b flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <span className="font-semibold text-sm">Custo total por local de estoque</span>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Local</TableHead>
+                <TableHead className="text-right">Custo total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {custos.porLocal.length === 0 ? (
+                <TableRow><TableCell colSpan={2} className="text-center py-6 text-muted-foreground">Sem lotes com custo informado</TableCell></TableRow>
+              ) : custos.porLocal.map(([loc, v]) => (
+                <TableRow key={loc}>
+                  <TableCell>{loc}</TableCell>
+                  <TableCell className="text-right tabular-nums font-medium">{fmtMoney(v)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      </div>
+
+      <Card className="p-0 overflow-hidden">
+        <div className="px-4 py-3 border-b flex items-center gap-2">
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <span className="font-semibold text-sm">Custo total por lote</span>
+        </div>
+        <div className="overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Produto</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead>Local</TableHead>
+                <TableHead>Validade</TableHead>
+                <TableHead className="text-right">Saldo</TableHead>
+                <TableHead className="text-right">Custo un.</TableHead>
+                <TableHead className="text-right">Custo total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {custos.porLote.length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">Nenhum lote com custo informado</TableCell></TableRow>
+              ) : custos.porLote.map((l) => (
+                <TableRow key={l.id}>
+                  <TableCell className="font-medium">{l.produto}</TableCell>
+                  <TableCell><Badge variant="outline">{l.categoria}</Badge></TableCell>
+                  <TableCell>{l.local}</TableCell>
+                  <TableCell className="tabular-nums">
+                    {l.validade ? new Date(l.validade).toLocaleDateString("pt-BR") : <span className="text-muted-foreground">—</span>}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{l.saldo}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmtMoney(l.custoUnit)}</TableCell>
+                  <TableCell className="text-right tabular-nums font-semibold">{fmtMoney(l.custoTotal)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </Card>
     </div>
   );
 }
