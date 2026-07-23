@@ -69,32 +69,30 @@ function ConfigPage() {
     setLoading(true);
     try {
       // Limpar movimentações
-      const { error: e1 } = await supabase
-        .from("movimentacoes")
-        .delete()
-        .not("id", "is", null);
+      const { error: e1 } = await supabase.from("movimentacoes").delete().not("id", "is", null);
       if (e1) throw e1;
 
       // Limpar lotes
-      const { error: e1b } = await supabase
-        .from("lotes")
-        .delete()
-        .not("id", "is", null);
+      const { error: e1b } = await supabase.from("lotes").delete().not("id", "is", null);
       if (e1b) throw e1b;
 
+      // Limpar itens de requisição e requisições
+      const { error: eR1 } = await supabase.from("requisicao_itens").delete().not("id", "is", null);
+      if (eR1) throw eR1;
+      const { error: eR2 } = await supabase.from("requisicoes").delete().not("id", "is", null);
+      if (eR2) throw eR2;
+
+      // Limpar empréstimos
+      const { error: eE } = await supabase.from("emprestimos").delete().not("id", "is", null);
+      if (eE) throw eE;
+
       // Limpar itens de inventário e inventários
-      const { error: e2 } = await supabase
-        .from("inventario_itens")
-        .delete()
-        .not("id", "is", null);
+      const { error: e2 } = await supabase.from("inventario_itens").delete().not("id", "is", null);
       if (e2) throw e2;
-      const { error: e3 } = await supabase
-        .from("inventarios")
-        .delete()
-        .not("id", "is", null);
+      const { error: e3 } = await supabase.from("inventarios").delete().not("id", "is", null);
       if (e3) throw e3;
 
-      // Zerar estoque dos produtos
+      // Zerar estoque dos produtos (produtos, categorias, locais e configurações são preservados)
       const { error: e4 } = await supabase
         .from("produtos")
         .update({ estoque_atual: 0, estoque_inicial: 0 })
@@ -175,9 +173,9 @@ function ConfigPage() {
           <h2 className="font-semibold text-destructive">Resetar sistema</h2>
         </div>
         <p className="text-xs text-muted-foreground">
-          Apaga <b>movimentações</b>, <b>inventários</b> e zera o{" "}
-          <b>estoque atual</b> de todos os produtos. Produtos cadastrados e
-          categorias <b>não</b> são removidos.
+          Apaga <b>movimentações</b>, <b>lotes</b>, <b>requisições</b>, <b>empréstimos</b> e{" "}
+          <b>inventários</b> e zera o <b>estoque atual</b> dos produtos.{" "}
+          <b>Não</b> remove produtos, categorias, locais de estoque nem configurações.
         </p>
         <Button
           variant="destructive"

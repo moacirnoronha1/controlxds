@@ -12,6 +12,7 @@ import {
   Settings,
   ClipboardList,
   Repeat,
+  CalendarClock,
 } from "lucide-react";
 
 import {
@@ -45,6 +46,7 @@ const items: Item[] = [
   { title: "Leitura rápida", url: "/scan", icon: Barcode, roles: ["admin", "estoquista"] },
   { title: "Movimentações", url: "/movimentacoes", icon: History, roles: ALL },
   { title: "Mapa", url: "/mapa", icon: Grid3x3, roles: ALL },
+  { title: "Validade e Custo", url: "/validade-custo", icon: CalendarClock, roles: ALL },
   { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: ALL },
   { title: "Inventário", url: "/inventario", icon: ClipboardCheck, roles: ALL },
   { title: "Alertas", url: "/alertas", icon: AlertTriangle, roles: ALL },
