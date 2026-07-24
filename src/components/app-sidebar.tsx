@@ -13,6 +13,7 @@ import {
   ClipboardList,
   Repeat,
   CalendarClock,
+  Users,
 } from "lucide-react";
 
 import {
@@ -35,38 +36,41 @@ type Item = {
   roles: AppRole[];
 };
 
-const ALL: AppRole[] = ["admin", "estoquista", "leitor"];
+const ALL: AppRole[] = ["mestre", "estoquista", "lider", "requisitante"];
+const OP: AppRole[] = ["mestre", "estoquista"];
+const READ_OP: AppRole[] = ["mestre", "estoquista", "lider"];
 
 const items: Item[] = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: ALL },
-  { title: "Produtos", url: "/produtos", icon: Package, roles: ALL },
-  { title: "Entradas", url: "/entradas", icon: ArrowDownToLine, roles: ["admin", "estoquista"] },
+  { title: "Produtos", url: "/produtos", icon: Package, roles: READ_OP },
+  { title: "Entradas", url: "/entradas", icon: ArrowDownToLine, roles: OP },
   { title: "Requisições", url: "/requisicoes", icon: ClipboardList, roles: ALL },
-  { title: "Empréstimos", url: "/emprestimos", icon: Repeat, roles: ALL },
-  { title: "Leitura rápida", url: "/scan", icon: Barcode, roles: ["admin", "estoquista"] },
-  { title: "Movimentações", url: "/movimentacoes", icon: History, roles: ALL },
-  { title: "Mapa", url: "/mapa", icon: Grid3x3, roles: ALL },
-  { title: "Validade e Custo", url: "/validade-custo", icon: CalendarClock, roles: ALL },
-  { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: ALL },
-  { title: "Inventário", url: "/inventario", icon: ClipboardCheck, roles: ALL },
-  { title: "Alertas", url: "/alertas", icon: AlertTriangle, roles: ALL },
-  { title: "Configurações", url: "/configuracoes", icon: Settings, roles: ALL },
+  { title: "Empréstimos", url: "/emprestimos", icon: Repeat, roles: READ_OP },
+  { title: "Leitura rápida", url: "/scan", icon: Barcode, roles: OP },
+  { title: "Movimentações", url: "/movimentacoes", icon: History, roles: READ_OP },
+  { title: "Mapa", url: "/mapa", icon: Grid3x3, roles: READ_OP },
+  { title: "Validade e Custo", url: "/validade-custo", icon: CalendarClock, roles: READ_OP },
+  { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: READ_OP },
+  { title: "Inventário", url: "/inventario", icon: ClipboardCheck, roles: OP },
+  { title: "Alertas", url: "/alertas", icon: AlertTriangle, roles: READ_OP },
+  { title: "Usuários", url: "/usuarios", icon: Users, roles: ["mestre"] },
+  { title: "Configurações", url: "/configuracoes", icon: Settings, roles: ["mestre"] },
 ];
 
 export function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { role } = useAuth();
-  const visible = items.filter((i) => !role || i.roles.includes(role));
+  const visible = items.filter((i) => (role ? i.roles.includes(role) : false));
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 py-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground font-semibold">
-            X
+            GX
           </div>
           <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="text-sm font-semibold">Xica Estoque</span>
+            <span className="text-sm font-semibold">GX Control</span>
             <span className="text-xs text-muted-foreground">Controle de insumos</span>
           </div>
         </div>
