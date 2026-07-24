@@ -565,11 +565,59 @@ export type Database = {
         }
         Relationships: []
       }
+      usuarios: {
+        Row: {
+          ativo: boolean
+          cargo: Database["public"]["Enums"]["user_cargo"]
+          created_at: string
+          id: string
+          nome: string
+          senha_hash: string
+          setor: string | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          ativo?: boolean
+          cargo?: Database["public"]["Enums"]["user_cargo"]
+          created_at?: string
+          id?: string
+          nome: string
+          senha_hash: string
+          setor?: string | null
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          ativo?: boolean
+          cargo?: Database["public"]["Enums"]["user_cargo"]
+          created_at?: string
+          id?: string
+          nome?: string
+          senha_hash?: string
+          setor?: string | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      atualizar_usuario: {
+        Args: {
+          _ativo: boolean
+          _cargo: Database["public"]["Enums"]["user_cargo"]
+          _id: string
+          _nome: string
+          _senha: string
+          _setor: string
+          _username: string
+        }
+        Returns: undefined
+      }
       cancelar_requisicao: {
         Args: { _requisicao_id: string }
         Returns: undefined
@@ -595,6 +643,17 @@ export type Database = {
         }
         Returns: string
       }
+      criar_usuario: {
+        Args: {
+          _ativo: boolean
+          _cargo: Database["public"]["Enums"]["user_cargo"]
+          _nome: string
+          _senha: string
+          _setor: string
+          _username: string
+        }
+        Returns: string
+      }
       fechar_inventario: {
         Args: { _inventario_id: string }
         Returns: undefined
@@ -614,6 +673,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      login_usuario: {
+        Args: { _senha: string; _username: string }
+        Returns: {
+          ativo: boolean
+          cargo: Database["public"]["Enums"]["user_cargo"]
+          id: string
+          nome: string
+          setor: string
+          username: string
+        }[]
+      }
       registrar_saida_fefo: {
         Args: {
           _local_id: string
@@ -632,6 +702,7 @@ export type Database = {
       inventario_status: "aberto" | "em_conferencia" | "fechado"
       inventario_tipo: "rapido" | "parcial" | "completo"
       requisicao_status: "pendente" | "liberada" | "cancelada"
+      user_cargo: "mestre" | "estoquista" | "lider" | "requisitante"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -765,6 +836,7 @@ export const Constants = {
       inventario_status: ["aberto", "em_conferencia", "fechado"],
       inventario_tipo: ["rapido", "parcial", "completo"],
       requisicao_status: ["pendente", "liberada", "cancelada"],
+      user_cargo: ["mestre", "estoquista", "lider", "requisitante"],
     },
   },
 } as const
