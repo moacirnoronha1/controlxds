@@ -1,42 +1,118 @@
-// Auth temporariamente desativada. Hook stub: todos têm acesso de admin.
-import { createContext, useContext, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "admin" | "estoquista" | "leitor";
+export type AppRole = "mestre" | "estoquista" | "lider" | "requisitante";
+
+export const ROLE_LABEL: Record<AppRole, string> = {
+  mestre: "Mestre",
+  estoquista: "Estoquista",
+  lider: "Líder",
+  requisitante: "Responsável pela Requisição",
+};
+
+export type SessionUser = {
+  id: string;
+  nome: string;
+  username: string;
+  cargo: AppRole;
+  setor: string | null;
+};
+
+export type Action =
+  | "createMovement"       // entradas, scan, ajustar inventário
+  | "manageProducts"       // produtos, fechar inventário
+  | "createRequisicao"
+  | "liberateRequisicao"
+  | "viewRelatorios"
+  | "manageUsers"
+  | "resetSystem"
+  | "manageSettings";
+
+const MATRIX: Record<AppRole, Action[]> = {
+  mestre: [
+    "createMovement", "manageProducts", "createRequisicao", "liberateRequisicao",
+    "viewRelatorios", "manageUsers", "resetSystem", "manageSettings",
+  ],
+  estoquista: [
+    "createMovement", "createRequisicao", "liberateRequisicao", "viewRelatorios",
+  ],
+  lider: ["createRequisicao", "viewRelatorios"],
+  requisitante: ["createRequisicao"],
+};
+
+export function can(role: AppRole | null | undefined, action: Action): boolean {
+  if (!role) return false;
+  return MATRIX[role]?.includes(action) ?? false;
+}
 
 type AuthCtx = {
-  session: { user: { id: string } } | null;
-  user: { id: string } | null;
+  user: SessionUser | null;
   loading: boolean;
-  role: AppRole;
+  role: AppRole | null;
   displayName: string;
+  signIn: (username: string, senha: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
-const FAKE: AuthCtx = {
-  session: { user: { id: "dev" } },
-  user: { id: "dev" },
-  loading: false,
-  role: "admin",
-  displayName: "Dev",
-  signOut: async () => {},
-};
-
-const Ctx = createContext<AuthCtx>(FAKE);
+const Ctx = createContext<AuthCtx | null>(null);
+const STORAGE_KEY = "gx:session";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  return <Ctx.Provider value={FAKE}>{children}</Ctx.Provider>;
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+      if (raw) setUser(JSON.parse(raw) as SessionUser);
+    } catch {
+      /* ignore */
+    }
+    setLoading(false);
+  }, []);
+
+  const signIn = useCallback(async (username: string, senha: string) => {
+    const { data, error } = await supabase.rpc("login_usuario" as never, {
+      _username: username,
+      _senha: senha,
+    } as never);
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(data) ? (data[0] as SessionUser | undefined) : undefined;
+    if (!row || !row.id) throw new Error("Usuário ou senha inválidos, ou usuário inativo.");
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(row));
+    setUser(row);
+  }, []);
+
+  const signOut = useCallback(async () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setUser(null);
+  }, []);
+
+  const value = useMemo<AuthCtx>(
+    () => ({
+      user,
+      loading,
+      role: user?.cargo ?? null,
+      displayName: user?.nome ?? "",
+      signIn,
+      signOut,
+    }),
+    [user, loading, signIn, signOut],
+  );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useAuth() {
-  return useContext(Ctx);
-}
-
-export const ROLE_LABEL: Record<AppRole, string> = {
-  admin: "Administrador",
-  estoquista: "Estoquista",
-  leitor: "Leitor",
-};
-
-export function can(_role: AppRole | null, _action: string): boolean {
-  return true;
+  const v = useContext(Ctx);
+  if (!v) throw new Error("useAuth must be used inside <AuthProvider>");
+  return v;
 }
