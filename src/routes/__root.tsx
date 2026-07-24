@@ -8,8 +8,11 @@ import {
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider, useAuth, ROLE_LABEL } from "@/hooks/use-auth";
 import { AuthGate } from "@/components/auth-gate";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+
 
 import appCss from "../styles.css?url";
 
