@@ -200,10 +200,10 @@ function RequisicoesPage() {
             {reqs.isLoading && (
               <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Carregando...</TableCell></TableRow>
             )}
-            {!reqs.isLoading && (reqs.data ?? []).length === 0 && (
+            {!reqs.isLoading && listaFiltrada.length === 0 && (
               <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhuma requisição.</TableCell></TableRow>
             )}
-            {(reqs.data ?? []).map((r) => (
+            {listaFiltrada.map((r) => (
               <TableRow key={r.id}>
                 <TableCell className="font-mono">#{String(r.numero).padStart(5, "0")}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">
