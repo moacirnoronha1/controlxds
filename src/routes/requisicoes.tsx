@@ -54,9 +54,17 @@ function RequisicoesPage() {
   );
 
   function reset() {
-    setRequisitante(""); setSetor(""); setObservacao("");
+    setRequisitante(user?.nome ?? ""); setSetor(user?.setor ?? ""); setObservacao("");
     setItens([{ produto_id: "", quantidade: "" }]);
   }
+
+  const listaFiltrada = useMemo(() => {
+    const all = reqs.data ?? [];
+    if (isRequisitante && user) {
+      return all.filter((r) => r.requisitante.trim().toLowerCase() === user.nome.trim().toLowerCase());
+    }
+    return all;
+  }, [reqs.data, isRequisitante, user]);
 
   async function salvar() {
     const validos = itens
