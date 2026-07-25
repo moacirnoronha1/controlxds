@@ -58,7 +58,6 @@ function LoginScreen() {
               autoCapitalize="characters"
               value={username}
               onChange={(e) => setUsername(e.target.value.toUpperCase())}
-              placeholder="MOACIR"
             />
           </div>
           <div className="space-y-1">
@@ -67,8 +66,8 @@ function LoginScreen() {
               type="password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              placeholder="••••"
             />
+
           </div>
           <Button type="submit" className="w-full" disabled={busy}>
             <LogIn className="h-4 w-4 mr-2" />
