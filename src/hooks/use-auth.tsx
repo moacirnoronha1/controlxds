@@ -41,10 +41,13 @@ const MATRIX: Record<AppRole, Action[]> = {
     "createMovement", "manageProducts", "createRequisicao", "liberateRequisicao",
     "viewRelatorios", "manageUsers", "resetSystem", "manageSettings",
   ],
+  lider: [
+    "createMovement", "manageProducts", "createRequisicao", "liberateRequisicao",
+    "viewRelatorios",
+  ],
   estoquista: [
     "createMovement", "createRequisicao", "liberateRequisicao", "viewRelatorios",
   ],
-  lider: ["createRequisicao", "viewRelatorios"],
   requisitante: ["createRequisicao"],
 };
 
