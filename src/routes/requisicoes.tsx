@@ -107,7 +107,7 @@ function RequisicoesPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-2">
                   <Label>Requisitante</Label>
-                  <Input value={requisitante} onChange={(e) => setRequisitante(e.target.value)} placeholder="Nome de quem solicita" />
+                  <Input value={requisitante} onChange={(e) => setRequisitante(e.target.value)} placeholder="Nome de quem solicita" disabled={isRequisitante} />
                 </div>
                 <div className="grid gap-2">
                   <Label>Destino / Setor</Label>
