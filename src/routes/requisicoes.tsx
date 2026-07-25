@@ -20,6 +20,7 @@ import { useProdutos } from "@/lib/estoque";
 import {
   useCriarRequisicao, useRequisicoes, useSetores,
 } from "@/lib/requisicoes";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/requisicoes")({
   component: RequisicoesPage,
@@ -34,14 +35,16 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
 };
 
 function RequisicoesPage() {
+  const { user, role } = useAuth();
+  const isRequisitante = role === "requisitante";
   const reqs = useRequisicoes();
   const setores = useSetores();
   const produtos = useProdutos();
   const criar = useCriarRequisicao();
 
   const [open, setOpen] = useState(false);
-  const [requisitante, setRequisitante] = useState("");
-  const [setor, setSetor] = useState("");
+  const [requisitante, setRequisitante] = useState(user?.nome ?? "");
+  const [setor, setSetor] = useState(user?.setor ?? "");
   const [observacao, setObservacao] = useState("");
   const [itens, setItens] = useState<ItemDraft[]>([{ produto_id: "", quantidade: "" }]);
 
