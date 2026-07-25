@@ -21,6 +21,7 @@ import {
   useRequisicao, useResponsaveis, useLiberarRequisicao, useCancelarRequisicao,
 } from "@/lib/requisicoes";
 import { gerarRequisicaoPDF } from "@/lib/requisicao-pdf";
+import { useAuth, can } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/requisicoes_/$id")({
   component: RequisicaoDetalhe,
@@ -33,6 +34,8 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = 
 function RequisicaoDetalhe() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const podeLiberar = can(role, "liberateRequisicao");
   const q = useRequisicao(id);
   const responsaveis = useResponsaveis();
   const liberar = useLiberarRequisicao();
@@ -54,7 +57,7 @@ function RequisicaoDetalhe() {
   if (!q.data?.requisicao) return <p className="text-muted-foreground">Requisição não encontrada.</p>;
 
   const { requisicao: r, itens } = q.data;
-  const podeAgir = r.status === "pendente";
+  const podeAgir = r.status === "pendente" && podeLiberar;
 
   function payloadLiberacoes(): Record<string, number> {
     const out: Record<string, number> = {};
