@@ -37,7 +37,7 @@ type Item = {
 };
 
 const ALL: AppRole[] = ["mestre", "estoquista", "lider", "requisitante"];
-const OP: AppRole[] = ["mestre", "estoquista"];
+const OP: AppRole[] = ["mestre", "estoquista", "lider"];
 const READ_OP: AppRole[] = ["mestre", "estoquista", "lider"];
 
 const items: Item[] = [

@@ -20,6 +20,7 @@ import { useProdutos } from "@/lib/estoque";
 import {
   useCriarRequisicao, useRequisicoes, useSetores,
 } from "@/lib/requisicoes";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/requisicoes")({
   component: RequisicoesPage,
@@ -34,14 +35,16 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
 };
 
 function RequisicoesPage() {
+  const { user, role } = useAuth();
+  const isRequisitante = role === "requisitante";
   const reqs = useRequisicoes();
   const setores = useSetores();
   const produtos = useProdutos();
   const criar = useCriarRequisicao();
 
   const [open, setOpen] = useState(false);
-  const [requisitante, setRequisitante] = useState("");
-  const [setor, setSetor] = useState("");
+  const [requisitante, setRequisitante] = useState(user?.nome ?? "");
+  const [setor, setSetor] = useState(user?.setor ?? "");
   const [observacao, setObservacao] = useState("");
   const [itens, setItens] = useState<ItemDraft[]>([{ produto_id: "", quantidade: "" }]);
 
@@ -51,9 +54,17 @@ function RequisicoesPage() {
   );
 
   function reset() {
-    setRequisitante(""); setSetor(""); setObservacao("");
+    setRequisitante(user?.nome ?? ""); setSetor(user?.setor ?? ""); setObservacao("");
     setItens([{ produto_id: "", quantidade: "" }]);
   }
+
+  const listaFiltrada = useMemo(() => {
+    const all = reqs.data ?? [];
+    if (isRequisitante && user) {
+      return all.filter((r) => r.requisitante.trim().toLowerCase() === user.nome.trim().toLowerCase());
+    }
+    return all;
+  }, [reqs.data, isRequisitante, user]);
 
   async function salvar() {
     const validos = itens
@@ -96,7 +107,7 @@ function RequisicoesPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-2">
                   <Label>Requisitante</Label>
-                  <Input value={requisitante} onChange={(e) => setRequisitante(e.target.value)} placeholder="Nome de quem solicita" />
+                  <Input value={requisitante} onChange={(e) => setRequisitante(e.target.value)} placeholder="Nome de quem solicita" disabled={isRequisitante} />
                 </div>
                 <div className="grid gap-2">
                   <Label>Destino / Setor</Label>
@@ -189,10 +200,10 @@ function RequisicoesPage() {
             {reqs.isLoading && (
               <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Carregando...</TableCell></TableRow>
             )}
-            {!reqs.isLoading && (reqs.data ?? []).length === 0 && (
+            {!reqs.isLoading && listaFiltrada.length === 0 && (
               <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhuma requisição.</TableCell></TableRow>
             )}
-            {(reqs.data ?? []).map((r) => (
+            {listaFiltrada.map((r) => (
               <TableRow key={r.id}>
                 <TableCell className="font-mono">#{String(r.numero).padStart(5, "0")}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">
