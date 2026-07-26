@@ -177,7 +177,7 @@ function AvariasPage() {
 
   const updateStatus = useMutation({
     mutationFn: async (p: { id: string; status: Status }) => {
-      const { error } = await supabase.from("avarias" as never).update({ status: p.status }).eq("id", p.id);
+      const { error } = await supabase.from("avarias" as never).update({ status: p.status } as never).eq("id", p.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -189,7 +189,7 @@ function AvariasPage() {
 
   const updateChecklist = useMutation({
     mutationFn: async (p: { id: string; field: keyof Avaria; value: boolean }) => {
-      const { error } = await supabase.from("avarias" as never).update({ [p.field]: p.value }).eq("id", p.id);
+      const { error } = await supabase.from("avarias" as never).update({ [p.field]: p.value } as never).eq("id", p.id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["avarias"] }),

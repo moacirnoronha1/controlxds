@@ -21,6 +21,7 @@ import { Route as InventarioRouteImport } from './routes/inventario'
 import { Route as EntradasRouteImport } from './routes/entradas'
 import { Route as EmprestimosRouteImport } from './routes/emprestimos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as AvariasRouteImport } from './routes/avarias'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RequisicoesIdRouteImport } from './routes/requisicoes_.$id'
@@ -86,6 +87,11 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AvariasRoute = AvariasRouteImport.update({
+  id: '/avarias',
+  path: '/avarias',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlertasRoute = AlertasRouteImport.update({
   id: '/alertas',
   path: '/alertas',
@@ -110,6 +116,7 @@ const InventarioIdRoute = InventarioIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
+  '/avarias': typeof AvariasRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/emprestimos': typeof EmprestimosRoute
   '/entradas': typeof EntradasRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
+  '/avarias': typeof AvariasRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/emprestimos': typeof EmprestimosRoute
   '/entradas': typeof EntradasRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
+  '/avarias': typeof AvariasRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/emprestimos': typeof EmprestimosRoute
   '/entradas': typeof EntradasRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/alertas'
+    | '/avarias'
     | '/configuracoes'
     | '/emprestimos'
     | '/entradas'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/alertas'
+    | '/avarias'
     | '/configuracoes'
     | '/emprestimos'
     | '/entradas'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/alertas'
+    | '/avarias'
     | '/configuracoes'
     | '/emprestimos'
     | '/entradas'
@@ -222,6 +234,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertasRoute: typeof AlertasRoute
+  AvariasRoute: typeof AvariasRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   EmprestimosRoute: typeof EmprestimosRoute
   EntradasRoute: typeof EntradasRoute
@@ -324,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/avarias': {
+      id: '/avarias'
+      path: '/avarias'
+      fullPath: '/avarias'
+      preLoaderRoute: typeof AvariasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alertas': {
       id: '/alertas'
       path: '/alertas'
@@ -358,6 +378,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertasRoute: AlertasRoute,
+  AvariasRoute: AvariasRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   EmprestimosRoute: EmprestimosRoute,
   EntradasRoute: EntradasRoute,
