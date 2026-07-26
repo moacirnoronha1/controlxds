@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useProdutos, useMovimentacoes } from "@/lib/estoque";
 import { Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Table,
   TableBody,
@@ -23,8 +24,14 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/")({
-  component: Dashboard,
+  component: DashboardRoute,
 });
+
+function DashboardRoute() {
+  const { role } = useAuth();
+  if (role === "requisitante") return <Navigate to="/requisicoes" replace />;
+  return <Dashboard />;
+}
 
 function isToday(iso: string) {
   const d = new Date(iso);
