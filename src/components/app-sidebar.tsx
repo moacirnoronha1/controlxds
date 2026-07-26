@@ -41,7 +41,7 @@ const OP: AppRole[] = ["mestre", "estoquista", "lider"];
 const READ_OP: AppRole[] = ["mestre", "estoquista", "lider"];
 
 const items: Item[] = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: ALL },
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: READ_OP },
   { title: "Produtos", url: "/produtos", icon: Package, roles: READ_OP },
   { title: "Entradas", url: "/entradas", icon: ArrowDownToLine, roles: OP },
   { title: "Requisições", url: "/requisicoes", icon: ClipboardList, roles: ALL },
