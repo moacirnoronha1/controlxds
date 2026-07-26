@@ -14,6 +14,7 @@ import {
   Repeat,
   CalendarClock,
   Users,
+  ShieldAlert,
 } from "lucide-react";
 
 import {
