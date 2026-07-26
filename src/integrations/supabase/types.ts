@@ -14,6 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
+      avarias: {
+        Row: {
+          barco: string | null
+          chk_aguardando: boolean
+          chk_aprovado: boolean
+          chk_comunicado: boolean
+          chk_descontado: boolean
+          chk_evidencia: boolean
+          chk_recusado: boolean
+          chk_registrada: boolean
+          chk_resolvido: boolean
+          created_at: string
+          data: string
+          id: string
+          local_id: string | null
+          manifesto: string | null
+          momento: Database["public"]["Enums"]["avaria_momento"]
+          motivo: string | null
+          observacao: string | null
+          produto_id: string
+          quantidade: number
+          quantidade_aproveitada: number | null
+          quantidade_avariada: number | null
+          quantidade_recebida: number | null
+          responsavel: string | null
+          status: Database["public"]["Enums"]["avaria_status"]
+          tipo: Database["public"]["Enums"]["avaria_tipo"]
+          updated_at: string
+          valor_estimado: number | null
+        }
+        Insert: {
+          barco?: string | null
+          chk_aguardando?: boolean
+          chk_aprovado?: boolean
+          chk_comunicado?: boolean
+          chk_descontado?: boolean
+          chk_evidencia?: boolean
+          chk_recusado?: boolean
+          chk_registrada?: boolean
+          chk_resolvido?: boolean
+          created_at?: string
+          data?: string
+          id?: string
+          local_id?: string | null
+          manifesto?: string | null
+          momento: Database["public"]["Enums"]["avaria_momento"]
+          motivo?: string | null
+          observacao?: string | null
+          produto_id: string
+          quantidade?: number
+          quantidade_aproveitada?: number | null
+          quantidade_avariada?: number | null
+          quantidade_recebida?: number | null
+          responsavel?: string | null
+          status?: Database["public"]["Enums"]["avaria_status"]
+          tipo: Database["public"]["Enums"]["avaria_tipo"]
+          updated_at?: string
+          valor_estimado?: number | null
+        }
+        Update: {
+          barco?: string | null
+          chk_aguardando?: boolean
+          chk_aprovado?: boolean
+          chk_comunicado?: boolean
+          chk_descontado?: boolean
+          chk_evidencia?: boolean
+          chk_recusado?: boolean
+          chk_registrada?: boolean
+          chk_resolvido?: boolean
+          created_at?: string
+          data?: string
+          id?: string
+          local_id?: string | null
+          manifesto?: string | null
+          momento?: Database["public"]["Enums"]["avaria_momento"]
+          motivo?: string | null
+          observacao?: string | null
+          produto_id?: string
+          quantidade?: number
+          quantidade_aproveitada?: number | null
+          quantidade_avariada?: number | null
+          quantidade_recebida?: number | null
+          responsavel?: string | null
+          status?: Database["public"]["Enums"]["avaria_status"]
+          tipo?: Database["public"]["Enums"]["avaria_tipo"]
+          updated_at?: string
+          valor_estimado?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avarias_local_id_fkey"
+            columns: ["local_id"]
+            isOneToOne: false
+            referencedRelation: "locais_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avarias_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emprestimos: {
         Row: {
           created_at: string
@@ -697,6 +802,21 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "estoquista" | "leitor"
+      avaria_momento: "na_chegada" | "depois_chegada"
+      avaria_status:
+        | "pendente"
+        | "em_analise"
+        | "aprovado"
+        | "recusado"
+        | "descontado"
+        | "resolvido"
+      avaria_tipo:
+        | "vencido"
+        | "quebrado"
+        | "danificado"
+        | "perda_operacional"
+        | "divergencia_contagem"
+        | "outro"
       emprestimo_status: "pendente" | "devolvido" | "atrasado"
       emprestimo_tipo: "emprestamos" | "tomamos_emprestado"
       inventario_status: "aberto" | "em_conferencia" | "fechado"
@@ -831,6 +951,23 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "estoquista", "leitor"],
+      avaria_momento: ["na_chegada", "depois_chegada"],
+      avaria_status: [
+        "pendente",
+        "em_analise",
+        "aprovado",
+        "recusado",
+        "descontado",
+        "resolvido",
+      ],
+      avaria_tipo: [
+        "vencido",
+        "quebrado",
+        "danificado",
+        "perda_operacional",
+        "divergencia_contagem",
+        "outro",
+      ],
       emprestimo_status: ["pendente", "devolvido", "atrasado"],
       emprestimo_tipo: ["emprestamos", "tomamos_emprestado"],
       inventario_status: ["aberto", "em_conferencia", "fechado"],
