@@ -47,7 +47,7 @@ const items: Item[] = [
   { title: "Entradas", url: "/entradas", icon: ArrowDownToLine, roles: OP },
   { title: "Requisições", url: "/requisicoes", icon: ClipboardList, roles: ALL },
   { title: "Empréstimos", url: "/emprestimos", icon: Repeat, roles: READ_OP },
-  { title: "Leitura rápida", url: "/scan", icon: Barcode, roles: OP },
+  
   { title: "Movimentações", url: "/movimentacoes", icon: History, roles: READ_OP },
   { title: "Mapa", url: "/mapa", icon: Grid3x3, roles: READ_OP },
   { title: "Validade e Custo", url: "/validade-custo", icon: CalendarClock, roles: READ_OP },
