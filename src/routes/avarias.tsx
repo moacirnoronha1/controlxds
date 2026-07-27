@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, can } from "@/hooks/use-auth";
-import { useProdutos, useLocais } from "@/lib/estoque";
+import { useProdutos, useLocais, useLotes } from "@/lib/estoque";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
