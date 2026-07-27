@@ -769,6 +769,7 @@ export type Database = {
         }
         Returns: string
       }
+      excluir_usuario: { Args: { _id: string }; Returns: undefined }
       fechar_inventario: {
         Args: { _inventario_id: string }
         Returns: undefined
@@ -787,6 +788,17 @@ export type Database = {
           _responsavel: string
         }
         Returns: undefined
+      }
+      listar_usuarios: {
+        Args: never
+        Returns: {
+          ativo: boolean
+          cargo: Database["public"]["Enums"]["user_cargo"]
+          id: string
+          nome: string
+          setor: string
+          username: string
+        }[]
       }
       login_usuario: {
         Args: { _senha: string; _username: string }
