@@ -467,6 +467,7 @@ function NovaAvariaDialog({
   const [data, setData] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [produtoId, setProdutoId] = useState("");
   const [localId, setLocalId] = useState<string>("");
+  const [loteId, setLoteId] = useState<string>("");
   const [tipo, setTipo] = useState<Tipo>("quebrado");
   const [motivo, setMotivo] = useState("");
   const [quantidade, setQuantidade] = useState<string>("");
@@ -479,6 +480,18 @@ function NovaAvariaDialog({
   const [observacao, setObservacao] = useState("");
   const [responsavel, setResponsavel] = useState(defaultResponsavel);
   const [busy, setBusy] = useState(false);
+
+  const { data: lotesProduto = [] } = useLotes(
+    momento === "depois_chegada" && produtoId ? produtoId : undefined,
+  );
+  const lotesDisponiveis = useMemo(
+    () => lotesProduto.filter((l) => Number(l.saldo) > 0),
+    [lotesProduto],
+  );
+  const loteSelecionado = lotesDisponiveis.find((l) => l.id === loteId) ?? null;
+
+  // Reset lote quando troca produto ou momento
+  useMemo(() => { setLoteId(""); }, [produtoId, momento]);
 
   async function save() {
     if (!produtoId) { toast.error("Selecione o produto"); return; }
