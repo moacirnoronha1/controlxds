@@ -123,13 +123,16 @@ export function MovForm({ tipo }: Props) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        <p className="text-sm text-muted-foreground">
-          {tipo === "entrada"
-            ? "Cada entrada gera um lote com validade e custo próprios."
-            : "A saída consome dos lotes disponíveis (validade mais próxima primeiro)."}
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+          <p className="text-sm text-muted-foreground">
+            {tipo === "entrada"
+              ? "Cada entrada gera um lote com validade e custo próprios."
+              : "A saída consome dos lotes disponíveis (validade mais próxima primeiro)."}
+          </p>
+        </div>
+        {tipo === "entrada" && <ImportXmlNfe />}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
