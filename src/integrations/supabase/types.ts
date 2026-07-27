@@ -29,6 +29,7 @@ export type Database = {
           data: string
           id: string
           local_id: string | null
+          lote_id: string | null
           manifesto: string | null
           momento: Database["public"]["Enums"]["avaria_momento"]
           motivo: string | null
@@ -58,6 +59,7 @@ export type Database = {
           data?: string
           id?: string
           local_id?: string | null
+          lote_id?: string | null
           manifesto?: string | null
           momento: Database["public"]["Enums"]["avaria_momento"]
           motivo?: string | null
@@ -87,6 +89,7 @@ export type Database = {
           data?: string
           id?: string
           local_id?: string | null
+          lote_id?: string | null
           manifesto?: string | null
           momento?: Database["public"]["Enums"]["avaria_momento"]
           motivo?: string | null
@@ -108,6 +111,13 @@ export type Database = {
             columns: ["local_id"]
             isOneToOne: false
             referencedRelation: "locais_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avarias_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
             referencedColumns: ["id"]
           },
           {
