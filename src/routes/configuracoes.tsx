@@ -68,13 +68,21 @@ function ConfigPage() {
     }
     setLoading(true);
     try {
-      // Limpar movimentações
+      // Limpar avarias (referenciam lotes)
+      const { error: eAv } = await supabase.from("avarias").delete().not("id", "is", null);
+      if (eAv) throw eAv;
+
+      // Limpar movimentações (referenciam lotes)
       const { error: e1 } = await supabase.from("movimentacoes").delete().not("id", "is", null);
       if (e1) throw e1;
 
       // Limpar lotes
       const { error: e1b } = await supabase.from("lotes").delete().not("id", "is", null);
       if (e1b) throw e1b;
+
+      // Limpar notas fiscais importadas
+      const { error: eNF } = await supabase.from("notas_fiscais").delete().not("id", "is", null);
+      if (eNF) throw eNF;
 
       // Limpar itens de requisição e requisições
       const { error: eR1 } = await supabase.from("requisicao_itens").delete().not("id", "is", null);
