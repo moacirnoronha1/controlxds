@@ -51,10 +51,7 @@ function UsuariosPage() {
     queryKey: ["usuarios"],
     enabled: role === "mestre",
     queryFn: async (): Promise<UsuarioRow[]> => {
-      const { data, error } = await supabase
-        .from("usuarios" as never)
-        .select("id,nome,username,cargo,setor,ativo")
-        .order("nome");
+      const { data, error } = await supabase.rpc("listar_usuarios" as never);
       if (error) throw error;
       return (data ?? []) as unknown as UsuarioRow[];
     },
@@ -62,7 +59,7 @@ function UsuariosPage() {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("usuarios" as never).delete().eq("id", id);
+      const { error } = await supabase.rpc("excluir_usuario" as never, { _id: id } as never);
       if (error) throw error;
     },
     onSuccess: () => {
