@@ -559,7 +559,7 @@ function NovaAvariaDialog({
           <DialogDescription>
             {momento === "na_chegada"
               ? "Na chegada: não dá baixa no estoque; abre pendência com o barco/transportadora."
-              : "Depois da chegada: baixa automática no estoque (FEFO)."}
+              : "Depois da chegada: baixa apenas do lote selecionado."}
           </DialogDescription>
         </DialogHeader>
 
