@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, can } from "@/hooks/use-auth";
-import { useProdutos, useLocais } from "@/lib/estoque";
+import { useProdutos, useLocais, useLotes } from "@/lib/estoque";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -467,6 +467,7 @@ function NovaAvariaDialog({
   const [data, setData] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [produtoId, setProdutoId] = useState("");
   const [localId, setLocalId] = useState<string>("");
+  const [loteId, setLoteId] = useState<string>("");
   const [tipo, setTipo] = useState<Tipo>("quebrado");
   const [motivo, setMotivo] = useState("");
   const [quantidade, setQuantidade] = useState<string>("");
@@ -480,6 +481,18 @@ function NovaAvariaDialog({
   const [responsavel, setResponsavel] = useState(defaultResponsavel);
   const [busy, setBusy] = useState(false);
 
+  const { data: lotesProduto = [] } = useLotes(
+    momento === "depois_chegada" && produtoId ? produtoId : undefined,
+  );
+  const lotesDisponiveis = useMemo(
+    () => lotesProduto.filter((l) => Number(l.saldo) > 0),
+    [lotesProduto],
+  );
+  const loteSelecionado = lotesDisponiveis.find((l) => l.id === loteId) ?? null;
+
+  // Reset lote quando troca produto ou momento
+  useEffect(() => { setLoteId(""); }, [produtoId, momento]);
+
   async function save() {
     if (!produtoId) { toast.error("Selecione o produto"); return; }
     if (momento === "na_chegada") {
@@ -490,23 +503,35 @@ function NovaAvariaDialog({
     } else {
       const q = Number(quantidade);
       if (!(q > 0)) { toast.error("Informe a quantidade"); return; }
+      if (!loteId) { toast.error("Selecione o lote específico"); return; }
+      if (loteSelecionado && q > Number(loteSelecionado.saldo)) {
+        toast.error(`Quantidade maior que o saldo do lote (${loteSelecionado.saldo})`);
+        return;
+      }
     }
     setBusy(true);
     try {
+      const isDepois = momento === "depois_chegada";
+      const valorCalc = valor
+        ? Number(valor)
+        : isDepois && loteSelecionado?.custo_unitario != null
+          ? Number(loteSelecionado.custo_unitario) * Number(quantidade)
+          : null;
       const payload = {
         data,
         produto_id: produtoId,
-        local_id: localId || null,
+        local_id: isDepois ? (loteSelecionado?.local_id ?? null) : (localId || null),
         momento,
         tipo,
         motivo: motivo || null,
-        quantidade: momento === "depois_chegada" ? Number(quantidade) : Number(qtdAvariada) || 0,
+        quantidade: isDepois ? Number(quantidade) : Number(qtdAvariada) || 0,
         barco: momento === "na_chegada" ? (barco || null) : null,
         manifesto: momento === "na_chegada" ? (manifesto || null) : null,
         quantidade_recebida: momento === "na_chegada" ? Number(qtdRecebida) : null,
         quantidade_avariada: momento === "na_chegada" ? Number(qtdAvariada) : null,
         quantidade_aproveitada: momento === "na_chegada" ? (qtdAproveitada ? Number(qtdAproveitada) : 0) : null,
-        valor_estimado: valor ? Number(valor) : null,
+        valor_estimado: valorCalc,
+        lote_id: isDepois ? loteId : null,
         responsavel: responsavel || null,
         observacao: observacao || null,
       };
@@ -515,7 +540,7 @@ function NovaAvariaDialog({
       toast.success(
         momento === "na_chegada"
           ? "Avaria na chegada registrada (pendência aberta com o barco)"
-          : "Avaria registrada e estoque baixado (FEFO)"
+          : "Avaria registrada e baixa aplicada no lote selecionado"
       );
       onSaved();
       onClose();
@@ -534,7 +559,7 @@ function NovaAvariaDialog({
           <DialogDescription>
             {momento === "na_chegada"
               ? "Na chegada: não dá baixa no estoque; abre pendência com o barco/transportadora."
-              : "Depois da chegada: baixa automática no estoque (FEFO)."}
+              : "Depois da chegada: baixa apenas do lote selecionado."}
           </DialogDescription>
         </DialogHeader>
 
@@ -566,17 +591,56 @@ function NovaAvariaDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label>Local de estoque {momento === "depois_chegada" && <span className="text-xs text-muted-foreground">(opcional)</span>}</Label>
-              <Select value={localId || "none"} onValueChange={(v) => setLocalId(v === "none" ? "" : v)}>
-                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">— sem local —</SelectItem>
-                  {locais.map((l) => <SelectItem key={l.id} value={l.id}>{l.nome}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {momento === "na_chegada" ? (
+              <div className="space-y-1">
+                <Label>Local de estoque</Label>
+                <Select value={localId || "none"} onValueChange={(v) => setLocalId(v === "none" ? "" : v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— sem local —</SelectItem>
+                    {locais.map((l) => <SelectItem key={l.id} value={l.id}>{l.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <Label>Local de estoque</Label>
+                <div className="h-9 px-3 flex items-center rounded-md border border-border bg-muted/40 text-sm text-muted-foreground">
+                  {loteSelecionado?.locais_estoque?.nome ?? "Definido pelo lote"}
+                </div>
+              </div>
+            )}
           </div>
+
+          {momento === "depois_chegada" && (
+            <div className="space-y-1">
+              <Label>Lote específico *</Label>
+              {!produtoId ? (
+                <p className="text-xs text-muted-foreground">Selecione um produto para ver os lotes.</p>
+              ) : lotesDisponiveis.length === 0 ? (
+                <p className="text-xs text-destructive">Este produto não tem lotes com saldo disponível.</p>
+              ) : (
+                <Select value={loteId} onValueChange={setLoteId}>
+                  <SelectTrigger><SelectValue placeholder="Selecione o lote..." /></SelectTrigger>
+                  <SelectContent>
+                    {lotesDisponiveis.map((l) => {
+                      const val = l.validade
+                        ? new Date(l.validade).toLocaleDateString("pt-BR")
+                        : "sem validade";
+                      const custo = l.custo_unitario != null ? `R$ ${Number(l.custo_unitario).toFixed(2)}` : "s/ custo";
+                      const local = l.locais_estoque?.nome ?? "—";
+                      const forn = l.fornecedor ? ` · ${l.fornecedor}` : "";
+                      return (
+                        <SelectItem key={l.id} value={l.id}>
+                          Val {val} · {l.saldo} disp · {custo} · {local}{forn}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          )}
 
           <div className="grid sm:grid-cols-2 gap-3">
             <div className="space-y-1">
