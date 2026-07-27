@@ -35,6 +35,7 @@ import {
 import { useAuth, can } from "@/hooks/use-auth";
 import { Card as InfoCard } from "@/components/ui/card";
 import { ShieldAlert } from "lucide-react";
+import { ImportXmlNfe } from "@/components/import-xml-nfe";
 
 type Props = { tipo: "entrada" | "saida" };
 
