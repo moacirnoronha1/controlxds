@@ -441,6 +441,45 @@ export type Database = {
           },
         ]
       }
+      notas_fiscais: {
+        Row: {
+          chave: string
+          cnpj: string | null
+          created_at: string
+          data_emissao: string | null
+          fornecedor: string | null
+          id: string
+          numero: string | null
+          observacao: string | null
+          responsavel: string | null
+          updated_at: string
+        }
+        Insert: {
+          chave: string
+          cnpj?: string | null
+          created_at?: string
+          data_emissao?: string | null
+          fornecedor?: string | null
+          id?: string
+          numero?: string | null
+          observacao?: string | null
+          responsavel?: string | null
+          updated_at?: string
+        }
+        Update: {
+          chave?: string
+          cnpj?: string | null
+          created_at?: string
+          data_emissao?: string | null
+          fornecedor?: string | null
+          id?: string
+          numero?: string | null
+          observacao?: string | null
+          responsavel?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       produtos: {
         Row: {
           ativo: boolean
