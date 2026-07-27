@@ -503,23 +503,35 @@ function NovaAvariaDialog({
     } else {
       const q = Number(quantidade);
       if (!(q > 0)) { toast.error("Informe a quantidade"); return; }
+      if (!loteId) { toast.error("Selecione o lote específico"); return; }
+      if (loteSelecionado && q > Number(loteSelecionado.saldo)) {
+        toast.error(`Quantidade maior que o saldo do lote (${loteSelecionado.saldo})`);
+        return;
+      }
     }
     setBusy(true);
     try {
+      const isDepois = momento === "depois_chegada";
+      const valorCalc = valor
+        ? Number(valor)
+        : isDepois && loteSelecionado?.custo_unitario != null
+          ? Number(loteSelecionado.custo_unitario) * Number(quantidade)
+          : null;
       const payload = {
         data,
         produto_id: produtoId,
-        local_id: localId || null,
+        local_id: isDepois ? (loteSelecionado?.local_id ?? null) : (localId || null),
         momento,
         tipo,
         motivo: motivo || null,
-        quantidade: momento === "depois_chegada" ? Number(quantidade) : Number(qtdAvariada) || 0,
+        quantidade: isDepois ? Number(quantidade) : Number(qtdAvariada) || 0,
         barco: momento === "na_chegada" ? (barco || null) : null,
         manifesto: momento === "na_chegada" ? (manifesto || null) : null,
         quantidade_recebida: momento === "na_chegada" ? Number(qtdRecebida) : null,
         quantidade_avariada: momento === "na_chegada" ? Number(qtdAvariada) : null,
         quantidade_aproveitada: momento === "na_chegada" ? (qtdAproveitada ? Number(qtdAproveitada) : 0) : null,
-        valor_estimado: valor ? Number(valor) : null,
+        valor_estimado: valorCalc,
+        lote_id: isDepois ? loteId : null,
         responsavel: responsavel || null,
         observacao: observacao || null,
       };
@@ -528,7 +540,7 @@ function NovaAvariaDialog({
       toast.success(
         momento === "na_chegada"
           ? "Avaria na chegada registrada (pendência aberta com o barco)"
-          : "Avaria registrada e estoque baixado (FEFO)"
+          : "Avaria registrada e baixa aplicada no lote selecionado"
       );
       onSaved();
       onClose();
