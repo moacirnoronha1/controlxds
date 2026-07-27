@@ -98,6 +98,7 @@ export const CATEGORIAS = [
   "Bebida não alcoólica",
   "Vinhos",
   "Frutas e verduras",
+  "Frios",
   "Secos",
   "Limpeza",
   "Escritório",
