@@ -491,7 +491,7 @@ function NovaAvariaDialog({
   const loteSelecionado = lotesDisponiveis.find((l) => l.id === loteId) ?? null;
 
   // Reset lote quando troca produto ou momento
-  useMemo(() => { setLoteId(""); }, [produtoId, momento]);
+  useEffect(() => { setLoteId(""); }, [produtoId, momento]);
 
   async function save() {
     if (!produtoId) { toast.error("Selecione o produto"); return; }
