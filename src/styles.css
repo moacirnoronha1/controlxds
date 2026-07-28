@@ -94,3 +94,12 @@
   html, body { background-color: var(--color-background); color: var(--color-foreground); }
   body { font-feature-settings: "cv11", "ss01"; -webkit-font-smoothing: antialiased; }
 }
+
+/* Títulos principais em LETRA DE FORMA */
+h1,
+h2,
+[data-slot="dialog-title"],
+[data-slot="card-title"],
+[data-slot="table"] thead th {
+  text-transform: uppercase;
+}
