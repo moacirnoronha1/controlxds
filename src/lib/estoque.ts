@@ -215,10 +215,12 @@ export function useSaveProduto() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (p: Partial<Produto> & { nome: string }) => {
-      const clean = { ...p };
+      const clean = { ...p, nome: upper(p.nome) };
+      if (clean.categoria) clean.categoria = upper(clean.categoria);
       // estoque_inicial e estoque_atual não são mais editados pelo cadastro
       delete (clean as { estoque_inicial?: number }).estoque_inicial;
       delete (clean as { estoque_atual?: number }).estoque_atual;
+
       if (p.id) {
         const { error } = await supabase.from("produtos").update(clean).eq("id", p.id);
         if (error) throw error;
