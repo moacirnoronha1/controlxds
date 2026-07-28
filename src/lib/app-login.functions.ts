@@ -14,6 +14,7 @@ export const loginComSessao = createServerFn({ method: "POST" })
     senha: String(d?.senha ?? ""),
   }))
   .handler(async ({ data }) => {
+   try {
     if (!data.username || !data.senha) throw new Error("Informe usuário e senha.");
 
     const url = process.env.SUPABASE_URL!;
@@ -90,4 +91,5 @@ export const loginComSessao = createServerFn({ method: "POST" })
       access_token: signed.session.access_token,
       refresh_token: signed.session.refresh_token,
     };
+   } catch (e) { console.error("LOGINFN", e); throw e; }
   });
