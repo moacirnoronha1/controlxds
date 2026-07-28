@@ -850,6 +850,13 @@ export type Database = {
           username: string
         }[]
       }
+      nf_ja_importada: {
+        Args: { _chave: string }
+        Returns: {
+          existe: boolean
+          numero: string
+        }[]
+      }
       registrar_saida_fefo: {
         Args: {
           _local_id: string
