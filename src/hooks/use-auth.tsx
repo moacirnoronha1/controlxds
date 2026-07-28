@@ -90,18 +90,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (username: string, senha: string) => {
-    const { data, error } = await supabase.rpc("login_usuario" as never, {
-      _username: username,
-      _senha: senha,
-    } as never);
-    if (error) throw new Error(error.message);
-    const row = Array.isArray(data) ? (data[0] as SessionUser | undefined) : undefined;
-    if (!row || !row.id) throw new Error("Usuário ou senha inválidos, ou usuário inativo.");
+    const res = await loginComSessao({ data: { username, senha } });
+    const row = res.user as SessionUser;
+    const { error: sessErr } = await supabase.auth.setSession({
+      access_token: res.access_token,
+      refresh_token: res.refresh_token,
+    });
+    if (sessErr) throw new Error(sessErr.message);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(row));
     setUser(row);
   }, []);
 
   const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem(STORAGE_KEY);
     setUser(null);
   }, []);
