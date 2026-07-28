@@ -36,7 +36,6 @@ import {
   useLocais,
   useCriarEntradaLote,
   type Produto,
-  CATEGORIAS,
   UNIDADES,
 } from "@/lib/estoque";
 import { useAuth } from "@/hooks/use-auth";
