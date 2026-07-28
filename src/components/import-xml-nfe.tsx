@@ -160,13 +160,10 @@ export function ImportXmlNfe() {
       const xml = await file.text();
       const parsed = parseNfeXml(xml);
       if (!parsed.chave) throw new Error("Chave da NF-e não encontrada.");
-      const { data: exist } = await supabase
-        .from("notas_fiscais")
-        .select("id, numero")
-        .eq("chave", parsed.chave)
-        .maybeSingle();
-      if (exist) {
-        throw new Error(`Nota já importada anteriormente (nº ${exist.numero ?? "?"}).`);
+      const { data: exist } = await supabase.rpc("nf_ja_importada", { _chave: parsed.chave });
+      const dup = Array.isArray(exist) ? exist[0] : null;
+      if (dup?.existe) {
+        throw new Error(`Nota já importada anteriormente (nº ${dup.numero ?? "?"}).`);
       }
       parsed.itens = autoLink(parsed.itens, produtos, localPadrao);
       setNota(parsed);
