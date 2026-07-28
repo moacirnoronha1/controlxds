@@ -1,4 +1,5 @@
 import { useRef, useState, useMemo } from "react";
+import { upper } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -193,8 +194,8 @@ export function ImportXmlNfe() {
       const { data, error } = await supabase
         .from("produtos")
         .insert({
-          nome: it.descricao.slice(0, 120),
-          categoria: CATEGORIAS[4] as string, // "Secos"
+          nome: upper(it.descricao.slice(0, 120)),
+          categoria: "SECOS",
           unidade_medida: unidade,
           codigo_barras: it.ean || null,
         })
