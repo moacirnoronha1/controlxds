@@ -677,6 +677,38 @@ export type Database = {
         }
         Relationships: []
       }
+      sessoes: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          token: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token: string
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessoes_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       setores: {
         Row: {
           ativo: boolean
@@ -768,6 +800,7 @@ export type Database = {
           _nome: string
           _senha: string
           _setor: string
+          _token: string
           _username: string
         }
         Returns: undefined
@@ -804,11 +837,16 @@ export type Database = {
           _nome: string
           _senha: string
           _setor: string
+          _token: string
           _username: string
         }
         Returns: string
       }
-      excluir_usuario: { Args: { _id: string }; Returns: undefined }
+      excluir_usuario: {
+        Args: { _id: string; _token: string }
+        Returns: undefined
+      }
+      exigir_mestre: { Args: { _token: string }; Returns: string }
       fechar_inventario: {
         Args: { _inventario_id: string }
         Returns: undefined
@@ -829,7 +867,7 @@ export type Database = {
         Returns: undefined
       }
       listar_usuarios: {
-        Args: never
+        Args: { _token: string }
         Returns: {
           ativo: boolean
           cargo: Database["public"]["Enums"]["user_cargo"]
@@ -847,6 +885,7 @@ export type Database = {
           id: string
           nome: string
           setor: string
+          token: string
           username: string
         }[]
       }

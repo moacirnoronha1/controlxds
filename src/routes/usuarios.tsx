@@ -48,11 +48,13 @@ function UsuariosPage() {
   const [creating, setCreating] = useState(false);
   const [toDelete, setToDelete] = useState<UsuarioRow | null>(null);
 
+  const token = user?.token ?? "";
+
   const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["usuarios"],
-    enabled: role === "mestre",
+    queryKey: ["usuarios", token],
+    enabled: role === "mestre" && !!token,
     queryFn: async (): Promise<UsuarioRow[]> => {
-      const { data, error } = await supabase.rpc("listar_usuarios" as never);
+      const { data, error } = await supabase.rpc("listar_usuarios" as never, { _token: token } as never);
       if (error) throw error;
       return (data ?? []) as unknown as UsuarioRow[];
     },
@@ -60,7 +62,7 @@ function UsuariosPage() {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc("excluir_usuario" as never, { _id: id } as never);
+      const { error } = await supabase.rpc("excluir_usuario" as never, { _token: token, _id: id } as never);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -188,6 +190,8 @@ function UserDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { user } = useAuth();
+  const token = user?.token ?? "";
   const isEdit = !!initial;
   const [nome, setNome] = useState(initial?.nome ?? "");
   const [username, setUsername] = useState(initial?.username ?? "");
@@ -222,6 +226,7 @@ function UserDialog({
     try {
       if (isEdit && initial) {
         const { error } = await supabase.rpc("atualizar_usuario" as never, {
+          _token: token,
           _id: initial.id,
           _nome: upper(nome.trim()),
           _username: username.trim().toUpperCase(),
@@ -234,6 +239,7 @@ function UserDialog({
         toast.success("Usuário atualizado");
       } else {
         const { error } = await supabase.rpc("criar_usuario" as never, {
+          _token: token,
           _nome: upper(nome.trim()),
           _username: username.trim().toUpperCase(),
           _senha: senha,
