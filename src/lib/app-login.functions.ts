@@ -23,7 +23,10 @@ export const loginComSessao = createServerFn({ method: "POST" })
     } as const;
 
     const pub = createClient(url, publishable, authOpts);
-    const { data: rows, error } = await pub.rpc("login_usuario" as never, {
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: rows, error } = await supabaseAdmin.rpc("login_usuario" as never, {
       _username: data.username,
       _senha: data.senha,
     } as never);
@@ -33,7 +36,6 @@ export const loginComSessao = createServerFn({ method: "POST" })
       | null;
     if (!row?.id) throw new Error("Usuário ou senha inválidos, ou usuário inativo.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const email = `${row.username.toLowerCase().replace(/[^a-z0-9._-]/g, "")}@gxcontrol.local`;
     const tempPassword = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().slice(0, 8);
