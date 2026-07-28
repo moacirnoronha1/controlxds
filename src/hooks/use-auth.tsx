@@ -24,6 +24,7 @@ export type SessionUser = {
   username: string;
   cargo: AppRole;
   setor: string | null;
+  token?: string;
 };
 
 export type Action =
