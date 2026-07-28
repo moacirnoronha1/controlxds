@@ -143,16 +143,17 @@ export function useSaveLocal() {
       if (l.id) {
         const { error } = await supabase
           .from("locais_estoque")
-          .update({ nome: l.nome, ativo: l.ativo ?? true })
+          .update({ nome: upper(l.nome), ativo: l.ativo ?? true })
           .eq("id", l.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from("locais_estoque")
-          .insert({ nome: l.nome });
+          .insert({ nome: upper(l.nome) });
         if (error) throw error;
       }
     },
+
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["locais_estoque"] });
       toast.success("Local salvo");
