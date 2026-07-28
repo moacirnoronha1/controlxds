@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
+import { upper } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
 
 export type Produto = {
   id: string;
