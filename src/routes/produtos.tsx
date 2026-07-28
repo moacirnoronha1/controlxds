@@ -69,7 +69,7 @@ function ProdutosPage() {
     const defaultLocal = locais.find((l) => l.nome === "Estoque Principal") ?? locais[0];
     setEditing({
       nome: "",
-      categoria: "Secos",
+      categoria: "SECOS",
       unidade_medida: "un",
       estoque_minimo: 0,
       codigo_barras: null,
