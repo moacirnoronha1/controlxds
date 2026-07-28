@@ -861,6 +861,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_app_user: { Args: never; Returns: boolean }
       liberar_requisicao: {
         Args: {
           _liberacoes?: Json
