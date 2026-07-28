@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
+import { upper } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
 
 export type Produto = {
   id: string;
@@ -94,16 +96,17 @@ export type Movimentacao = {
 };
 
 export const CATEGORIAS = [
-  "Bebida alcoólica",
-  "Bebida não alcoólica",
-  "Vinhos",
-  "Frutas e verduras",
-  "Frios",
-  "Secos",
-  "Limpeza",
-  "Escritório",
-  "Outros",
+  "BEBIDA ALCOÓLICA",
+  "BEBIDA NÃO ALCOÓLICA",
+  "VINHOS",
+  "FRUTAS E VERDURAS",
+  "FRIOS",
+  "SECOS",
+  "LIMPEZA",
+  "ESCRITÓRIO",
+  "OUTROS",
 ] as const;
+
 
 export const UNIDADES = ["un", "kg", "g", "L", "mL", "cx", "pct", "dz"] as const;
 
@@ -142,16 +145,17 @@ export function useSaveLocal() {
       if (l.id) {
         const { error } = await supabase
           .from("locais_estoque")
-          .update({ nome: l.nome, ativo: l.ativo ?? true })
+          .update({ nome: upper(l.nome), ativo: l.ativo ?? true })
           .eq("id", l.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from("locais_estoque")
-          .insert({ nome: l.nome });
+          .insert({ nome: upper(l.nome) });
         if (error) throw error;
       }
     },
+
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["locais_estoque"] });
       toast.success("Local salvo");
@@ -211,10 +215,12 @@ export function useSaveProduto() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (p: Partial<Produto> & { nome: string }) => {
-      const clean = { ...p };
+      const clean = { ...p, nome: upper(p.nome) };
+      if (clean.categoria) clean.categoria = upper(clean.categoria);
       // estoque_inicial e estoque_atual não são mais editados pelo cadastro
       delete (clean as { estoque_inicial?: number }).estoque_inicial;
       delete (clean as { estoque_atual?: number }).estoque_atual;
+
       if (p.id) {
         const { error } = await supabase.from("produtos").update(clean).eq("id", p.id);
         if (error) throw error;

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { upper } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -57,7 +58,7 @@ export function useSaveSetor() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (nome: string) => {
-      const { error } = await supabase.from("setores").insert({ nome });
+      const { error } = await supabase.from("setores").insert({ nome: upper(nome) });
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["setores"] }); toast.success("Setor adicionado"); },
@@ -81,7 +82,7 @@ export function useSaveResponsavel() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (p: { nome: string; cargo?: string }) => {
-      const { error } = await supabase.from("responsaveis").insert(p);
+      const { error } = await supabase.from("responsaveis").insert({ ...p, nome: upper(p.nome), cargo: p.cargo ? upper(p.cargo) : p.cargo });
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["responsaveis"] }); toast.success("Responsável adicionado"); },

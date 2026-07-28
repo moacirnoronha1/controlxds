@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { upper } from "@/lib/utils";
 import ExcelJS from "exceljs";
 import { Button } from "@/components/ui/button";
 import {
@@ -214,8 +215,8 @@ export function ImportProdutos() {
     setImporting(true);
     try {
       const payload = validas.map((l) => ({
-        nome: l.nome,
-        categoria: l.categoria,
+        nome: upper(l.nome),
+        categoria: upper(l.categoria),
         unidade_medida: l.unidade_medida,
         estoque_inicial: l.estoque_inicial,
         estoque_atual: l.estoque_inicial,

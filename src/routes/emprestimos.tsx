@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { upper } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,7 +97,7 @@ function EmprestimosPage() {
     await criar.mutateAsync({
       tipo,
       produto_id: produtoId || null,
-      produto_nome: produtoNome.trim(),
+      produto_nome: upper(produtoNome.trim()),
       quantidade: q,
       unidade_medida: unidade.trim() || null,
       origem: origem.trim() || null,

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { upper } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -222,7 +223,7 @@ function UserDialog({
       if (isEdit && initial) {
         const { error } = await supabase.rpc("atualizar_usuario" as never, {
           _id: initial.id,
-          _nome: nome.trim(),
+          _nome: upper(nome.trim()),
           _username: username.trim().toUpperCase(),
           _cargo: cargo,
           _setor: setor.trim(),
@@ -233,7 +234,7 @@ function UserDialog({
         toast.success("Usuário atualizado");
       } else {
         const { error } = await supabase.rpc("criar_usuario" as never, {
-          _nome: nome.trim(),
+          _nome: upper(nome.trim()),
           _username: username.trim().toUpperCase(),
           _senha: senha,
           _cargo: cargo,
