@@ -226,6 +226,7 @@ function UserDialog({
     try {
       if (isEdit && initial) {
         const { error } = await supabase.rpc("atualizar_usuario" as never, {
+          _token: token,
           _id: initial.id,
           _nome: upper(nome.trim()),
           _username: username.trim().toUpperCase(),
@@ -238,6 +239,7 @@ function UserDialog({
         toast.success("Usuário atualizado");
       } else {
         const { error } = await supabase.rpc("criar_usuario" as never, {
+          _token: token,
           _nome: upper(nome.trim()),
           _username: username.trim().toUpperCase(),
           _senha: senha,
