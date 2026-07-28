@@ -754,6 +754,7 @@ export type Database = {
       usuarios: {
         Row: {
           ativo: boolean
+          auth_user_id: string | null
           cargo: Database["public"]["Enums"]["user_cargo"]
           created_at: string
           id: string
@@ -765,6 +766,7 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean
+          auth_user_id?: string | null
           cargo?: Database["public"]["Enums"]["user_cargo"]
           created_at?: string
           id?: string
@@ -776,6 +778,7 @@ export type Database = {
         }
         Update: {
           ativo?: boolean
+          auth_user_id?: string | null
           cargo?: Database["public"]["Enums"]["user_cargo"]
           created_at?: string
           id?: string
