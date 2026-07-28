@@ -94,16 +94,17 @@ export type Movimentacao = {
 };
 
 export const CATEGORIAS = [
-  "Bebida alcoólica",
-  "Bebida não alcoólica",
-  "Vinhos",
-  "Frutas e verduras",
-  "Frios",
-  "Secos",
-  "Limpeza",
-  "Escritório",
-  "Outros",
+  "BEBIDA ALCOÓLICA",
+  "BEBIDA NÃO ALCOÓLICA",
+  "VINHOS",
+  "FRUTAS E VERDURAS",
+  "FRIOS",
+  "SECOS",
+  "LIMPEZA",
+  "ESCRITÓRIO",
+  "OUTROS",
 ] as const;
+
 
 export const UNIDADES = ["un", "kg", "g", "L", "mL", "cx", "pct", "dz"] as const;
 
