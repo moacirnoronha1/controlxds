@@ -190,6 +190,8 @@ function UserDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { user } = useAuth();
+  const token = user?.token ?? "";
   const isEdit = !!initial;
   const [nome, setNome] = useState(initial?.nome ?? "");
   const [username, setUsername] = useState(initial?.username ?? "");
