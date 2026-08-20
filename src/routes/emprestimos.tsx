@@ -52,7 +52,9 @@ const TIPO_LABEL: Record<EmprestimoTipo, string> = {
 type Filtro = "todos" | EmprestimoTipo;
 
 function EmprestimosPage() {
+  const { user } = useAuth();
   const emp = useEmprestimos();
+
   const produtos = useProdutos();
   const criar = useCriarEmprestimo();
   const devolver = useDevolverEmprestimo();
