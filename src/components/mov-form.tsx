@@ -240,12 +240,10 @@ export function MovForm({ tipo }: Props) {
               )}
 
               <div className="grid gap-2">
-                <Label>Responsável</Label>
-                <Input
-                  value={form.responsavel}
-                  onChange={(e) => setForm({ ...form, responsavel: e.target.value })}
-                />
+                <Label>Responsável (usuário logado)</Label>
+                <Input value={form.responsavel} readOnly disabled />
               </div>
+
               <div className="grid gap-2">
                 <Label>Observação</Label>
                 <Textarea
