@@ -20,6 +20,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -28,7 +29,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useAuth, type AppRole } from "@/hooks/use-auth";
+import { useAuth, ROLE_LABEL, type AppRole } from "@/hooks/use-auth";
+
 
 type Item = {
   title: string;
