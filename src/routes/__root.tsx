@@ -93,9 +93,12 @@ function UserMenu() {
   if (!user) return null;
   return (
     <div className="flex items-center gap-3">
-      <div className="text-right leading-tight hidden sm:block">
+      <div className="text-right leading-tight">
         <div className="text-sm font-medium">{user.nome}</div>
-        <div className="text-xs text-muted-foreground">{ROLE_LABEL[user.cargo]}</div>
+        <div className="text-xs text-muted-foreground">
+          {ROLE_LABEL[user.cargo]}
+          {user.setor ? ` · ${user.setor}` : ""}
+        </div>
       </div>
       <Button size="sm" variant="ghost" onClick={() => signOut()} title="Sair">
         <LogOut className="h-4 w-4" />
@@ -103,5 +106,6 @@ function UserMenu() {
     </div>
   );
 }
+
 
 

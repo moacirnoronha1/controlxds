@@ -25,6 +25,8 @@ import {
   useEmprestimos, useCriarEmprestimo, useDevolverEmprestimo, useDeleteEmprestimo,
   type EmprestimoTipo, type EmprestimoStatus,
 } from "@/lib/emprestimos";
+import { useAuth } from "@/hooks/use-auth";
+
 
 export const Route = createFileRoute("/emprestimos")({
   component: EmprestimosPage,
@@ -50,7 +52,9 @@ const TIPO_LABEL: Record<EmprestimoTipo, string> = {
 type Filtro = "todos" | EmprestimoTipo;
 
 function EmprestimosPage() {
+  const { user } = useAuth();
   const emp = useEmprestimos();
+
   const produtos = useProdutos();
   const criar = useCriarEmprestimo();
   const devolver = useDevolverEmprestimo();
@@ -66,7 +70,6 @@ function EmprestimosPage() {
   const [unidade, setUnidade] = useState("");
   const [origem, setOrigem] = useState("");
   const [destino, setDestino] = useState("");
-  const [responsavel, setResponsavel] = useState("");
   const [dataEmp, setDataEmp] = useState(() => new Date().toISOString().slice(0, 10));
   const [previsao, setPrevisao] = useState("");
   const [observacao, setObservacao] = useState("");
@@ -85,7 +88,6 @@ function EmprestimosPage() {
     setUnidade("");
     setOrigem("");
     setDestino("");
-    setResponsavel("");
     setDataEmp(new Date().toISOString().slice(0, 10));
     setPrevisao("");
     setObservacao("");
@@ -93,6 +95,7 @@ function EmprestimosPage() {
 
   async function salvar() {
     const q = Number(quantidade);
+    if (!user?.nome) return;
     if (!produtoNome.trim() || !q || q <= 0) return;
     await criar.mutateAsync({
       tipo,
@@ -102,7 +105,7 @@ function EmprestimosPage() {
       unidade_medida: unidade.trim() || null,
       origem: origem.trim() || null,
       destino: destino.trim() || null,
-      responsavel: responsavel.trim() || null,
+      responsavel: user?.nome ?? null,
       data_emprestimo: dataEmp,
       previsao_devolucao: previsao || null,
       observacao: observacao.trim() || null,
@@ -179,8 +182,8 @@ function EmprestimosPage() {
                   <Input type="number" min="0" step="any" value={quantidade} onChange={(e) => setQuantidade(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
-                  <Label>Responsável</Label>
-                  <Input value={responsavel} onChange={(e) => setResponsavel(e.target.value)} />
+                  <Label>Responsável (usuário logado)</Label>
+                  <Input value={user?.nome ?? ""} readOnly disabled />
                 </div>
               </div>
 

@@ -656,7 +656,7 @@ function NovaAvariaDialog({
             </div>
             <div className="space-y-1">
               <Label>Responsável interno</Label>
-              <Input value={responsavel} onChange={(e) => setResponsavel(e.target.value)} />
+              <Input value={responsavel} readOnly disabled />
             </div>
           </div>
 

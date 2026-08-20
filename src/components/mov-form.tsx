@@ -40,7 +40,7 @@ import { ImportXmlNfe } from "@/components/import-xml-nfe";
 type Props = { tipo: "entrada" | "saida" };
 
 export function MovForm({ tipo }: Props) {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const allowed = can(role, "createMovement");
   const { data: produtos = [] } = useProdutos();
   const { data: locais = [] } = useLocais();
@@ -53,12 +53,18 @@ export function MovForm({ tipo }: Props) {
     produto_id: "",
     quantidade: "",
     observacao: "",
-    responsavel: "",
+    responsavel: user?.nome ?? "",
     fornecedor: "",
     local_id: "",
     validade: "",
     custo_unitario: "",
   });
+
+  // Mantém o responsável sincronizado com o usuário logado
+  useEffect(() => {
+    if (user?.nome) setForm((f) => (f.responsavel ? f : { ...f, responsavel: user.nome }));
+  }, [user?.nome]);
+
 
   // Ao trocar produto, se for entrada e o produto tiver local padrão, pré-seleciona
   useEffect(() => {
@@ -75,7 +81,9 @@ export function MovForm({ tipo }: Props) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!user?.nome) return;
     if (!form.produto_id || !form.quantidade) return;
+
     if (tipo === "entrada") {
       if (!form.local_id) return;
       await entrada.mutateAsync({
@@ -234,12 +242,10 @@ export function MovForm({ tipo }: Props) {
               )}
 
               <div className="grid gap-2">
-                <Label>Responsável</Label>
-                <Input
-                  value={form.responsavel}
-                  onChange={(e) => setForm({ ...form, responsavel: e.target.value })}
-                />
+                <Label>Responsável (usuário logado)</Label>
+                <Input value={form.responsavel} readOnly disabled />
               </div>
+
               <div className="grid gap-2">
                 <Label>Observação</Label>
                 <Textarea

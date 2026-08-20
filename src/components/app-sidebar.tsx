@@ -20,6 +20,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -28,7 +29,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useAuth, type AppRole } from "@/hooks/use-auth";
+import { useAuth, ROLE_LABEL, type AppRole } from "@/hooks/use-auth";
+
 
 type Item = {
   title: string;
@@ -61,7 +63,7 @@ const items: Item[] = [
 
 export function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const visible = items.filter((i) => (role ? i.roles.includes(role) : false));
 
   return (
@@ -96,6 +98,24 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      {user && (
+        <SidebarFooter className="border-t border-sidebar-border px-3 py-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-xs font-semibold uppercase">
+              {user.nome.slice(0, 2)}
+            </div>
+            <div className="flex flex-col leading-tight min-w-0 group-data-[collapsible=icon]:hidden">
+              <span className="text-xs font-medium truncate">Usuário: {user.nome}</span>
+              <span className="text-xs text-muted-foreground truncate">
+                Permissão: {ROLE_LABEL[user.cargo]}
+              </span>
+              {user.setor && (
+                <span className="text-xs text-muted-foreground truncate">Setor: {user.setor}</span>
+              )}
+            </div>
+          </div>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }
