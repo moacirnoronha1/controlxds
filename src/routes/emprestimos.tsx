@@ -25,6 +25,8 @@ import {
   useEmprestimos, useCriarEmprestimo, useDevolverEmprestimo, useDeleteEmprestimo,
   type EmprestimoTipo, type EmprestimoStatus,
 } from "@/lib/emprestimos";
+import { useAuth } from "@/hooks/use-auth";
+
 
 export const Route = createFileRoute("/emprestimos")({
   component: EmprestimosPage,
