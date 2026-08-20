@@ -81,7 +81,9 @@ export function MovForm({ tipo }: Props) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!user?.nome) return;
     if (!form.produto_id || !form.quantidade) return;
+
     if (tipo === "entrada") {
       if (!form.local_id) return;
       await entrada.mutateAsync({
