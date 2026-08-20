@@ -81,14 +81,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
-      if (raw) setUser(JSON.parse(raw) as SessionUser);
-    } catch {
-      /* ignore */
-    }
-    setLoading(false);
+    let cancelled = false;
+
+    (async () => {
+      let stored: SessionUser | null = null;
+      try {
+        const raw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+        if (raw) stored = JSON.parse(raw) as SessionUser;
+      } catch {
+        /* ignore */
+      }
+
+      if (stored) {
+        // A sessão do backend pode ter expirado: sem ela o app consulta como
+        // visitante e o banco bloqueia tudo (produtos "somem"). Nesse caso,
+        // limpamos a sessão local e pedimos login novamente.
+        const { data, error } = await supabase.auth.getSession();
+        if (error || !data.session) {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch {
+            /* ignore */
+          }
+          stored = null;
+        }
+      }
+
+      if (!cancelled) {
+        setUser(stored);
+        setLoading(false);
+      }
+    })();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || (event === "TOKEN_REFRESHED" && !session)) {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          /* ignore */
+        }
+        setUser(null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, []);
+
 
   const signIn = useCallback(async (username: string, senha: string) => {
     const res = await loginComSessao({ data: { username, senha } });
