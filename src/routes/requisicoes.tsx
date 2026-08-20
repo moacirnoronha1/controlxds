@@ -77,6 +77,7 @@ function RequisicoesPage() {
           codigo: p?.codigo_barras ?? null,
         };
       });
+    if (!user?.nome) return;
     if (!requisitante.trim() || !setor || validos.length === 0) return;
     await criar.mutateAsync({
       requisitante: requisitante.trim(),
@@ -106,8 +107,8 @@ function RequisicoesPage() {
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-2">
-                  <Label>Requisitante</Label>
-                  <Input value={requisitante} onChange={(e) => setRequisitante(e.target.value)} placeholder="Nome de quem solicita" disabled={isRequisitante} />
+                  <Label>Requisitante (usuário logado)</Label>
+                  <Input value={requisitante} readOnly disabled />
                 </div>
                 <div className="grid gap-2">
                   <Label>Destino / Setor</Label>
