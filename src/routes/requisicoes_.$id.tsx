@@ -85,12 +85,16 @@ function RequisicaoDetalhe() {
             </p>
           </div>
         </div>
-        <Badge variant={STATUS_VARIANT[r.status]} className="capitalize text-sm">{r.status}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={STATUS_VARIANT[r.status]} className="capitalize text-sm">{r.status}</Badge>
+          {r.extra && <Badge variant="outline" className="text-sm">Extra / fora do horário</Badge>}
+        </div>
       </div>
 
       <Card className="p-5 grid sm:grid-cols-2 gap-4">
         <div><Label className="text-xs">Requisitante</Label><p className="text-sm">{r.requisitante}</p></div>
         <div><Label className="text-xs">Setor</Label><p className="text-sm">{r.setor}</p></div>
+        <div><Label className="text-xs">Requisição extra / fora do horário</Label><p className="text-sm">{r.extra ? "Sim" : "Não"}</p></div>
         <div><Label className="text-xs">Responsável liberação</Label><p className="text-sm">{r.responsavel_liberacao ?? "—"}</p></div>
         <div><Label className="text-xs">Liberada em</Label><p className="text-sm">{r.liberada_em ? new Date(r.liberada_em).toLocaleString("pt-BR") : "—"}</p></div>
         {r.observacao && (

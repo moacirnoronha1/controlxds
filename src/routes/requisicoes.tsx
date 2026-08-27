@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -46,6 +47,8 @@ function RequisicoesPage() {
   const [requisitante, setRequisitante] = useState(user?.nome ?? "");
   const [setor, setSetor] = useState(user?.setor ?? "");
   const [observacao, setObservacao] = useState("");
+  const [extra, setExtra] = useState(false);
+  const [soExtras, setSoExtras] = useState(false);
   const [itens, setItens] = useState<ItemDraft[]>([{ produto_id: "", quantidade: "" }]);
 
   const setoresAtivos = useMemo(
@@ -54,17 +57,18 @@ function RequisicoesPage() {
   );
 
   function reset() {
-    setRequisitante(user?.nome ?? ""); setSetor(user?.setor ?? ""); setObservacao("");
+    setRequisitante(user?.nome ?? ""); setSetor(user?.setor ?? ""); setObservacao(""); setExtra(false);
     setItens([{ produto_id: "", quantidade: "" }]);
   }
 
   const listaFiltrada = useMemo(() => {
-    const all = reqs.data ?? [];
+    let all = reqs.data ?? [];
     if (isRequisitante && user) {
-      return all.filter((r) => r.requisitante.trim().toLowerCase() === user.nome.trim().toLowerCase());
+      all = all.filter((r) => r.requisitante.trim().toLowerCase() === user.nome.trim().toLowerCase());
     }
+    if (soExtras) all = all.filter((r) => r.extra);
     return all;
-  }, [reqs.data, isRequisitante, user]);
+  }, [reqs.data, isRequisitante, user, soExtras]);
 
   async function salvar() {
     const validos = itens
@@ -83,6 +87,7 @@ function RequisicoesPage() {
       requisitante: requisitante.trim(),
       setor,
       observacao: observacao.trim() || undefined,
+      extra,
       itens: validos,
     });
     setOpen(false);
@@ -172,6 +177,16 @@ function RequisicoesPage() {
                 </div>
               </div>
 
+              <label className="flex items-start gap-3 rounded-md border p-3 cursor-pointer">
+                <Checkbox checked={extra} onCheckedChange={(v) => setExtra(v === true)} />
+                <span className="grid gap-0.5">
+                  <span className="text-sm font-medium">Requisição extra / fora do horário</span>
+                  <span className="text-xs text-muted-foreground">
+                    Marque quando o pedido for feito fora do horário padrão de requisição.
+                  </span>
+                </span>
+              </label>
+
               <div className="grid gap-2">
                 <Label>Observação</Label>
                 <Textarea rows={2} value={observacao} onChange={(e) => setObservacao(e.target.value)} />
@@ -184,6 +199,11 @@ function RequisicoesPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <label className="flex items-center gap-2 text-sm cursor-pointer w-fit">
+        <Checkbox checked={soExtras} onCheckedChange={(v) => setSoExtras(v === true)} />
+        Mostrar apenas requisições extras / fora do horário
+      </label>
 
       <Card className="p-0 overflow-hidden">
         <Table>
@@ -213,7 +233,10 @@ function RequisicoesPage() {
                 <TableCell>{r.requisitante}</TableCell>
                 <TableCell>{r.setor}</TableCell>
                 <TableCell>
-                  <Badge variant={STATUS_VARIANT[r.status]} className="capitalize">{r.status}</Badge>
+                  <div className="flex flex-wrap items-center gap-1">
+                    <Badge variant={STATUS_VARIANT[r.status]} className="capitalize">{r.status}</Badge>
+                    {r.extra && <Badge variant="outline">Extra / fora do horário</Badge>}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <Button asChild size="sm" variant="ghost">

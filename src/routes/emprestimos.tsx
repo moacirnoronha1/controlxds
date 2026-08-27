@@ -26,6 +26,7 @@ import {
   type EmprestimoTipo, type EmprestimoStatus,
 } from "@/lib/emprestimos";
 import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
 
 export const Route = createFileRoute("/emprestimos")({
@@ -97,6 +98,10 @@ function EmprestimosPage() {
     const q = Number(quantidade);
     if (!user?.nome) return;
     if (!produtoNome.trim() || !q || q <= 0) return;
+    if (!previsao) {
+      toast.error("Informe a previsão de devolução");
+      return;
+    }
     await criar.mutateAsync({
       tipo,
       produto_id: produtoId || null,
@@ -204,8 +209,13 @@ function EmprestimosPage() {
                   <Input type="date" value={dataEmp} onChange={(e) => setDataEmp(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
-                  <Label>Previsão de devolução</Label>
-                  <Input type="date" value={previsao} onChange={(e) => setPrevisao(e.target.value)} />
+                  <Label>
+                    Previsão de devolução <span className="text-destructive">*</span>
+                  </Label>
+                  <Input type="date" required value={previsao} onChange={(e) => setPrevisao(e.target.value)} />
+                  {!previsao && (
+                    <p className="text-xs text-muted-foreground">Campo obrigatório.</p>
+                  )}
                 </div>
               </div>
 
@@ -216,7 +226,7 @@ function EmprestimosPage() {
             </div>
             <DialogFooter>
               <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-              <Button onClick={salvar} disabled={criar.isPending}>Registrar</Button>
+              <Button onClick={salvar} disabled={criar.isPending || !previsao}>Registrar</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
