@@ -13,6 +13,7 @@ export type Requisicao = {
   setor: string;
   responsavel_liberacao: string | null;
   status: RequisicaoStatus;
+  extra: boolean;
   observacao: string | null;
   liberada_em: string | null;
   cancelada_em: string | null;
