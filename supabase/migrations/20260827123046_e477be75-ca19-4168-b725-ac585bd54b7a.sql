@@ -1,0 +1,1 @@
+ALTER TABLE public.requisicoes ADD COLUMN IF NOT EXISTS extra boolean NOT NULL DEFAULT false;

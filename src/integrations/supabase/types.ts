@@ -613,6 +613,7 @@ export type Database = {
           cancelada_em: string | null
           created_at: string
           data: string
+          extra: boolean
           id: string
           liberada_em: string | null
           numero: number
@@ -627,6 +628,7 @@ export type Database = {
           cancelada_em?: string | null
           created_at?: string
           data?: string
+          extra?: boolean
           id?: string
           liberada_em?: string | null
           numero?: number
@@ -641,6 +643,7 @@ export type Database = {
           cancelada_em?: string | null
           created_at?: string
           data?: string
+          extra?: boolean
           id?: string
           liberada_em?: string | null
           numero?: number
