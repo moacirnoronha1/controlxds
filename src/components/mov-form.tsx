@@ -22,7 +22,12 @@ import {
   useLocais,
   useCriarEntradaLote,
   useRegistrarSaidaFefo,
+  useLotes,
 } from "@/lib/estoque";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -75,6 +80,18 @@ export function MovForm({ tipo }: Props) {
     }
   }, [form.produto_id, produtos]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const { data: lotesProduto = [] } = useLotes(form.produto_id || undefined);
+  const [avisoValidade, setAvisoValidade] = useState<string | null>(null);
+
+  // Lote existente (com saldo) que vence DEPOIS do lote que está entrando
+  const loteMaisNovoEmEstoque = (() => {
+    if (tipo !== "entrada" || !form.produto_id || !form.validade) return null;
+    const candidatos = lotesProduto
+      .filter((l) => Number(l.saldo) > 0 && l.validade && l.validade > form.validade)
+      .sort((a, b) => (a.validade! > b.validade! ? -1 : 1));
+    return candidatos[0] ?? null;
+  })();
+
   const qtd = Number(form.quantidade) || 0;
   const custoUn = Number(form.custo_unitario) || 0;
   const custoTotal = qtd * custoUn;
@@ -84,6 +101,14 @@ export function MovForm({ tipo }: Props) {
     if (!user?.nome) return;
     if (!form.produto_id || !form.quantidade) return;
 
+    if (tipo === "entrada" && loteMaisNovoEmEstoque) {
+      setAvisoValidade(loteMaisNovoEmEstoque.validade!);
+      return;
+    }
+    await efetivar();
+  }
+
+  async function efetivar() {
     if (tipo === "entrada") {
       if (!form.local_id) return;
       await entrada.mutateAsync({
@@ -114,6 +139,8 @@ export function MovForm({ tipo }: Props) {
     });
   }
 
+  const dataBR = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
+
   const recentes = (movs.data ?? []).filter((m) => m.tipo === tipo).slice(0, 8);
   const title = tipo === "entrada" ? "Registrar entrada" : "Registrar saída";
 
@@ -131,6 +158,31 @@ export function MovForm({ tipo }: Props) {
 
   return (
     <div className="space-y-6">
+      <AlertDialog open={!!avisoValidade} onOpenChange={(v) => { if (!v) setAvisoValidade(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Atenção com a validade</AlertDialogTitle>
+            <AlertDialogDescription>
+              Este lote que está entrando possui validade mais antiga do que outro lote já
+              existente em estoque.
+              {avisoValidade && (
+                <>
+                  {" "}Entrando: {dataBR(form.validade)} · Já em estoque: {dataBR(avisoValidade)}.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Voltar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => { setAvisoValidade(null); await efetivar(); }}
+            >
+              Confirmar mesmo assim
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
