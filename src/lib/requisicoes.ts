@@ -145,6 +145,7 @@ export function useCriarRequisicao() {
       requisitante: string;
       setor: string;
       observacao?: string;
+      extra?: boolean;
       itens: { produto_id: string; codigo?: string | null; quantidade_solicitada: number }[];
     }) => {
       const { data: req, error } = await supabase
@@ -152,6 +153,7 @@ export function useCriarRequisicao() {
         .insert({
           requisitante: p.requisitante,
           setor: p.setor,
+          extra: p.extra ?? false,
           observacao: p.observacao ?? null,
         })
         .select()
