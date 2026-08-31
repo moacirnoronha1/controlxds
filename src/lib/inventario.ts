@@ -11,6 +11,7 @@ export type Inventario = {
   tipo: InventarioTipo;
   status: InventarioStatus;
   titulo: string | null;
+  categoria: string | null;
   observacao: string | null;
   criado_por: string | null;
   fechado_por: string | null;
@@ -44,9 +45,9 @@ export const TIPO_LABEL: Record<InventarioTipo, string> = {
   completo: "Completo",
 };
 
-export function useInventarios(mes?: string) {
+export function useInventarios(mes?: string, categoria?: string) {
   return useQuery({
-    queryKey: ["inventarios", mes ?? "all"],
+    queryKey: ["inventarios", mes ?? "all", categoria ?? "all"],
     queryFn: async () => {
       let q = supabase.from("inventarios").select("*").order("created_at", { ascending: false });
       if (mes) {
@@ -55,6 +56,7 @@ export function useInventarios(mes?: string) {
         const end = new Date(y, m, 1).toISOString().slice(0, 10);
         q = q.gte("referencia", start).lt("referencia", end);
       }
+      if (categoria) q = q.eq("categoria", categoria);
       const { data, error } = await q;
       if (error) throw error;
       return data as Inventario[];
@@ -93,11 +95,12 @@ export function useInventarioItens(id: string | undefined) {
 export function useCriarInventario() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (v: { tipo: InventarioTipo; titulo: string; produto_ids?: string[] }) => {
+    mutationFn: async (v: { tipo: InventarioTipo; titulo: string; produto_ids?: string[]; categoria?: string | null }) => {
       const { data, error } = await supabase.rpc("criar_inventario", {
         _tipo: v.tipo,
         _titulo: v.titulo,
         ...(v.produto_ids ? { _produto_ids: v.produto_ids } : {}),
+        ...(v.categoria ? { _categoria: v.categoria } : {}),
       });
       if (error) throw error;
       return data as string;
