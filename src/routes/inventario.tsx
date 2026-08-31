@@ -20,7 +20,7 @@ import {
   useInventarios, useCriarInventario, useExcluirInventario, STATUS_LABEL, TIPO_LABEL,
   type InventarioTipo, type InventarioStatus,
 } from "@/lib/inventario";
-import { useProdutos } from "@/lib/estoque";
+import { useProdutos, CATEGORIAS } from "@/lib/estoque";
 import { useAuth, can } from "@/hooks/use-auth";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -40,7 +40,8 @@ function InventarioListPage() {
   const podeCriar = can(role, "createMovement");
   const podeExcluir = can(role, "manageProducts");
   const [mes, setMes] = useState<string>("");
-  const { data: invs = [], isLoading } = useInventarios(mes || undefined);
+  const [filtroCat, setFiltroCat] = useState<string>("todas");
+  const { data: invs = [], isLoading } = useInventarios(mes || undefined, filtroCat === "todas" ? undefined : filtroCat);
   const excluir = useExcluirInventario();
   const [openNew, setOpenNew] = useState(false);
 
@@ -52,6 +53,13 @@ function InventarioListPage() {
           <p className="text-sm text-muted-foreground">Conferência física do estoque</p>
         </div>
         <div className="flex gap-2">
+          <Select value={filtroCat} onValueChange={setFiltroCat}>
+            <SelectTrigger className="w-[200px]"><SelectValue placeholder="Categoria" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas as categorias</SelectItem>
+              {CATEGORIAS.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+            </SelectContent>
+          </Select>
           <Input
             type="month"
             value={mes}
@@ -76,6 +84,7 @@ function InventarioListPage() {
             <TableRow>
               <TableHead>Referência</TableHead>
               <TableHead>Título</TableHead>
+              <TableHead>Categoria</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Criado em</TableHead>
@@ -85,15 +94,16 @@ function InventarioListPage() {
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
             )}
             {!isLoading && invs.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum inventário</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhum inventário</TableCell></TableRow>
             )}
             {invs.map((inv) => (
               <TableRow key={inv.id}>
                 <TableCell className="font-mono">{format(new Date(inv.referencia), "MM/yyyy")}</TableCell>
                 <TableCell className="max-w-[260px] truncate">{inv.titulo || "—"}</TableCell>
+                <TableCell className="text-sm">{inv.categoria || "Todas"}</TableCell>
                 <TableCell><Badge variant="outline">{TIPO_LABEL[inv.tipo]}</Badge></TableCell>
                 <TableCell><Badge variant={STATUS_VARIANT[inv.status]}>{STATUS_LABEL[inv.status]}</Badge></TableCell>
                 <TableCell className="text-sm text-muted-foreground">
@@ -130,14 +140,19 @@ function InventarioListPage() {
 function NovoInventarioDialog({ onDone }: { onDone: () => void }) {
   const [tipo, setTipo] = useState<InventarioTipo>("completo");
   const [titulo, setTitulo] = useState(`Inventário ${format(new Date(), "MM/yyyy")}`);
+  const [categoria, setCategoria] = useState<string>("todas");
   const [busca, setBusca] = useState("");
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
   const { data: produtos = [] } = useProdutos();
   const criar = useCriarInventario();
 
   const filtrados = useMemo(
-    () => produtos.filter((p) => p.ativo && p.nome.toLowerCase().includes(busca.toLowerCase())),
-    [produtos, busca],
+    () => produtos.filter((p) =>
+      p.ativo &&
+      p.nome.toLowerCase().includes(busca.toLowerCase()) &&
+      (categoria === "todas" || (p.categoria ?? "").toUpperCase() === categoria.toUpperCase()),
+    ),
+    [produtos, busca, categoria],
   );
 
   const submit = async () => {
@@ -145,6 +160,7 @@ function NovoInventarioDialog({ onDone }: { onDone: () => void }) {
       tipo,
       titulo,
       produto_ids: tipo === "parcial" ? Array.from(selecionados) : undefined,
+      categoria: categoria === "todas" ? null : categoria,
     });
     onDone();
     // navegar
@@ -169,6 +185,19 @@ function NovoInventarioDialog({ onDone }: { onDone: () => void }) {
               <SelectItem value="parcial">Parcial — selecionar produtos</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <div>
+          <Label>Categoria</Label>
+          <Select value={categoria} onValueChange={(v) => { setCategoria(v); setSelecionados(new Set()); }}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas as categorias</SelectItem>
+              {CATEGORIAS.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            {categoria === "todas" ? "Inventário completo, todos os produtos ativos." : `Apenas produtos da categoria ${categoria}.`}
+          </p>
         </div>
         {tipo === "parcial" && (
           <div className="space-y-2">
