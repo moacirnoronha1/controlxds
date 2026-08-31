@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -253,6 +253,7 @@ export type Database = {
       }
       inventarios: {
         Row: {
+          categoria: string | null
           created_at: string
           criado_por: string | null
           fechado_em: string | null
@@ -266,6 +267,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          categoria?: string | null
           created_at?: string
           criado_por?: string | null
           fechado_em?: string | null
@@ -279,6 +281,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          categoria?: string | null
           created_at?: string
           criado_por?: string | null
           fechado_em?: string | null
@@ -828,14 +831,24 @@ export type Database = {
         }
         Returns: string
       }
-      criar_inventario: {
-        Args: {
-          _produto_ids?: string[]
-          _tipo: Database["public"]["Enums"]["inventario_tipo"]
-          _titulo: string
-        }
-        Returns: string
-      }
+      criar_inventario:
+        | {
+            Args: {
+              _produto_ids?: string[]
+              _tipo: Database["public"]["Enums"]["inventario_tipo"]
+              _titulo: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              _categoria?: string
+              _produto_ids?: string[]
+              _tipo: Database["public"]["Enums"]["inventario_tipo"]
+              _titulo: string
+            }
+            Returns: string
+          }
       criar_usuario: {
         Args: {
           _ativo: boolean
