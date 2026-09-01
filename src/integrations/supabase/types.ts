@@ -14,6 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
+      ajustes_estoque: {
+        Row: {
+          created_at: string
+          decidido_em: string | null
+          decidido_por: string | null
+          decisao_motivo: string | null
+          id: string
+          local_id: string | null
+          lote_id: string | null
+          motivo: string | null
+          produto_id: string
+          quantidade: number
+          saldo_antes: number | null
+          saldo_depois: number | null
+          solicitado_por: string | null
+          status: Database["public"]["Enums"]["ajuste_status"]
+          tipo: Database["public"]["Enums"]["ajuste_tipo"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decidido_em?: string | null
+          decidido_por?: string | null
+          decisao_motivo?: string | null
+          id?: string
+          local_id?: string | null
+          lote_id?: string | null
+          motivo?: string | null
+          produto_id: string
+          quantidade: number
+          saldo_antes?: number | null
+          saldo_depois?: number | null
+          solicitado_por?: string | null
+          status?: Database["public"]["Enums"]["ajuste_status"]
+          tipo: Database["public"]["Enums"]["ajuste_tipo"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decidido_em?: string | null
+          decidido_por?: string | null
+          decisao_motivo?: string | null
+          id?: string
+          local_id?: string | null
+          lote_id?: string | null
+          motivo?: string | null
+          produto_id?: string
+          quantidade?: number
+          saldo_antes?: number | null
+          saldo_depois?: number | null
+          solicitado_por?: string | null
+          status?: Database["public"]["Enums"]["ajuste_status"]
+          tipo?: Database["public"]["Enums"]["ajuste_tipo"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ajustes_estoque_local_id_fkey"
+            columns: ["local_id"]
+            isOneToOne: false
+            referencedRelation: "locais_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ajustes_estoque_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ajustes_estoque_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       avarias: {
         Row: {
           barco: string | null
@@ -804,6 +883,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aprovar_ajuste: {
+        Args: { _ajuste_id: string; _responsavel: string }
+        Returns: undefined
+      }
       atualizar_usuario: {
         Args: {
           _ativo: boolean
@@ -910,6 +993,10 @@ export type Database = {
           numero: string
         }[]
       }
+      recusar_ajuste: {
+        Args: { _ajuste_id: string; _motivo: string; _responsavel: string }
+        Returns: undefined
+      }
       registrar_saida_fefo: {
         Args: {
           _local_id: string
@@ -922,6 +1009,8 @@ export type Database = {
       }
     }
     Enums: {
+      ajuste_status: "pendente" | "aprovado" | "recusado"
+      ajuste_tipo: "entrada" | "saida" | "correcao"
       app_role: "admin" | "estoquista" | "leitor"
       avaria_momento: "na_chegada" | "depois_chegada"
       avaria_status:
@@ -1071,6 +1160,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ajuste_status: ["pendente", "aprovado", "recusado"],
+      ajuste_tipo: ["entrada", "saida", "correcao"],
       app_role: ["admin", "estoquista", "leitor"],
       avaria_momento: ["na_chegada", "depois_chegada"],
       avaria_status: [
