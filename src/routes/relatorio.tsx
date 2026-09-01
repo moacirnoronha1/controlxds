@@ -224,6 +224,23 @@ function RelatorioPage() {
                       {p.estoque_atual}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
+                      {minimoAuto}
+                      {p.dias_seguranca > 0 && (
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          +{p.dias_seguranca}d seg.
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums font-semibold">
+                      {reposicao > 0 ? (
+                        <span className="text-destructive">
+                          {reposicao} {p.unidade_medida}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
                       {fmtPrev(previsao)}
                     </TableCell>
                     <TableCell className="text-right tabular-nums font-semibold">
