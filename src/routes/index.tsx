@@ -60,7 +60,7 @@ function Dashboard() {
       saidasHoje: saidasHoje.reduce((a, b) => a + Number(b.quantidade), 0),
       baixoList: baixo,
     };
-  }, [produtos, movs]);
+  }, [produtos, movs, minimos]);
 
   const consumoPorProduto = useMemo(() => {
     const map = new Map<string, number>();
