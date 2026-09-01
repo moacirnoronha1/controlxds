@@ -15,6 +15,7 @@ import {
   CalendarClock,
   Users,
   ShieldAlert,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import {
