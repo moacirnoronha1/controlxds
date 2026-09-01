@@ -79,6 +79,19 @@ export async function findProdutoByCodigo(codigo: string): Promise<ScanMatch | n
   return null;
 }
 
+export type MovTipo = "entrada" | "saida" | "ajuste_entrada" | "ajuste_saida";
+
+/** Ajuste de inventário: não é consumo, não entra em médias, relatórios de saída nem no mapa OUT. */
+export function isAjusteInventario(tipo: MovTipo) {
+  return tipo === "ajuste_entrada" || tipo === "ajuste_saida";
+}
+
+export function labelMovTipo(tipo: MovTipo) {
+  if (tipo === "ajuste_entrada") return "AJUSTE DE INVENTÁRIO (+)";
+  if (tipo === "ajuste_saida") return "AJUSTE DE INVENTÁRIO (−)";
+  return tipo === "entrada" ? "ENTRADA" : "SAÍDA";
+}
+
 export type Movimentacao = {
   id: string;
   produto_id: string;
