@@ -12,6 +12,7 @@ export type Produto = {
   estoque_inicial: number;
   estoque_atual: number;
   estoque_minimo: number;
+  dias_seguranca: number;
   codigo_barras: string | null;
   codigo_caixa: string | null;
   unidades_por_caixa: number;
