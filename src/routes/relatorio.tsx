@@ -61,9 +61,13 @@ function RelatorioPage() {
       const necessidade = ref * cobertura;
       const sugestaoBruta = necessidade - p.estoque_atual;
       const sugestao = ref > 0 && sugestaoBruta > 0 ? Math.ceil(sugestaoBruta) : 0;
-      return { p, m5, m10, m15, m20, m30, previsao, sugestao };
+      const info = minimos.get(p.id);
+      const minimoAuto = info?.minimoAuto ?? 0;
+      const minimoEfetivo = info?.minimoEfetivo ?? Number(p.estoque_minimo) || 0;
+      const reposicao = Math.max(0, Math.ceil(minimoEfetivo - Number(p.estoque_atual)));
+      return { p, m5, m10, m15, m20, m30, previsao, sugestao, minimoAuto, reposicao };
     });
-  }, [produtos, movs]);
+  }, [produtos, movs, minimos]);
 
 
   const filtradas = useMemo(
