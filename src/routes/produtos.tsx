@@ -42,10 +42,12 @@ import { calcularMinimos, LEAD_TIME_DIAS } from "@/lib/estoque-minimo";
 import { Card } from "@/components/ui/card";
 import { ImportProdutos } from "@/components/import-produtos";
 import { useAuth, can } from "@/hooks/use-auth";
+import { useCriarSolicitacaoProduto } from "@/lib/produto-solicitacoes";
 
 export const Route = createFileRoute("/produtos")({
   component: ProdutosPage,
 });
+
 
 function ProdutosPage() {
   const { role } = useAuth();
