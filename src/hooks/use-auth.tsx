@@ -39,22 +39,27 @@ export type Action =
   | "manageSettings"
   | "viewAvarias"          // ver aba de avarias
   | "createAvaria"         // registrar avaria
-  | "manageAvarias";       // alterar status/checklist
+  | "manageAvarias"        // alterar status/checklist
+  | "createAjuste"         // solicitar ajuste de estoque
+  | "approveAjuste";       // aprovar/recusar ajuste de estoque
 
 const MATRIX: Record<AppRole, Action[]> = {
   mestre: [
     "createMovement", "manageProducts", "createRequisicao", "liberateRequisicao",
     "viewRelatorios", "manageUsers", "resetSystem", "manageSettings",
     "viewAvarias", "createAvaria", "manageAvarias",
+    "createAjuste", "approveAjuste",
   ],
   lider: [
     "createMovement", "manageProducts", "createRequisicao", "liberateRequisicao",
     "viewRelatorios",
     "viewAvarias", "createAvaria", "manageAvarias",
+    "createAjuste", "approveAjuste",
   ],
   estoquista: [
     "createMovement", "createRequisicao", "liberateRequisicao", "viewRelatorios",
     "viewAvarias", "createAvaria",
+    "createAjuste",
   ],
   requisitante: ["createRequisicao"],
 };

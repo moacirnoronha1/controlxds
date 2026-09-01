@@ -23,6 +23,7 @@ import { Route as EmprestimosRouteImport } from './routes/emprestimos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AvariasRouteImport } from './routes/avarias'
 import { Route as AlertasRouteImport } from './routes/alertas'
+import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RequisicoesIdRouteImport } from './routes/requisicoes_.$id'
 import { Route as InventarioIdRouteImport } from './routes/inventario_.$id'
@@ -97,6 +98,11 @@ const AlertasRoute = AlertasRouteImport.update({
   path: '/alertas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AjustesRoute = AjustesRouteImport.update({
+  id: '/ajustes',
+  path: '/ajustes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -115,6 +121,7 @@ const InventarioIdRoute = InventarioIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ajustes': typeof AjustesRoute
   '/alertas': typeof AlertasRoute
   '/avarias': typeof AvariasRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ajustes': typeof AjustesRoute
   '/alertas': typeof AlertasRoute
   '/avarias': typeof AvariasRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -154,6 +162,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ajustes': typeof AjustesRoute
   '/alertas': typeof AlertasRoute
   '/avarias': typeof AvariasRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ajustes'
     | '/alertas'
     | '/avarias'
     | '/configuracoes'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ajustes'
     | '/alertas'
     | '/avarias'
     | '/configuracoes'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/ajustes'
     | '/alertas'
     | '/avarias'
     | '/configuracoes'
@@ -233,6 +245,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AjustesRoute: typeof AjustesRoute
   AlertasRoute: typeof AlertasRoute
   AvariasRoute: typeof AvariasRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
@@ -351,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ajustes': {
+      id: '/ajustes'
+      path: '/ajustes'
+      fullPath: '/ajustes'
+      preLoaderRoute: typeof AjustesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -377,6 +397,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AjustesRoute: AjustesRoute,
   AlertasRoute: AlertasRoute,
   AvariasRoute: AvariasRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
