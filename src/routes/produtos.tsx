@@ -42,18 +42,36 @@ import { calcularMinimos, LEAD_TIME_DIAS } from "@/lib/estoque-minimo";
 import { Card } from "@/components/ui/card";
 import { ImportProdutos } from "@/components/import-produtos";
 import { useAuth, can } from "@/hooks/use-auth";
+import { useCriarSolicitacaoProduto } from "@/lib/produto-solicitacoes";
 
 export const Route = createFileRoute("/produtos")({
   component: ProdutosPage,
 });
 
+
+const CAMPOS_SOLICITACAO = [
+  "nome", "categoria", "unidade_medida", "estoque_minimo", "dias_seguranca",
+  "codigo_barras", "codigo_caixa", "unidades_por_caixa", "local_padrao_id", "ativo",
+] as const;
+
+function payload(p: Partial<Produto>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const k of CAMPOS_SOLICITACAO) {
+    out[k] = (p as Record<string, unknown>)[k] ?? null;
+  }
+  return out;
+}
+
 function ProdutosPage() {
-  const { role } = useAuth();
+  const { role, displayName } = useAuth();
   const canEdit = can(role, "manageProducts");
+  const canRequest = can(role, "requestProduto");
+  const soliciting = !canEdit && canRequest;
   const { data: produtos = [], isLoading } = useProdutos();
   const { data: locais = [] } = useLocais();
   const save = useSaveProduto();
   const del = useDeleteProduto();
+  const solicitar = useCriarSolicitacaoProduto();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("all");
   const [open, setOpen] = useState(false);
@@ -93,9 +111,38 @@ function ProdutosPage() {
 
   async function handleSave() {
     if (!editing?.nome?.trim()) return;
-    await save.mutateAsync(editing as Produto);
+    if (soliciting) {
+      const original = editing.id ? produtos.find((p) => p.id === editing.id) : null;
+      await solicitar.mutateAsync({
+        tipo: editing.id ? "edicao" : "inclusao",
+        produto_id: editing.id ?? null,
+        produto_nome: editing.nome.trim().toUpperCase(),
+        dados_antes: original ? payload(original) : null,
+        dados_propostos: payload(editing),
+        solicitado_por: displayName,
+      });
+    } else {
+      await save.mutateAsync(editing as Produto);
+    }
     setOpen(false);
     setEditing(null);
+  }
+
+  async function handleDelete(p: Produto) {
+    if (soliciting) {
+      const motivo = prompt(`Solicitar exclusão de ${p.nome}. Motivo (opcional):`);
+      if (motivo === null) return;
+      await solicitar.mutateAsync({
+        tipo: "exclusao",
+        produto_id: p.id,
+        produto_nome: p.nome,
+        dados_antes: payload(p),
+        motivo: motivo.trim() || null,
+        solicitado_por: displayName,
+      });
+      return;
+    }
+    if (confirm(`Excluir ${p.nome}?`)) del.mutate(p.id);
   }
 
   return (
@@ -103,17 +150,23 @@ function ProdutosPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Produtos</h1>
-          <p className="text-sm text-muted-foreground">Cadastre e gerencie seus insumos.</p>
+          <p className="text-sm text-muted-foreground">
+            {soliciting
+              ? "Suas alterações ficam pendentes até a aprovação do Mestre."
+              : "Cadastre e gerencie seus insumos."}
+          </p>
         </div>
-        {canEdit && (
+        {(canEdit || canRequest) && (
           <div className="flex gap-2">
-            <ImportProdutos />
+            {canEdit && <ImportProdutos />}
             <Button onClick={openNew}>
-              <Plus className="h-4 w-4 mr-1" /> Novo produto
+              <Plus className="h-4 w-4 mr-1" />
+              {soliciting ? "Solicitar produto" : "Novo produto"}
             </Button>
           </div>
         )}
       </div>
+
 
       <div className="flex flex-wrap gap-2">
         <div className="relative flex-1 min-w-[200px]">
@@ -201,7 +254,7 @@ function ProdutosPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {canEdit ? (
+                    {canEdit || canRequest ? (
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" onClick={() => openEdit(p)}>
                           <Pencil className="h-4 w-4" />
@@ -209,15 +262,14 @@ function ProdutosPage() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          onClick={() => {
-                            if (confirm(`Excluir ${p.nome}?`)) del.mutate(p.id);
-                          }}
+                          onClick={() => handleDelete(p)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     ) : null}
                   </TableCell>
+
                 </TableRow>
               );
             })}

@@ -562,6 +562,65 @@ export type Database = {
         }
         Relationships: []
       }
+      produto_solicitacoes: {
+        Row: {
+          created_at: string
+          dados_antes: Json | null
+          dados_propostos: Json | null
+          decidido_em: string | null
+          decidido_por: string | null
+          decisao_motivo: string | null
+          id: string
+          motivo: string | null
+          produto_id: string | null
+          produto_nome: string
+          solicitado_por: string | null
+          status: Database["public"]["Enums"]["produto_solicitacao_status"]
+          tipo: Database["public"]["Enums"]["produto_solicitacao_tipo"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dados_antes?: Json | null
+          dados_propostos?: Json | null
+          decidido_em?: string | null
+          decidido_por?: string | null
+          decisao_motivo?: string | null
+          id?: string
+          motivo?: string | null
+          produto_id?: string | null
+          produto_nome: string
+          solicitado_por?: string | null
+          status?: Database["public"]["Enums"]["produto_solicitacao_status"]
+          tipo: Database["public"]["Enums"]["produto_solicitacao_tipo"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dados_antes?: Json | null
+          dados_propostos?: Json | null
+          decidido_em?: string | null
+          decidido_por?: string | null
+          decisao_motivo?: string | null
+          id?: string
+          motivo?: string | null
+          produto_id?: string | null
+          produto_nome?: string
+          solicitado_por?: string | null
+          status?: Database["public"]["Enums"]["produto_solicitacao_status"]
+          tipo?: Database["public"]["Enums"]["produto_solicitacao_tipo"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produto_solicitacoes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       produtos: {
         Row: {
           ativo: boolean
@@ -887,6 +946,10 @@ export type Database = {
         Args: { _ajuste_id: string; _responsavel: string }
         Returns: undefined
       }
+      aprovar_produto_solicitacao: {
+        Args: { _responsavel: string; _solicitacao_id: string }
+        Returns: undefined
+      }
       atualizar_usuario: {
         Args: {
           _ativo: boolean
@@ -997,6 +1060,10 @@ export type Database = {
         Args: { _ajuste_id: string; _motivo: string; _responsavel: string }
         Returns: undefined
       }
+      recusar_produto_solicitacao: {
+        Args: { _motivo: string; _responsavel: string; _solicitacao_id: string }
+        Returns: undefined
+      }
       registrar_saida_fefo: {
         Args: {
           _local_id: string
@@ -1031,6 +1098,8 @@ export type Database = {
       emprestimo_tipo: "emprestamos" | "tomamos_emprestado"
       inventario_status: "aberto" | "em_conferencia" | "fechado"
       inventario_tipo: "rapido" | "parcial" | "completo"
+      produto_solicitacao_status: "pendente" | "aprovado" | "recusado"
+      produto_solicitacao_tipo: "inclusao" | "edicao" | "exclusao"
       requisicao_status: "pendente" | "liberada" | "cancelada"
       user_cargo: "mestre" | "estoquista" | "lider" | "requisitante"
     }
@@ -1184,6 +1253,8 @@ export const Constants = {
       emprestimo_tipo: ["emprestamos", "tomamos_emprestado"],
       inventario_status: ["aberto", "em_conferencia", "fechado"],
       inventario_tipo: ["rapido", "parcial", "completo"],
+      produto_solicitacao_status: ["pendente", "aprovado", "recusado"],
+      produto_solicitacao_tipo: ["inclusao", "edicao", "exclusao"],
       requisicao_status: ["pendente", "liberada", "cancelada"],
       user_cargo: ["mestre", "estoquista", "lider", "requisitante"],
     },

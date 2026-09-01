@@ -40,8 +40,11 @@ export type Action =
   | "viewAvarias"          // ver aba de avarias
   | "createAvaria"         // registrar avaria
   | "manageAvarias"        // alterar status/checklist
-  | "createAjuste"         // solicitar ajuste de estoque
-  | "approveAjuste";       // aprovar/recusar ajuste de estoque
+  | "createAjuste"          // solicitar ajuste de estoque
+  | "approveAjuste"         // aprovar/recusar ajuste de estoque
+  | "requestProduto"        // solicitar inclusão/edição/exclusão de produto
+  | "viewAprovacoes"        // ver área de aprovações de produtos
+  | "approveProduto";       // aprovar/recusar solicitações de produto
 
 const MATRIX: Record<AppRole, Action[]> = {
   mestre: [
@@ -49,20 +52,24 @@ const MATRIX: Record<AppRole, Action[]> = {
     "viewRelatorios", "manageUsers", "resetSystem", "manageSettings",
     "viewAvarias", "createAvaria", "manageAvarias",
     "createAjuste", "approveAjuste",
+    "requestProduto", "viewAprovacoes", "approveProduto",
   ],
   lider: [
     "createMovement", "manageProducts", "createRequisicao", "liberateRequisicao",
     "viewRelatorios",
     "viewAvarias", "createAvaria", "manageAvarias",
     "createAjuste", "approveAjuste",
+    "requestProduto", "viewAprovacoes",
   ],
   estoquista: [
     "createMovement", "createRequisicao", "liberateRequisicao", "viewRelatorios",
     "viewAvarias", "createAvaria",
     "createAjuste",
+    "requestProduto",
   ],
   requisitante: ["createRequisicao"],
 };
+
 
 export function can(role: AppRole | null | undefined, action: Action): boolean {
   if (!role) return false;
