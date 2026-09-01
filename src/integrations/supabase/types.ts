@@ -831,24 +831,15 @@ export type Database = {
         }
         Returns: string
       }
-      criar_inventario:
-        | {
-            Args: {
-              _produto_ids?: string[]
-              _tipo: Database["public"]["Enums"]["inventario_tipo"]
-              _titulo: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              _categoria?: string
-              _produto_ids?: string[]
-              _tipo: Database["public"]["Enums"]["inventario_tipo"]
-              _titulo: string
-            }
-            Returns: string
-          }
+      criar_inventario: {
+        Args: {
+          _categoria?: string
+          _produto_ids?: string[]
+          _tipo: Database["public"]["Enums"]["inventario_tipo"]
+          _titulo: string
+        }
+        Returns: string
+      }
       criar_usuario: {
         Args: {
           _ativo: boolean
