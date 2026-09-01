@@ -47,10 +47,10 @@ function Dashboard() {
   const { data: produtos = [] } = useProdutos();
   const { data: movs = [] } = useMovimentacoes();
 
+  const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
+
   const stats = useMemo(() => {
-    const baixo = produtos.filter(
-      (p) => p.ativo && p.estoque_atual <= p.estoque_minimo,
-    );
+    const baixo = produtos.filter((p) => p.ativo && (minimos.get(p.id)?.baixo ?? false));
     const entradasHoje = movs.filter((m) => m.tipo === "entrada" && isToday(m.data_movimentacao));
     const saidasHoje = movs.filter((m) => m.tipo === "saida" && isToday(m.data_movimentacao));
     return {
