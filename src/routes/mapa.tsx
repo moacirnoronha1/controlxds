@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { useProdutos, useMovimentacoes } from "@/lib/estoque";
+import { useProdutos, useMovimentacoes, isAjusteInventario } from "@/lib/estoque";
 import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/mapa")({
@@ -41,6 +41,7 @@ function MapaPage() {
       if (!map.has(m.produto_id)) map.set(m.produto_id, new Map());
       const row = map.get(m.produto_id)!;
       const cell = row.get(dia) ?? { in: 0, out: 0 };
+      if (isAjusteInventario(m.tipo)) continue;
       if (m.tipo === "entrada") cell.in += Number(m.quantidade);
       else cell.out += Number(m.quantidade);
       row.set(dia, cell);
