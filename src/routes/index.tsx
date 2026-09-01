@@ -156,7 +156,12 @@ function Dashboard() {
                     key={p.id}
                     className="flex items-center justify-between text-sm border-b border-border last:border-0 pb-2"
                   >
-                    <span className="truncate">{p.nome}</span>
+                    <span className="truncate">
+                      {p.nome}
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        mín. sugerido {minimos.get(p.id)?.minimoAuto ?? 0}
+                      </span>
+                    </span>
                     <Badge variant="destructive" className="shrink-0">
                       {p.estoque_atual} {p.unidade_medida}
                     </Badge>
