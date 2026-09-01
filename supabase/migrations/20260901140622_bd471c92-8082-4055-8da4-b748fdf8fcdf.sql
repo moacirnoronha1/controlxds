@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.bloquear_edicao_inventario_fechado() FROM PUBLIC, anon, authenticated;
