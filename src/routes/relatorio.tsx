@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useProdutos, useMovimentacoes, useLotes } from "@/lib/estoque";
+import { calcularMinimos, LEAD_TIME_DIAS } from "@/lib/estoque-minimo";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
