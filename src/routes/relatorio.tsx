@@ -25,6 +25,7 @@ function RelatorioPage() {
   const { data: movs = [] } = useMovimentacoes();
   const { data: lotes = [] } = useLotes();
   const [search, setSearch] = useState("");
+  const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
 
   const linhas = useMemo(() => {
     const now = Date.now();
