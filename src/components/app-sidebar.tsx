@@ -55,6 +55,7 @@ const items: Item[] = [
   { title: "Validade e Custo", url: "/validade-custo", icon: CalendarClock, roles: READ_OP },
   { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: READ_OP },
   { title: "Inventário", url: "/inventario", icon: ClipboardCheck, roles: OP },
+  { title: "Ajustes", url: "/ajustes", icon: SlidersHorizontal, roles: OP },
   { title: "Alertas", url: "/alertas", icon: AlertTriangle, roles: READ_OP },
   { title: "Avarias", url: "/avarias", icon: ShieldAlert, roles: READ_OP },
   { title: "Usuários", url: "/usuarios", icon: Users, roles: ["mestre"] },
