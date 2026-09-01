@@ -2,7 +2,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useProdutos, useMovimentacoes } from "@/lib/estoque";
+import { useProdutos, useMovimentacoes, labelMovTipo, isAjusteInventario } from "@/lib/estoque";
 import { calcularMinimos } from "@/lib/estoque-minimo";
 import { Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -196,8 +196,8 @@ function Dashboard() {
                     {new Date(m.data_movimentacao).toLocaleString("pt-BR")}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={m.tipo === "entrada" ? "default" : "secondary"}>
-                      {m.tipo}
+                    <Badge variant={isAjusteInventario(m.tipo) ? "outline" : m.tipo === "entrada" ? "default" : "secondary"}>
+                      {labelMovTipo(m.tipo)}
                     </Badge>
                   </TableCell>
                   <TableCell>{m.produtos?.nome ?? "—"}</TableCell>

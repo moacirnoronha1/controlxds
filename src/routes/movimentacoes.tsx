@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useMovimentacoes } from "@/lib/estoque";
+import { useMovimentacoes, labelMovTipo, isAjusteInventario } from "@/lib/estoque";
 import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/movimentacoes")({
@@ -34,7 +34,8 @@ function MovsPage() {
     () =>
       movs.filter(
         (m) =>
-          (tipo === "all" || m.tipo === tipo) &&
+          (tipo === "all" ||
+            (tipo === "ajuste" ? isAjusteInventario(m.tipo) : m.tipo === tipo)) &&
           (m.produtos?.nome ?? "").toLowerCase().includes(q.toLowerCase()),
       ),
     [movs, q, tipo],
@@ -63,6 +64,7 @@ function MovsPage() {
             <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="entrada">Entradas</SelectItem>
             <SelectItem value="saida">Saídas</SelectItem>
+            <SelectItem value="ajuste">Ajustes de Inventário</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -87,8 +89,8 @@ function MovsPage() {
                   {new Date(m.data_movimentacao).toLocaleString("pt-BR")}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={m.tipo === "entrada" ? "default" : "secondary"}>
-                    {m.tipo}
+                  <Badge variant={isAjusteInventario(m.tipo) ? "outline" : m.tipo === "entrada" ? "default" : "secondary"}>
+                    {labelMovTipo(m.tipo)}
                   </Badge>
                 </TableCell>
                 <TableCell>{m.produtos?.nome ?? "—"}</TableCell>
