@@ -259,7 +259,7 @@ function ProdutosPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-2">
-                  <Label>Estoque mínimo</Label>
+                  <Label>Estoque mínimo (manual)</Label>
                   <Input
                     type="number"
                     value={editing.estoque_minimo ?? 0}
@@ -267,6 +267,31 @@ function ProdutosPage() {
                       setEditing({ ...editing, estoque_minimo: Number(e.target.value) })
                     }
                   />
+                  {editing.id && (
+                    <p className="text-xs text-muted-foreground">
+                      Sugerido pelo sistema: {minimos.get(editing.id)?.minimoAuto ?? 0}{" "}
+                      {editing.unidade_medida} (média{" "}
+                      {(minimos.get(editing.id)?.mediaDiaria ?? 0).toLocaleString("pt-BR", {
+                        maximumFractionDigits: 2,
+                      })}
+                      /dia × {LEAD_TIME_DIAS + (Number(editing.dias_seguranca) || 0)} dias)
+                    </p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label>Dias de segurança (opcional)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={editing.dias_seguranca ?? 0}
+                    onChange={(e) =>
+                      setEditing({ ...editing, dias_seguranca: Number(e.target.value) || 0 })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Somados ao lead time de {LEAD_TIME_DIAS} dias no mínimo automático.
+                  </p>
                 </div>
                 <div className="grid gap-2">
                   <Label>Local de estoque padrão</Label>
