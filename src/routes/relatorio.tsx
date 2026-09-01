@@ -186,6 +186,10 @@ function RelatorioPage() {
               <TableHead className="text-right">Média 20d</TableHead>
               <TableHead className="text-right">Média mensal</TableHead>
               <TableHead className="text-right">Estoque atual</TableHead>
+              <TableHead className="text-right">
+                Mín. automático ({LEAD_TIME_DIAS}d)
+              </TableHead>
+              <TableHead className="text-right">Repor até o mínimo</TableHead>
               <TableHead className="text-right">Previsão</TableHead>
               <TableHead className="text-right">Sugestão compra (30d)</TableHead>
               <TableHead>Consumo</TableHead>
@@ -194,12 +198,12 @@ function RelatorioPage() {
           <TableBody>
             {filtradas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
                   Nenhum produto encontrado.
                 </TableCell>
               </TableRow>
             ) : (
-              filtradas.map(({ p, m5, m10, m15, m20, m30, previsao, sugestao }) => {
+              filtradas.map(({ p, m5, m10, m15, m20, m30, previsao, sugestao, minimoAuto, reposicao }) => {
                 const n = nivel(m30);
                 return (
                   <TableRow key={p.id}>
