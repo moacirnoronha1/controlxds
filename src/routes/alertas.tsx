@@ -38,12 +38,13 @@ function AlertasPage() {
 
     // Estoque baixo
     for (const p of produtos) {
-      if (p.ativo && p.estoque_atual <= p.estoque_minimo) {
+      const info = minimos.get(p.id);
+      if (p.ativo && info?.baixo) {
         out.push({
           tipo: "baixo",
           titulo: "Estoque baixo",
           produto: p.nome,
-          detalhe: `${p.estoque_atual} ${p.unidade_medida} (mín. ${p.estoque_minimo})`,
+          detalhe: `${p.estoque_atual} ${p.unidade_medida} (mín. manual ${p.estoque_minimo} · mín. automático ${info.minimoAuto} = média ${info.mediaDiaria.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}/dia × ${LEAD_TIME_DIAS + info.diasSeguranca} dias)`,
         });
       }
     }
