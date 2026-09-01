@@ -76,6 +76,7 @@ function ProdutosPage() {
       categoria: "SECOS",
       unidade_medida: "un",
       estoque_minimo: 0,
+      dias_seguranca: 0,
       codigo_barras: null,
       codigo_caixa: null,
       unidades_por_caixa: 1,
