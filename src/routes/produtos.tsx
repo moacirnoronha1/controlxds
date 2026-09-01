@@ -185,6 +185,12 @@ function ProdutosPage() {
                   <TableCell className="text-right tabular-nums text-muted-foreground">
                     {p.estoque_minimo} {p.unidade_medida}
                   </TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                    {info?.minimoAuto ?? 0} {p.unidade_medida}
+                    {p.dias_seguranca > 0 && (
+                      <span className="ml-1 text-xs">(+{p.dias_seguranca}d)</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {baixo ? (
                       <Badge variant="destructive">Baixo</Badge>
