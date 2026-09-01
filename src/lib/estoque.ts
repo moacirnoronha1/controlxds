@@ -82,7 +82,7 @@ export async function findProdutoByCodigo(codigo: string): Promise<ScanMatch | n
 export type Movimentacao = {
   id: string;
   produto_id: string;
-  tipo: "entrada" | "saida";
+  tipo: MovTipo;
   quantidade: number;
   data_movimentacao: string;
   observacao: string | null;
