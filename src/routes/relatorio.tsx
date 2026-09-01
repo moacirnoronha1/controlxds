@@ -65,7 +65,7 @@ function RelatorioPage() {
       const sugestao = ref > 0 && sugestaoBruta > 0 ? Math.ceil(sugestaoBruta) : 0;
       const info = minimos.get(p.id);
       const minimoAuto = info?.minimoAuto ?? 0;
-      const minimoEfetivo = info?.minimoEfetivo ?? Number(p.estoque_minimo) || 0;
+      const minimoEfetivo = info?.minimoEfetivo ?? (Number(p.estoque_minimo) || 0);
       const reposicao = Math.max(0, Math.ceil(minimoEfetivo - Number(p.estoque_atual)));
       return { p, m5, m10, m15, m20, m30, previsao, sugestao, minimoAuto, reposicao };
     });
