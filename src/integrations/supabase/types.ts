@@ -490,6 +490,7 @@ export type Database = {
           codigo_barras: string | null
           codigo_caixa: string | null
           created_at: string
+          dias_seguranca: number
           estoque_atual: number
           estoque_inicial: number
           estoque_minimo: number
@@ -506,6 +507,7 @@ export type Database = {
           codigo_barras?: string | null
           codigo_caixa?: string | null
           created_at?: string
+          dias_seguranca?: number
           estoque_atual?: number
           estoque_inicial?: number
           estoque_minimo?: number
@@ -522,6 +524,7 @@ export type Database = {
           codigo_barras?: string | null
           codigo_caixa?: string | null
           created_at?: string
+          dias_seguranca?: number
           estoque_atual?: number
           estoque_inicial?: number
           estoque_minimo?: number

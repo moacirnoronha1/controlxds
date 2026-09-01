@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useProdutos, useMovimentacoes } from "@/lib/estoque";
+import { calcularMinimos } from "@/lib/estoque-minimo";
 import { Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -47,10 +48,10 @@ function Dashboard() {
   const { data: produtos = [] } = useProdutos();
   const { data: movs = [] } = useMovimentacoes();
 
+  const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
+
   const stats = useMemo(() => {
-    const baixo = produtos.filter(
-      (p) => p.ativo && p.estoque_atual <= p.estoque_minimo,
-    );
+    const baixo = produtos.filter((p) => p.ativo && (minimos.get(p.id)?.baixo ?? false));
     const entradasHoje = movs.filter((m) => m.tipo === "entrada" && isToday(m.data_movimentacao));
     const saidasHoje = movs.filter((m) => m.tipo === "saida" && isToday(m.data_movimentacao));
     return {
@@ -60,7 +61,7 @@ function Dashboard() {
       saidasHoje: saidasHoje.reduce((a, b) => a + Number(b.quantidade), 0),
       baixoList: baixo,
     };
-  }, [produtos, movs]);
+  }, [produtos, movs, minimos]);
 
   const consumoPorProduto = useMemo(() => {
     const map = new Map<string, number>();
@@ -156,7 +157,12 @@ function Dashboard() {
                     key={p.id}
                     className="flex items-center justify-between text-sm border-b border-border last:border-0 pb-2"
                   >
-                    <span className="truncate">{p.nome}</span>
+                    <span className="truncate">
+                      {p.nome}
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        mín. sugerido {minimos.get(p.id)?.minimoAuto ?? 0}
+                      </span>
+                    </span>
                     <Badge variant="destructive" className="shrink-0">
                       {p.estoque_atual} {p.unidade_medida}
                     </Badge>

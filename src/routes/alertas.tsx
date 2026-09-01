@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { useProdutos, useLotes } from "@/lib/estoque";
+import { useProdutos, useLotes, useMovimentacoes } from "@/lib/estoque";
+import { calcularMinimos, LEAD_TIME_DIAS } from "@/lib/estoque-minimo";
 import { useEmprestimos } from "@/lib/emprestimos";
 import {
   AlertTriangle, PackageX, CalendarClock, CalendarX, Repeat, DollarSign, HelpCircle,
@@ -27,6 +28,8 @@ function AlertasPage() {
   const { data: produtos = [] } = useProdutos();
   const { data: lotes = [] } = useLotes();
   const { data: emprestimos = [] } = useEmprestimos();
+  const { data: movs = [] } = useMovimentacoes();
+  const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
 
   const alertas = useMemo<Alerta[]>(() => {
     const out: Alerta[] = [];
@@ -35,12 +38,13 @@ function AlertasPage() {
 
     // Estoque baixo
     for (const p of produtos) {
-      if (p.ativo && p.estoque_atual <= p.estoque_minimo) {
+      const info = minimos.get(p.id);
+      if (p.ativo && info?.baixo) {
         out.push({
           tipo: "baixo",
           titulo: "Estoque baixo",
           produto: p.nome,
-          detalhe: `${p.estoque_atual} ${p.unidade_medida} (mín. ${p.estoque_minimo})`,
+          detalhe: `${p.estoque_atual} ${p.unidade_medida} (mín. manual ${p.estoque_minimo} · mín. automático ${info.minimoAuto} = média ${info.mediaDiaria.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}/dia × ${LEAD_TIME_DIAS + info.diasSeguranca} dias)`,
         });
       }
     }
@@ -110,7 +114,7 @@ function AlertasPage() {
     }
 
     return out;
-  }, [produtos, lotes, emprestimos]);
+  }, [produtos, lotes, emprestimos, minimos]);
 
   const grupos: { key: Alerta["tipo"]; label: string; icon: typeof AlertTriangle; cls: string }[] = [
     { key: "vencido", label: "Vencidos", icon: CalendarX, cls: "text-destructive" },

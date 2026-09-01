@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useProdutos, useMovimentacoes, useLotes } from "@/lib/estoque";
+import { calcularMinimos, LEAD_TIME_DIAS } from "@/lib/estoque-minimo";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,7 @@ function RelatorioPage() {
   const { data: movs = [] } = useMovimentacoes();
   const { data: lotes = [] } = useLotes();
   const [search, setSearch] = useState("");
+  const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
 
   const linhas = useMemo(() => {
     const now = Date.now();
@@ -61,9 +63,13 @@ function RelatorioPage() {
       const necessidade = ref * cobertura;
       const sugestaoBruta = necessidade - p.estoque_atual;
       const sugestao = ref > 0 && sugestaoBruta > 0 ? Math.ceil(sugestaoBruta) : 0;
-      return { p, m5, m10, m15, m20, m30, previsao, sugestao };
+      const info = minimos.get(p.id);
+      const minimoAuto = info?.minimoAuto ?? 0;
+      const minimoEfetivo = info?.minimoEfetivo ?? (Number(p.estoque_minimo) || 0);
+      const reposicao = Math.max(0, Math.ceil(minimoEfetivo - Number(p.estoque_atual)));
+      return { p, m5, m10, m15, m20, m30, previsao, sugestao, minimoAuto, reposicao };
     });
-  }, [produtos, movs]);
+  }, [produtos, movs, minimos]);
 
 
   const filtradas = useMemo(
@@ -180,6 +186,10 @@ function RelatorioPage() {
               <TableHead className="text-right">Média 20d</TableHead>
               <TableHead className="text-right">Média mensal</TableHead>
               <TableHead className="text-right">Estoque atual</TableHead>
+              <TableHead className="text-right">
+                Mín. automático ({LEAD_TIME_DIAS}d)
+              </TableHead>
+              <TableHead className="text-right">Repor até o mínimo</TableHead>
               <TableHead className="text-right">Previsão</TableHead>
               <TableHead className="text-right">Sugestão compra (30d)</TableHead>
               <TableHead>Consumo</TableHead>
@@ -188,12 +198,12 @@ function RelatorioPage() {
           <TableBody>
             {filtradas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
                   Nenhum produto encontrado.
                 </TableCell>
               </TableRow>
             ) : (
-              filtradas.map(({ p, m5, m10, m15, m20, m30, previsao, sugestao }) => {
+              filtradas.map(({ p, m5, m10, m15, m20, m30, previsao, sugestao, minimoAuto, reposicao }) => {
                 const n = nivel(m30);
                 return (
                   <TableRow key={p.id}>
@@ -212,6 +222,23 @@ function RelatorioPage() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {p.estoque_atual}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {minimoAuto}
+                      {p.dias_seguranca > 0 && (
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          +{p.dias_seguranca}d seg.
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums font-semibold">
+                      {reposicao > 0 ? (
+                        <span className="text-destructive">
+                          {reposicao} {p.unidade_medida}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {fmtPrev(previsao)}

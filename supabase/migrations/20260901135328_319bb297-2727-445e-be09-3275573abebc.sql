@@ -1,0 +1,1 @@
+ALTER TABLE public.produtos ADD COLUMN IF NOT EXISTS dias_seguranca integer NOT NULL DEFAULT 0;

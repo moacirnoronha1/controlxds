@@ -35,8 +35,10 @@ import {
   useProdutos,
   useSaveProduto,
   useLocais,
+  useMovimentacoes,
   type Produto,
 } from "@/lib/estoque";
+import { calcularMinimos, LEAD_TIME_DIAS } from "@/lib/estoque-minimo";
 import { Card } from "@/components/ui/card";
 import { ImportProdutos } from "@/components/import-produtos";
 import { useAuth, can } from "@/hooks/use-auth";
@@ -56,6 +58,8 @@ function ProdutosPage() {
   const [cat, setCat] = useState<string>("all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<Produto> | null>(null);
+  const { data: movs = [] } = useMovimentacoes();
+  const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
 
   const filtered = useMemo(() => {
     return produtos.filter(
@@ -72,6 +76,7 @@ function ProdutosPage() {
       categoria: "SECOS",
       unidade_medida: "un",
       estoque_minimo: 0,
+      dias_seguranca: 0,
       codigo_barras: null,
       codigo_caixa: null,
       unidades_por_caixa: 1,
@@ -142,7 +147,8 @@ function ProdutosPage() {
               <TableHead>Produto</TableHead>
               <TableHead>Categoria</TableHead>
               <TableHead className="text-right">Estoque</TableHead>
-              <TableHead className="text-right">Mínimo</TableHead>
+              <TableHead className="text-right">Mínimo manual</TableHead>
+              <TableHead className="text-right">Mínimo sugerido</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[100px]" />
             </TableRow>
@@ -150,20 +156,21 @@ function ProdutosPage() {
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   Carregando...
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   Nenhum produto. Clique em "Novo produto" para começar.
                 </TableCell>
               </TableRow>
             )}
             {filtered.map((p) => {
-              const baixo = p.estoque_atual <= p.estoque_minimo;
+              const info = minimos.get(p.id);
+              const baixo = info?.baixo ?? p.estoque_atual <= p.estoque_minimo;
               return (
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">{p.nome}</TableCell>
@@ -177,6 +184,12 @@ function ProdutosPage() {
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">
                     {p.estoque_minimo} {p.unidade_medida}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                    {info?.minimoAuto ?? 0} {p.unidade_medida}
+                    {p.dias_seguranca > 0 && (
+                      <span className="ml-1 text-xs">(+{p.dias_seguranca}d)</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     {baixo ? (
@@ -259,7 +272,7 @@ function ProdutosPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-2">
-                  <Label>Estoque mínimo</Label>
+                  <Label>Estoque mínimo (manual)</Label>
                   <Input
                     type="number"
                     value={editing.estoque_minimo ?? 0}
@@ -267,6 +280,31 @@ function ProdutosPage() {
                       setEditing({ ...editing, estoque_minimo: Number(e.target.value) })
                     }
                   />
+                  {editing.id && (
+                    <p className="text-xs text-muted-foreground">
+                      Sugerido pelo sistema: {minimos.get(editing.id)?.minimoAuto ?? 0}{" "}
+                      {editing.unidade_medida} (média{" "}
+                      {(minimos.get(editing.id)?.mediaDiaria ?? 0).toLocaleString("pt-BR", {
+                        maximumFractionDigits: 2,
+                      })}
+                      /dia × {LEAD_TIME_DIAS + (Number(editing.dias_seguranca) || 0)} dias)
+                    </p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label>Dias de segurança (opcional)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={editing.dias_seguranca ?? 0}
+                    onChange={(e) =>
+                      setEditing({ ...editing, dias_seguranca: Number(e.target.value) || 0 })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Somados ao lead time de {LEAD_TIME_DIAS} dias no mínimo automático.
+                  </p>
                 </div>
                 <div className="grid gap-2">
                   <Label>Local de estoque padrão</Label>
