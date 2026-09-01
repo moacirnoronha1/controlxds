@@ -28,6 +28,8 @@ function AlertasPage() {
   const { data: produtos = [] } = useProdutos();
   const { data: lotes = [] } = useLotes();
   const { data: emprestimos = [] } = useEmprestimos();
+  const { data: movs = [] } = useMovimentacoes();
+  const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
 
   const alertas = useMemo<Alerta[]>(() => {
     const out: Alerta[] = [];
