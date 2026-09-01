@@ -35,8 +35,10 @@ import {
   useProdutos,
   useSaveProduto,
   useLocais,
+  useMovimentacoes,
   type Produto,
 } from "@/lib/estoque";
+import { calcularMinimos, LEAD_TIME_DIAS } from "@/lib/estoque-minimo";
 import { Card } from "@/components/ui/card";
 import { ImportProdutos } from "@/components/import-produtos";
 import { useAuth, can } from "@/hooks/use-auth";
