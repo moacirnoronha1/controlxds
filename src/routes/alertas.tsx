@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { useProdutos, useLotes } from "@/lib/estoque";
+import { useProdutos, useLotes, useMovimentacoes } from "@/lib/estoque";
+import { calcularMinimos, LEAD_TIME_DIAS } from "@/lib/estoque-minimo";
 import { useEmprestimos } from "@/lib/emprestimos";
 import {
   AlertTriangle, PackageX, CalendarClock, CalendarX, Repeat, DollarSign, HelpCircle,
