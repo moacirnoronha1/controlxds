@@ -114,7 +114,7 @@ function AlertasPage() {
     }
 
     return out;
-  }, [produtos, lotes, emprestimos]);
+  }, [produtos, lotes, emprestimos, minimos]);
 
   const grupos: { key: Alerta["tipo"]; label: string; icon: typeof AlertTriangle; cls: string }[] = [
     { key: "vencido", label: "Vencidos", icon: CalendarX, cls: "text-destructive" },
