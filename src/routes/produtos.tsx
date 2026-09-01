@@ -147,7 +147,8 @@ function ProdutosPage() {
               <TableHead>Produto</TableHead>
               <TableHead>Categoria</TableHead>
               <TableHead className="text-right">Estoque</TableHead>
-              <TableHead className="text-right">Mínimo</TableHead>
+              <TableHead className="text-right">Mínimo manual</TableHead>
+              <TableHead className="text-right">Mínimo sugerido</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[100px]" />
             </TableRow>
@@ -155,20 +156,21 @@ function ProdutosPage() {
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   Carregando...
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   Nenhum produto. Clique em "Novo produto" para começar.
                 </TableCell>
               </TableRow>
             )}
             {filtered.map((p) => {
-              const baixo = p.estoque_atual <= p.estoque_minimo;
+              const info = minimos.get(p.id);
+              const baixo = info?.baixo ?? p.estoque_atual <= p.estoque_minimo;
               return (
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">{p.nome}</TableCell>
