@@ -1,90 +1,39 @@
+# Ajuste de Estoque com aprovação
 
-# GX Control — Etapa 1: Base do estoque com locais e lotes
+Hoje o sistema não tem um módulo de ajuste manual: correções só acontecem via inventário ou avaria. Vamos criar uma aba "Ajustes" onde qualquer usuário operacional solicita, mas o estoque só muda depois que um Mestre ou Líder aprova.
 
-Reorganizar o cadastro de produtos, criar locais de estoque e transformar cada entrada em um lote com validade e custo próprios. Saída passa a consumir dos lotes (FEFO — primeiro que vence, primeiro que sai).
+## Como vai funcionar
 
-## 1. Categorias
+1. Estoquista, Líder ou Mestre abre "Ajustes" e clica em "Solicitar ajuste".
+2. Preenche produto, local, lote/validade (opcional para entrada), tipo (entrada, saída, correção), quantidade e motivo.
+3. O pedido entra como Pendente. Nada muda no estoque.
+4. Mestre ou Líder vê a lista de pendentes e escolhe Aprovar ou Recusar (recusa pede uma justificativa).
+5. Ao aprovar: o estoque é alterado, a movimentação é registrada e o histórico grava saldo antes, saldo depois, quem aprovou e quando.
+6. Ao recusar: nada muda no estoque; fica registrado quem recusou, quando e o motivo.
+7. O perfil "Responsável pela Requisição" não vê o menu nem a página.
 
-Novas categorias fixas no sistema:
-- Bebida alcoólica
-- Bebida não alcoólica
-- Vinhos
-- Frutas e verduras
-- Secos
-- Limpeza
-- Escritório
-- Outros
+Tipos de ajuste:
+- Entrada: soma a quantidade (cria lote de ajuste no local escolhido).
+- Saída: baixa a quantidade, dos lotes por validade mais próxima (ou do lote escolhido, se informado).
+- Correção: o saldo final passa a ser exatamente a quantidade informada; o sistema calcula a diferença e aplica entrada ou saída só dessa diferença.
 
-Aplicadas no cadastro de produto, filtros de Produtos, Mapa e Relatórios.
+## Tela
 
-Categorias antigas ("Frios", "Bebidas", "Cozinha") que não estão mais na lista serão migradas automaticamente:
-- "Bebidas" → "Bebida não alcoólica"
-- "Frios" e "Cozinha" → "Outros"
-
-## 2. Locais de estoque
-
-Nova tabela `locais_estoque` com os quatro locais iniciais:
-- Estoque de Bebidas
-- Escritório Xica
-- Casa
-- Estoque Principal
-
-Tela nova em **Configurações → Locais** para adicionar/renomear/desativar locais.
-
-## 3. Cadastro de produtos
-
-Formulário passa a ter apenas:
-- nome
-- categoria
-- unidade de medida
-- estoque mínimo
-- código de barras da unidade
-- código de barras da caixa
-- multiplicador da embalagem (unidades por caixa)
-- **local de estoque padrão**
-
-Campos removidos do formulário: estoque inicial, validade, custo. O estoque atual passa a ser calculado pela soma dos lotes disponíveis (não é mais editado no cadastro).
-
-## 4. Entradas viram lotes
-
-Cada entrada cria um lote separado com:
-- produto
-- quantidade
-- local de estoque (default = local padrão do produto)
-- validade do lote
-- custo unitário
-- custo total (calculado = qtd × custo unitário)
-- fornecedor
-- observação
-
-Lotes com validade e custo diferentes convivem em paralelo. Histórico de entradas passa a mostrar validade, custo e local de cada lote.
-
-## 5. Saídas consomem lotes (FEFO)
-
-Ao registrar saída, o sistema desconta automaticamente dos lotes daquele produto e local começando pelo que vence antes. Se faltar saldo, mostra erro claro.
-
-## 6. Onde o "estoque atual" aparece
-
-Passa a ser `SUM(saldo dos lotes)` do produto (opcionalmente filtrado por local). Telas afetadas: Produtos, Alertas, Mapa, Relatório, Inventário, Requisições, Scan.
+- Lista com abas Pendentes / Aprovados / Recusados, mostrando data, produto, local, tipo, quantidade, motivo, solicitante e status.
+- No aprovado/recusado, o histórico mostra saldo antes, saldo depois, quem decidiu e a data/hora.
+- Busca por produto e filtro por tipo.
 
 ## Detalhes técnicos
 
-- Migração cria `locais_estoque` e `lotes` (produto_id, local_id, validade, custo_unitario, quantidade_inicial, saldo, fornecedor, observacao). GRANTs + RLS abertos como no restante do sistema (login está desativado).
-- Migração adiciona `local_padrao_id` em `produtos` e ajusta a coluna `categoria` (mapeamento das antigas → novas).
-- `movimentacoes` ganha `lote_id` e `local_id` opcionais para rastrear a origem. Trigger de estoque atual é substituída: `produtos.estoque_atual` deixa de ser atualizado por movimentação (ou passa a ser derivado); saldo real vem dos lotes.
-- Nova função `registrar_saida_fefo(produto_id, local_id, quantidade, ...)` que distribui a saída pelos lotes por validade crescente e cria as movimentações correspondentes.
-- Frontend: novo hook `useLotes`, ajuste em `estoque.ts` (`estoque_atual` derivado), formulário de entrada reescrito com campos de lote, tela de Produtos sem "estoque inicial", tela nova de Locais.
-- Scan continua funcionando: entrada abre modal de lote (validade/custo/local); saída usa FEFO no local padrão.
+Banco:
+- Enums `ajuste_tipo` (entrada, saida, correcao) e `ajuste_status` (pendente, aprovado, recusado).
+- Tabela `public.ajustes_estoque`: produto_id, local_id, lote_id, validade (via lote), tipo, quantidade, motivo, solicitado_por (texto do usuário logado), decidido_por, decisao_motivo, status, saldo_antes, saldo_depois, decidido_em, created_at, updated_at. GRANT para authenticated/service_role, RLS com `is_app_user()` no mesmo padrão das outras tabelas, trigger `touch_updated_at`.
+- RPC `aprovar_ajuste(_ajuste_id, _responsavel)`: SECURITY DEFINER, trava a linha, exige status pendente, lê `estoque_atual` como saldo_antes, aplica entrada (cria lote via lógica de `criar_entrada_lote`), saída (`registrar_saida_fefo` ou baixa do lote informado) ou correção (diferença), grava saldo_depois, status aprovado, decidido_por/decidido_em.
+- RPC `recusar_ajuste(_ajuste_id, _responsavel, _motivo)`: só muda status, sem tocar em estoque.
+- Ambas com `REVOKE ... FROM anon, public` e GRANT para authenticated, seguindo o padrão atual.
 
-## Escopo desta etapa
-
-Incluído: categorias, locais, cadastro enxuto, entrada por lote, saída FEFO, ajustes de leitura nas telas existentes.
-
-Fora do escopo (para etapas futuras): transferências entre locais, custo médio ponderado nos relatórios, alertas de validade próxima, inventário por local/lote.
-
-## Pergunta antes de executar
-
-Estoque atual hoje é um número único por produto, sem lotes. Ao ativar lotes, esse saldo precisa virar "algo". Prefere:
-
-**(a)** criar automaticamente **um lote inicial por produto** no Estoque Principal, com o saldo atual, sem validade e sem custo (recomendado — nada some); **ou**
-**(b)** **zerar tudo** e recomeçar cadastrando lotes do zero?
+Front-end:
+- `src/lib/ajustes.ts` com tipos e hooks (`useAjustes`, `useCriarAjuste`, `useAprovarAjuste`, `useRecusarAjuste`) invalidando `produtos`, `lotes` e `movimentacoes`.
+- Nova rota `src/routes/ajustes.tsx` com `head()` próprio (título/descrição).
+- Nova ação `approveAjuste` (mestre, líder) e `createAjuste` (mestre, líder, estoquista) na matriz de `src/hooks/use-auth.tsx`; item no menu de `app-sidebar.tsx` visível apenas para OP.
+- Solicitante e aprovador preenchidos automaticamente com o usuário logado, sem campo editável.
