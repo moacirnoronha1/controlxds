@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.criar_inventario(public.inventario_tipo, text, uuid[]);
