@@ -26,6 +26,22 @@ import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/requisicoes")({
   component: RequisicoesPage,
+  head: () => ({
+    meta: [
+      { title: "Requisições de Material | GX Control" },
+      {
+        name: "description",
+        content: "Crie e acompanhe requisições de materiais do estoque com segurança.",
+      },
+      { property: "og:title", content: "Requisições de Material | GX Control" },
+      {
+        property: "og:description",
+        content: "Criação e acompanhamento de requisições de materiais no GX Control.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
 });
 
 type ItemDraft = { id: string; produto_id: string; quantidade: string };
@@ -192,7 +208,9 @@ function RequisicoesPage() {
             Pedidos de retirada do estoque. Ao liberar, gera saída automática.
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(nextOpen) => {
+          if (!criar.isPending) setOpen(nextOpen);
+        }}>
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-1" /> Nova requisição</Button>
           </DialogTrigger>
