@@ -56,6 +56,14 @@ function RequisicoesPage() {
     [setores.data],
   );
 
+  const { totalItens, totalUnidades } = useMemo(() => {
+    const validos = itens.filter((i) => i.produto_id && Number(i.quantidade) > 0);
+    return {
+      totalItens: validos.length,
+      totalUnidades: validos.reduce((acc, i) => acc + Number(i.quantidade), 0),
+    };
+  }, [itens]);
+
   function reset() {
     setRequisitante(user?.nome ?? ""); setSetor(user?.setor ?? ""); setObservacao(""); setExtra(false);
     setItens([{ produto_id: "", quantidade: "" }]);
