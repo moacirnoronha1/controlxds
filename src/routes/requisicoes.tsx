@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -159,7 +159,7 @@ function RequisicoesPage() {
             Pedidos de retirada do estoque. Ao liberar, gera saída automática.
           </p>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { if (v) setOpen(true); }}>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-1" /> Nova requisição</Button>
           </DialogTrigger>
