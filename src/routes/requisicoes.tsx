@@ -151,7 +151,7 @@ function RequisicoesPage() {
           extra?: boolean;
           itens?: Array<Partial<ItemDraft> & Pick<ItemDraft, "produto_id" | "quantidade">>;
         };
-        if (d.itens?.some((i) => i.produto_id || i.quantidade)) {
+        if (d.itens?.length) {
           setItens(d.itens.map((item) => ({
             id: item.id || novoItem().id,
             produto_id: item.produto_id,
