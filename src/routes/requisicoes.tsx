@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus, Trash2, FileText } from "lucide-react";
+import { Plus, Trash2, FileText, Loader2 } from "lucide-react";
 import { useProdutos } from "@/lib/estoque";
 import {
   useCriarRequisicao, useRequisicoes, useSetores,
@@ -26,9 +26,35 @@ import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/requisicoes")({
   component: RequisicoesPage,
+  head: () => ({
+    meta: [
+      { title: "Requisições de Material | GX Control" },
+      {
+        name: "description",
+        content: "Crie e acompanhe requisições de materiais do estoque com segurança.",
+      },
+      { property: "og:title", content: "Requisições de Material | GX Control" },
+      {
+        property: "og:description",
+        content: "Criação e acompanhamento de requisições de materiais no GX Control.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
 });
 
-type ItemDraft = { produto_id: string; quantidade: string };
+type ItemDraft = { id: string; produto_id: string; quantidade: string };
+
+function novoItem(): ItemDraft {
+  return {
+    id: typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`,
+    produto_id: "",
+    quantidade: "",
+  };
+}
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   pendente: "secondary",
@@ -52,8 +78,9 @@ function RequisicoesPage() {
   const [observacao, setObservacao] = useState("");
   const [extra, setExtra] = useState(false);
   const [soExtras, setSoExtras] = useState(false);
-  const [itens, setItens] = useState<ItemDraft[]>([{ produto_id: "", quantidade: "" }]);
+  const [itens, setItens] = useState<ItemDraft[]>([{ id: "inicial", produto_id: "", quantidade: "" }]);
   const [draftCarregado, setDraftCarregado] = useState(false);
+  const salvandoRef = useRef(false);
 
   // Mantém o nome do requisitante em dia sem apagar o que já foi preenchido
   useEffect(() => {
@@ -68,10 +95,17 @@ function RequisicoesPage() {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) {
         const d = JSON.parse(raw) as {
-          setor?: string; observacao?: string; extra?: boolean; itens?: ItemDraft[];
+          setor?: string;
+          observacao?: string;
+          extra?: boolean;
+          itens?: Array<Partial<ItemDraft> & Pick<ItemDraft, "produto_id" | "quantidade">>;
         };
         if (d.itens?.some((i) => i.produto_id || i.quantidade)) {
-          setItens(d.itens);
+          setItens(d.itens.map((item) => ({
+            id: item.id || novoItem().id,
+            produto_id: item.produto_id,
+            quantidade: item.quantidade,
+          })));
           if (d.setor) setSetor(d.setor);
           if (d.observacao) setObservacao(d.observacao);
           setExtra(!!d.extra);
@@ -84,9 +118,12 @@ function RequisicoesPage() {
   // Salva rascunho enquanto o usuário preenche
   useEffect(() => {
     if (!draftCarregado) return;
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ setor, observacao, extra, itens }));
-    } catch { /* storage cheio, ignora */ }
+    const timer = window.setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ setor, observacao, extra, itens }));
+      } catch { /* storage cheio, ignora */ }
+    }, 200);
+    return () => window.clearTimeout(timer);
   }, [draftCarregado, setor, observacao, extra, itens]);
 
   const setoresAtivos = useMemo(
@@ -102,9 +139,14 @@ function RequisicoesPage() {
     };
   }, [itens]);
 
+  const produtosPorId = useMemo(
+    () => new Map((produtos.data ?? []).map((produto) => [produto.id, produto])),
+    [produtos.data],
+  );
+
   function reset() {
     setRequisitante(user?.nome ?? ""); setSetor(user?.setor ?? ""); setObservacao(""); setExtra(false);
-    setItens([{ produto_id: "", quantidade: "" }]);
+    setItens([novoItem()]);
     try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignora */ }
   }
 
@@ -118,10 +160,12 @@ function RequisicoesPage() {
   }, [reqs.data, isRequisitante, user, soExtras]);
 
   async function salvar() {
+    if (salvandoRef.current || criar.isPending) return;
+
     const validos = itens
       .filter((i) => i.produto_id && Number(i.quantidade) > 0)
       .map((i) => {
-        const p = produtos.data?.find((pp) => pp.id === i.produto_id);
+        const p = produtosPorId.get(i.produto_id);
         return {
           produto_id: i.produto_id,
           quantidade_solicitada: Number(i.quantidade),
@@ -133,17 +177,21 @@ function RequisicoesPage() {
     if (!setor) { toast.error("Selecione o destino / setor."); return; }
     if (validos.length === 0) { toast.error("Adicione ao menos um item com quantidade."); return; }
 
+    salvandoRef.current = true;
     try {
-      await criar.mutateAsync({
+      const requisicao = await criar.mutateAsync({
         requisitante: requisitante.trim(),
         setor,
         observacao: observacao.trim() || undefined,
         extra,
         itens: validos,
       });
+      toast.success(`Requisição #${String(requisicao.numero).padStart(5, "0")} criada com ${validos.length} ${validos.length === 1 ? "item" : "itens"}.`);
     } catch {
       // erro já exibido pelo hook; mantém todos os dados preenchidos
       return;
+    } finally {
+      salvandoRef.current = false;
     }
     // só limpa após sucesso
     setOpen(false);
@@ -160,7 +208,9 @@ function RequisicoesPage() {
             Pedidos de retirada do estoque. Ao liberar, gera saída automática.
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(nextOpen) => {
+          if (!criar.isPending) setOpen(nextOpen);
+        }}>
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-1" /> Nova requisição</Button>
           </DialogTrigger>
@@ -203,13 +253,13 @@ function RequisicoesPage() {
                 <div className="space-y-2">
                   <Label>Itens</Label>
                   <div className="space-y-2">
-                    {itens.map((it, idx) => (
-                      <div key={idx} className="flex gap-2 items-start">
+                    {itens.map((it) => (
+                      <div key={it.id} className="flex gap-2 items-start">
                         <div className="flex-1 min-w-0">
                           <Select
                             value={it.produto_id}
                             onValueChange={(v) => {
-                              const copy = [...itens]; copy[idx] = { ...copy[idx], produto_id: v }; setItens(copy);
+                              setItens((atuais) => atuais.map((item) => item.id === it.id ? { ...item, produto_id: v } : item));
                             }}
                           >
                             <SelectTrigger><SelectValue placeholder="Produto" /></SelectTrigger>
@@ -227,12 +277,14 @@ function RequisicoesPage() {
                           placeholder="Qtd"
                           value={it.quantidade}
                           onChange={(e) => {
-                            const copy = [...itens]; copy[idx] = { ...copy[idx], quantidade: e.target.value }; setItens(copy);
+                            const quantidade = e.target.value;
+                            setItens((atuais) => atuais.map((item) => item.id === it.id ? { ...item, quantidade } : item));
                           }}
                         />
                         <Button
                           type="button" variant="ghost" size="icon" className="shrink-0"
-                          onClick={() => setItens(itens.length === 1 ? [{ produto_id: "", quantidade: "" }] : itens.filter((_, i) => i !== idx))}
+                          aria-label="Remover item"
+                          onClick={() => setItens((atuais) => atuais.length === 1 ? [novoItem()] : atuais.filter((item) => item.id !== it.id))}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -266,11 +318,14 @@ function RequisicoesPage() {
                   {totalItens} {totalItens === 1 ? "item" : "itens"} · Total: {totalUnidades} unidades
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={() => setItens([...itens, { produto_id: "", quantidade: "" }])}>
+                  <Button type="button" variant="outline" size="sm" disabled={criar.isPending} onClick={() => setItens((atuais) => [...atuais, novoItem()])}>
                     <Plus className="h-4 w-4 mr-1" /> Adicionar item
                   </Button>
-                  <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-                  <Button onClick={salvar} disabled={criar.isPending}>Criar requisição</Button>
+                  <Button type="button" variant="ghost" disabled={criar.isPending} onClick={() => setOpen(false)}>Cancelar</Button>
+                  <Button type="button" onClick={salvar} disabled={criar.isPending} aria-busy={criar.isPending}>
+                    {criar.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    {criar.isPending ? "Criando..." : "Criar requisição"}
+                  </Button>
                 </div>
               </div>
             </div>

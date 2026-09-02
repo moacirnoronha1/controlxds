@@ -148,25 +148,18 @@ export function useCriarRequisicao() {
       extra?: boolean;
       itens: { produto_id: string; codigo?: string | null; quantidade_solicitada: number }[];
     }) => {
-      const { data: req, error } = await supabase
-        .from("requisicoes")
-        .insert({
-          requisitante: p.requisitante,
-          setor: p.setor,
-          extra: p.extra ?? false,
-          observacao: p.observacao ?? null,
-        })
-        .select()
-        .single();
+      const { data: req, error } = await supabase.rpc("criar_requisicao_com_itens", {
+        _requisitante: p.requisitante,
+        _setor: p.setor,
+        _observacao: p.observacao ?? "",
+        _extra: p.extra ?? false,
+        _itens: p.itens,
+      });
       if (error) throw error;
-      const itens = p.itens.map((i) => ({ ...i, requisicao_id: req.id }));
-      const { error: e2 } = await supabase.from("requisicao_itens").insert(itens);
-      if (e2) throw e2;
       return req as Requisicao;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["requisicoes"] });
-      toast.success("Requisição criada");
     },
     onError: (e: Error) => toast.error(e.message),
   });
