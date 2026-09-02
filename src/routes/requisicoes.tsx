@@ -21,6 +21,7 @@ import { useProdutos } from "@/lib/estoque";
 import {
   useCriarRequisicao, useRequisicoes, useSetores,
 } from "@/lib/requisicoes";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/requisicoes")({
