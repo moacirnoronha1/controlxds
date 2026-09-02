@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import { useProdutos } from "@/lib/estoque";
 import {
   useCriarRequisicao, useRequisicoes, useSetores,
 } from "@/lib/requisicoes";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/requisicoes")({
@@ -43,6 +44,8 @@ function RequisicoesPage() {
   const produtos = useProdutos();
   const criar = useCriarRequisicao();
 
+  const DRAFT_KEY = "gx:requisicao-rascunho";
+
   const [open, setOpen] = useState(false);
   const [requisitante, setRequisitante] = useState(user?.nome ?? "");
   const [setor, setSetor] = useState(user?.setor ?? "");
@@ -50,6 +53,41 @@ function RequisicoesPage() {
   const [extra, setExtra] = useState(false);
   const [soExtras, setSoExtras] = useState(false);
   const [itens, setItens] = useState<ItemDraft[]>([{ produto_id: "", quantidade: "" }]);
+  const [draftCarregado, setDraftCarregado] = useState(false);
+
+  // Mantém o nome do requisitante em dia sem apagar o que já foi preenchido
+  useEffect(() => {
+    if (user?.nome) setRequisitante((prev) => prev || user.nome);
+    if (user?.setor) setSetor((prev) => prev || user.setor!);
+  }, [user?.nome, user?.setor]);
+
+  // Carrega rascunho salvo localmente (uma vez)
+  useEffect(() => {
+    if (draftCarregado) return;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const d = JSON.parse(raw) as {
+          setor?: string; observacao?: string; extra?: boolean; itens?: ItemDraft[];
+        };
+        if (d.itens?.some((i) => i.produto_id || i.quantidade)) {
+          setItens(d.itens);
+          if (d.setor) setSetor(d.setor);
+          if (d.observacao) setObservacao(d.observacao);
+          setExtra(!!d.extra);
+        }
+      }
+    } catch { /* rascunho inválido, ignora */ }
+    setDraftCarregado(true);
+  }, [draftCarregado]);
+
+  // Salva rascunho enquanto o usuário preenche
+  useEffect(() => {
+    if (!draftCarregado) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ setor, observacao, extra, itens }));
+    } catch { /* storage cheio, ignora */ }
+  }, [draftCarregado, setor, observacao, extra, itens]);
 
   const setoresAtivos = useMemo(
     () => (setores.data ?? []).filter((s) => s.ativo),
@@ -67,6 +105,7 @@ function RequisicoesPage() {
   function reset() {
     setRequisitante(user?.nome ?? ""); setSetor(user?.setor ?? ""); setObservacao(""); setExtra(false);
     setItens([{ produto_id: "", quantidade: "" }]);
+    try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignora */ }
   }
 
   const listaFiltrada = useMemo(() => {
@@ -89,18 +128,28 @@ function RequisicoesPage() {
           codigo: p?.codigo_barras ?? null,
         };
       });
-    if (!user?.nome) return;
-    if (!requisitante.trim() || !setor || validos.length === 0) return;
-    await criar.mutateAsync({
-      requisitante: requisitante.trim(),
-      setor,
-      observacao: observacao.trim() || undefined,
-      extra,
-      itens: validos,
-    });
+    if (!user?.nome) { toast.error("Usuário não identificado. Faça login novamente."); return; }
+    if (!requisitante.trim()) { toast.error("Requisitante não identificado."); return; }
+    if (!setor) { toast.error("Selecione o destino / setor."); return; }
+    if (validos.length === 0) { toast.error("Adicione ao menos um item com quantidade."); return; }
+
+    try {
+      await criar.mutateAsync({
+        requisitante: requisitante.trim(),
+        setor,
+        observacao: observacao.trim() || undefined,
+        extra,
+        itens: validos,
+      });
+    } catch {
+      // erro já exibido pelo hook; mantém todos os dados preenchidos
+      return;
+    }
+    // só limpa após sucesso
     setOpen(false);
     reset();
   }
+
 
   return (
     <div className="space-y-6">
@@ -111,11 +160,15 @@ function RequisicoesPage() {
             Pedidos de retirada do estoque. Ao liberar, gera saída automática.
           </p>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-1" /> Nova requisição</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl flex flex-col max-h-[90dvh] p-0">
+          <DialogContent
+            className="max-w-2xl flex flex-col max-h-[90dvh] p-0"
+            onInteractOutside={(e) => e.preventDefault()}
+            onEscapeKeyDown={(e) => e.preventDefault()}
+          >
             <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
               <DialogTitle>Nova requisição</DialogTitle>
             </DialogHeader>
