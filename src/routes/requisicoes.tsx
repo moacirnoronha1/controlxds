@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Plus, Trash2, FileText, Loader2 } from "lucide-react";
-import { useProdutos } from "@/lib/estoque";
+import { useProdutos, type Produto } from "@/lib/estoque";
 import {
   useCriarRequisicao, useRequisicoes, useSetores,
 } from "@/lib/requisicoes";
@@ -55,6 +55,57 @@ function novoItem(): ItemDraft {
     quantidade: "",
   };
 }
+
+const ItemRequisicao = memo(function ItemRequisicao({
+  item,
+  produtos,
+  onChange,
+  onRemove,
+}: {
+  item: ItemDraft;
+  produtos: Produto[];
+  onChange: (id: string, patch: Partial<Omit<ItemDraft, "id">>) => void;
+  onRemove: (id: string) => void;
+}) {
+  return (
+    <div className="flex gap-2 items-start">
+      <div className="flex-1 min-w-0">
+        <Select
+          value={item.produto_id}
+          onValueChange={(produto_id) => onChange(item.id, { produto_id })}
+        >
+          <SelectTrigger><SelectValue placeholder="Produto" /></SelectTrigger>
+          <SelectContent>
+            {produtos.map((produto) => (
+              <SelectItem key={produto.id} value={produto.id}>
+                {produto.nome} ({produto.estoque_atual} {produto.unidade_medida})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <Input
+        type="number"
+        min="0"
+        step="any"
+        className="w-24 shrink-0"
+        placeholder="Qtd"
+        value={item.quantidade}
+        onChange={(event) => onChange(item.id, { quantidade: event.target.value })}
+      />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="shrink-0"
+        aria-label="Remover item"
+        onClick={() => onRemove(item.id)}
+      >
+        <Trash2 className="h-4 w-4 text-destructive" />
+      </Button>
+    </div>
+  );
+});
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   pendente: "secondary",
@@ -143,6 +194,14 @@ function RequisicoesPage() {
     () => new Map((produtos.data ?? []).map((produto) => [produto.id, produto])),
     [produtos.data],
   );
+
+  const atualizarItem = useCallback((id: string, patch: Partial<Omit<ItemDraft, "id">>) => {
+    setItens((atuais) => atuais.map((item) => item.id === id ? { ...item, ...patch } : item));
+  }, []);
+
+  const removerItem = useCallback((id: string) => {
+    setItens((atuais) => atuais.length === 1 ? [novoItem()] : atuais.filter((item) => item.id !== id));
+  }, []);
 
   function reset() {
     setRequisitante(user?.nome ?? ""); setSetor(user?.setor ?? ""); setObservacao(""); setExtra(false);
@@ -254,41 +313,13 @@ function RequisicoesPage() {
                   <Label>Itens</Label>
                   <div className="space-y-2">
                     {itens.map((it) => (
-                      <div key={it.id} className="flex gap-2 items-start">
-                        <div className="flex-1 min-w-0">
-                          <Select
-                            value={it.produto_id}
-                            onValueChange={(v) => {
-                              setItens((atuais) => atuais.map((item) => item.id === it.id ? { ...item, produto_id: v } : item));
-                            }}
-                          >
-                            <SelectTrigger><SelectValue placeholder="Produto" /></SelectTrigger>
-                            <SelectContent>
-                              {(produtos.data ?? []).map((p) => (
-                                <SelectItem key={p.id} value={p.id}>
-                                  {p.nome} ({p.estoque_atual} {p.unidade_medida})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <Input
-                          type="number" min="0" step="any" className="w-24 shrink-0"
-                          placeholder="Qtd"
-                          value={it.quantidade}
-                          onChange={(e) => {
-                            const quantidade = e.target.value;
-                            setItens((atuais) => atuais.map((item) => item.id === it.id ? { ...item, quantidade } : item));
-                          }}
-                        />
-                        <Button
-                          type="button" variant="ghost" size="icon" className="shrink-0"
-                          aria-label="Remover item"
-                          onClick={() => setItens((atuais) => atuais.length === 1 ? [novoItem()] : atuais.filter((item) => item.id !== it.id))}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
+                      <ItemRequisicao
+                        key={it.id}
+                        item={it}
+                        produtos={produtos.data ?? []}
+                        onChange={atualizarItem}
+                        onRemove={removerItem}
+                      />
                     ))}
                   </div>
                 </div>
