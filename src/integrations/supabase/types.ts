@@ -989,6 +989,36 @@ export type Database = {
         }
         Returns: string
       }
+      criar_requisicao_com_itens: {
+        Args: {
+          _extra: boolean
+          _itens: Json
+          _observacao: string
+          _requisitante: string
+          _setor: string
+        }
+        Returns: {
+          cancelada_em: string | null
+          created_at: string
+          data: string
+          extra: boolean
+          id: string
+          liberada_em: string | null
+          numero: number
+          observacao: string | null
+          requisitante: string
+          responsavel_liberacao: string | null
+          setor: string
+          status: Database["public"]["Enums"]["requisicao_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "requisicoes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       criar_usuario: {
         Args: {
           _ativo: boolean
