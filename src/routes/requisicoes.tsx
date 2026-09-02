@@ -115,95 +115,112 @@ function RequisicoesPage() {
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-1" /> Nova requisição</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader><DialogTitle>Nova requisição</DialogTitle></DialogHeader>
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-2">
-                  <Label>Requisitante (usuário logado)</Label>
-                  <Input value={requisitante} readOnly disabled />
-                </div>
-                <div className="grid gap-2">
-                  <Label>Destino / Setor</Label>
-                  <Select value={setor} onValueChange={setSetor}>
-                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    <SelectContent>
-                      {setoresAtivos.length === 0 && (
-                        <div className="px-2 py-3 text-xs text-muted-foreground">
-                          Cadastre setores em Configurações
-                        </div>
-                      )}
-                      {setoresAtivos.map((s) => (
-                        <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+          <DialogContent className="max-w-2xl flex flex-col max-h-[90dvh] p-0">
+            <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
+              <DialogTitle>Nova requisição</DialogTitle>
+            </DialogHeader>
+
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+              <div className="px-6 py-2 shrink-0 grid gap-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-2">
+                    <Label>Requisitante (usuário logado)</Label>
+                    <Input value={requisitante} readOnly disabled />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Destino / Setor</Label>
+                    <Select value={setor} onValueChange={setSetor}>
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        {setoresAtivos.length === 0 && (
+                          <div className="px-2 py-3 text-xs text-muted-foreground">
+                            Cadastre setores em Configurações
+                          </div>
+                        )}
+                        {setoresAtivos.map((s) => (
+                          <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Itens</Label>
+              <div className="flex-1 min-h-0 overflow-y-auto px-6 py-2">
                 <div className="space-y-2">
-                  {itens.map((it, idx) => (
-                    <div key={idx} className="flex gap-2 items-start">
-                      <div className="flex-1">
-                        <Select
-                          value={it.produto_id}
-                          onValueChange={(v) => {
-                            const copy = [...itens]; copy[idx] = { ...copy[idx], produto_id: v }; setItens(copy);
+                  <Label>Itens</Label>
+                  <div className="space-y-2">
+                    {itens.map((it, idx) => (
+                      <div key={idx} className="flex gap-2 items-start">
+                        <div className="flex-1 min-w-0">
+                          <Select
+                            value={it.produto_id}
+                            onValueChange={(v) => {
+                              const copy = [...itens]; copy[idx] = { ...copy[idx], produto_id: v }; setItens(copy);
+                            }}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Produto" /></SelectTrigger>
+                            <SelectContent>
+                              {(produtos.data ?? []).map((p) => (
+                                <SelectItem key={p.id} value={p.id}>
+                                  {p.nome} ({p.estoque_atual} {p.unidade_medida})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Input
+                          type="number" min="0" step="any" className="w-24 shrink-0"
+                          placeholder="Qtd"
+                          value={it.quantidade}
+                          onChange={(e) => {
+                            const copy = [...itens]; copy[idx] = { ...copy[idx], quantidade: e.target.value }; setItens(copy);
                           }}
+                        />
+                        <Button
+                          type="button" variant="ghost" size="icon" className="shrink-0"
+                          onClick={() => setItens(itens.length === 1 ? [{ produto_id: "", quantidade: "" }] : itens.filter((_, i) => i !== idx))}
                         >
-                          <SelectTrigger><SelectValue placeholder="Produto" /></SelectTrigger>
-                          <SelectContent>
-                            {(produtos.data ?? []).map((p) => (
-                              <SelectItem key={p.id} value={p.id}>
-                                {p.nome} ({p.estoque_atual} {p.unidade_medida})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
-                      <Input
-                        type="number" min="0" step="any" className="w-24"
-                        placeholder="Qtd"
-                        value={it.quantidade}
-                        onChange={(e) => {
-                          const copy = [...itens]; copy[idx] = { ...copy[idx], quantidade: e.target.value }; setItens(copy);
-                        }}
-                      />
-                      <Button
-                        type="button" variant="ghost" size="icon"
-                        onClick={() => setItens(itens.length === 1 ? [{ produto_id: "", quantidade: "" }] : itens.filter((_, i) => i !== idx))}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-6 py-2 shrink-0 grid gap-4">
+                <label className="flex items-start gap-3 rounded-md border p-3 cursor-pointer">
+                  <Checkbox checked={extra} onCheckedChange={(v) => setExtra(v === true)} />
+                  <span className="grid gap-0.5">
+                    <span className="text-sm font-medium">Requisição extra / fora do horário</span>
+                    <span className="text-xs text-muted-foreground">
+                      Marque quando o pedido for feito fora do horário padrão de requisição.
+                    </span>
+                  </span>
+                </label>
+
+                <div className="grid gap-2">
+                  <Label>Observação</Label>
+                  <Textarea rows={2} value={observacao} onChange={(e) => setObservacao(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t px-6 py-4 shrink-0 bg-background">
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="text-sm text-muted-foreground">
+                  {totalItens} {totalItens === 1 ? "item" : "itens"} · Total: {totalUnidades} unidades
+                </div>
+                <div className="flex flex-wrap items-center justify-end gap-2">
                   <Button type="button" variant="outline" size="sm" onClick={() => setItens([...itens, { produto_id: "", quantidade: "" }])}>
                     <Plus className="h-4 w-4 mr-1" /> Adicionar item
                   </Button>
+                  <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+                  <Button onClick={salvar} disabled={criar.isPending}>Criar requisição</Button>
                 </div>
               </div>
-
-              <label className="flex items-start gap-3 rounded-md border p-3 cursor-pointer">
-                <Checkbox checked={extra} onCheckedChange={(v) => setExtra(v === true)} />
-                <span className="grid gap-0.5">
-                  <span className="text-sm font-medium">Requisição extra / fora do horário</span>
-                  <span className="text-xs text-muted-foreground">
-                    Marque quando o pedido for feito fora do horário padrão de requisição.
-                  </span>
-                </span>
-              </label>
-
-              <div className="grid gap-2">
-                <Label>Observação</Label>
-                <Textarea rows={2} value={observacao} onChange={(e) => setObservacao(e.target.value)} />
-              </div>
             </div>
-            <DialogFooter>
-              <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-              <Button onClick={salvar} disabled={criar.isPending}>Criar requisição</Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
