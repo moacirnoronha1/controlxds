@@ -181,19 +181,8 @@ function AjustesPage() {
             className="pl-9"
           />
         </div>
-        <Select value={filtroTipo} onValueChange={(v) => setFiltroTipo(v as typeof filtroTipo)}>
-          <SelectTrigger className="w-[180px]">
-            <SlidersHorizontal className="h-4 w-4 mr-2" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os tipos</SelectItem>
-            <SelectItem value="entrada">Entrada</SelectItem>
-            <SelectItem value="saida">Saída</SelectItem>
-            <SelectItem value="correcao">Correção</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
+
 
       <Card className="p-0 overflow-x-auto">
         <Table>
