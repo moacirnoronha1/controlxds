@@ -16,12 +16,12 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Check, X, SlidersHorizontal, Search } from "lucide-react";
+import { Plus, Check, X, Search } from "lucide-react";
 import { useAuth, can } from "@/hooks/use-auth";
 import { useProdutos, useLocais, useLotes } from "@/lib/estoque";
 import {
   useAjustes, useCriarAjuste, useAprovarAjuste, useRecusarAjuste,
-  AJUSTE_TIPO_LABEL, AJUSTE_STATUS_LABEL,
+  AJUSTE_STATUS_LABEL,
   type AjusteTipo, type AjusteStatus,
 } from "@/lib/ajustes";
 import { toast } from "sonner";
