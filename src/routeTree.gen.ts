@@ -18,6 +18,7 @@ import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MovimentacoesRouteImport } from './routes/movimentacoes'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as InventarioRouteImport } from './routes/inventario'
+import { Route as IndicadoresRouteImport } from './routes/indicadores'
 import { Route as EntradasRouteImport } from './routes/entradas'
 import { Route as EmprestimosRouteImport } from './routes/emprestimos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
@@ -72,6 +73,11 @@ const MapaRoute = MapaRouteImport.update({
 const InventarioRoute = InventarioRouteImport.update({
   id: '/inventario',
   path: '/inventario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndicadoresRoute = IndicadoresRouteImport.update({
+  id: '/indicadores',
+  path: '/indicadores',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntradasRoute = EntradasRouteImport.update({
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof ConfiguracoesRoute
   '/emprestimos': typeof EmprestimosRoute
   '/entradas': typeof EntradasRoute
+  '/indicadores': typeof IndicadoresRoute
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/emprestimos': typeof EmprestimosRoute
   '/entradas': typeof EntradasRoute
+  '/indicadores': typeof IndicadoresRoute
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/configuracoes': typeof ConfiguracoesRoute
   '/emprestimos': typeof EmprestimosRoute
   '/entradas': typeof EntradasRoute
+  '/indicadores': typeof IndicadoresRoute
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/emprestimos'
     | '/entradas'
+    | '/indicadores'
     | '/inventario'
     | '/mapa'
     | '/movimentacoes'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/emprestimos'
     | '/entradas'
+    | '/indicadores'
     | '/inventario'
     | '/mapa'
     | '/movimentacoes'
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/emprestimos'
     | '/entradas'
+    | '/indicadores'
     | '/inventario'
     | '/mapa'
     | '/movimentacoes'
@@ -264,6 +276,7 @@ export interface RootRouteChildren {
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   EmprestimosRoute: typeof EmprestimosRoute
   EntradasRoute: typeof EntradasRoute
+  IndicadoresRoute: typeof IndicadoresRoute
   InventarioRoute: typeof InventarioRoute
   MapaRoute: typeof MapaRoute
   MovimentacoesRoute: typeof MovimentacoesRoute
@@ -340,6 +353,13 @@ declare module '@tanstack/react-router' {
       path: '/inventario'
       fullPath: '/inventario'
       preLoaderRoute: typeof InventarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/indicadores': {
+      id: '/indicadores'
+      path: '/indicadores'
+      fullPath: '/indicadores'
+      preLoaderRoute: typeof IndicadoresRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entradas': {
@@ -424,6 +444,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracoesRoute: ConfiguracoesRoute,
   EmprestimosRoute: EmprestimosRoute,
   EntradasRoute: EntradasRoute,
+  IndicadoresRoute: IndicadoresRoute,
   InventarioRoute: InventarioRoute,
   MapaRoute: MapaRoute,
   MovimentacoesRoute: MovimentacoesRoute,
