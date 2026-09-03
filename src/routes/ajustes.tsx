@@ -108,7 +108,6 @@ function AjustesPage() {
     setProdutoId("");
     setLocalId("");
     setLoteId("");
-    setTipo("correcao");
     setQuantidade("");
     setMotivo("");
   }
@@ -117,9 +116,10 @@ function AjustesPage() {
     if (!user) return toast.error("Usuário não identificado");
     if (!produtoId) return toast.error("Selecione o produto");
     const qtd = Number(quantidade);
-    if (!Number.isFinite(qtd) || qtd < 0) return toast.error("Quantidade inválida");
-    if (tipo !== "correcao" && qtd <= 0) return toast.error("Quantidade deve ser maior que zero");
+    if (quantidade === "" || !Number.isFinite(qtd) || qtd < 0)
+      return toast.error("Informe o estoque atual contado");
     if (!motivo.trim()) return toast.error("Informe o motivo do ajuste");
+
 
     await criar.mutateAsync({
       produto_id: produtoId,
