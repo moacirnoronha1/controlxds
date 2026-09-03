@@ -323,18 +323,11 @@ function AjustesPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
-                <Label>Tipo</Label>
-                <Select value={tipo} onValueChange={(v) => setTipo(v as AjusteTipo)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="entrada">Entrada</SelectItem>
-                    <SelectItem value="saida">Saída</SelectItem>
-                    <SelectItem value="correcao">Correção (saldo final)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Estoque do sistema</Label>
+                <Input value={produtoId ? String(saldoSistema) : ""} readOnly disabled />
               </div>
               <div className="grid gap-1.5">
-                <Label>Quantidade</Label>
+                <Label>Estoque atual contado</Label>
                 <Input
                   type="number"
                   min="0"
@@ -344,6 +337,16 @@ function AjustesPage() {
                 />
               </div>
             </div>
+
+            {produtoId && diferenca !== null && (
+              <p className="text-sm">
+                Diferença calculada:{" "}
+                <strong className={diferenca < 0 ? "text-destructive" : ""}>
+                  {diferenca > 0 ? "+" : ""}{diferenca} {produtoSel?.unidade_medida ?? ""}
+                </strong>{" "}
+                — estoque final ficará <strong>{informado}</strong>.
+              </p>
+            )}
 
             <div className="grid gap-1.5">
               <Label>Local de estoque</Label>
@@ -357,7 +360,7 @@ function AjustesPage() {
               </Select>
             </div>
 
-            {tipo !== "entrada" && (
+            {(diferenca === null || diferenca < 0) && (
               <div className="grid gap-1.5">
                 <Label>Lote / validade (opcional)</Label>
                 <Select value={loteId} onValueChange={setLoteId} disabled={!produtoId}>
@@ -377,6 +380,7 @@ function AjustesPage() {
                 </Select>
               </div>
             )}
+
 
             <div className="grid gap-1.5">
               <Label>Motivo</Label>
