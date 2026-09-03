@@ -16,12 +16,12 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Check, X, SlidersHorizontal, Search } from "lucide-react";
+import { Plus, Check, X, Search } from "lucide-react";
 import { useAuth, can } from "@/hooks/use-auth";
 import { useProdutos, useLocais, useLotes } from "@/lib/estoque";
 import {
   useAjustes, useCriarAjuste, useAprovarAjuste, useRecusarAjuste,
-  AJUSTE_TIPO_LABEL, AJUSTE_STATUS_LABEL,
+  AJUSTE_STATUS_LABEL,
   type AjusteTipo, type AjusteStatus,
 } from "@/lib/ajustes";
 import { toast } from "sonner";
@@ -72,13 +72,12 @@ function AjustesPage() {
 
   const [aba, setAba] = useState<AjusteStatus>("pendente");
   const [busca, setBusca] = useState("");
-  const [filtroTipo, setFiltroTipo] = useState<"todos" | AjusteTipo>("todos");
 
   const [open, setOpen] = useState(false);
   const [produtoId, setProdutoId] = useState("");
   const [localId, setLocalId] = useState("");
   const [loteId, setLoteId] = useState("");
-  const [tipo, setTipo] = useState<AjusteTipo>("correcao");
+  const tipo: AjusteTipo = "correcao";
   const [quantidade, setQuantidade] = useState("");
   const [motivo, setMotivo] = useState("");
 
@@ -88,15 +87,20 @@ function AjustesPage() {
   const lotes = useLotes(produtoId || undefined);
   const lotesDisponiveis = (lotes.data ?? []).filter((l) => Number(l.saldo) > 0);
 
+  const produtoSel = (produtos.data ?? []).find((p) => p.id === produtoId);
+  const saldoSistema = Number(produtoSel?.estoque_atual ?? 0);
+  const informado = Number(quantidade);
+  const diferenca = Number.isFinite(informado) && quantidade !== "" ? informado - saldoSistema : null;
+
   const lista = useMemo(() => {
     const q = busca.trim().toLowerCase();
     return (ajustes.data ?? []).filter(
       (a) =>
         a.status === aba &&
-        (filtroTipo === "todos" || a.tipo === filtroTipo) &&
         (!q || (a.produtos?.nome ?? "").toLowerCase().includes(q)),
     );
-  }, [ajustes.data, aba, filtroTipo, busca]);
+  }, [ajustes.data, aba, busca]);
+
 
   const pendentes = (ajustes.data ?? []).filter((a) => a.status === "pendente").length;
 
@@ -104,7 +108,6 @@ function AjustesPage() {
     setProdutoId("");
     setLocalId("");
     setLoteId("");
-    setTipo("correcao");
     setQuantidade("");
     setMotivo("");
   }
@@ -113,9 +116,10 @@ function AjustesPage() {
     if (!user) return toast.error("Usuário não identificado");
     if (!produtoId) return toast.error("Selecione o produto");
     const qtd = Number(quantidade);
-    if (!Number.isFinite(qtd) || qtd < 0) return toast.error("Quantidade inválida");
-    if (tipo !== "correcao" && qtd <= 0) return toast.error("Quantidade deve ser maior que zero");
+    if (quantidade === "" || !Number.isFinite(qtd) || qtd < 0)
+      return toast.error("Informe o estoque atual contado");
     if (!motivo.trim()) return toast.error("Informe o motivo do ajuste");
+
 
     await criar.mutateAsync({
       produto_id: produtoId,
@@ -177,19 +181,8 @@ function AjustesPage() {
             className="pl-9"
           />
         </div>
-        <Select value={filtroTipo} onValueChange={(v) => setFiltroTipo(v as typeof filtroTipo)}>
-          <SelectTrigger className="w-[180px]">
-            <SlidersHorizontal className="h-4 w-4 mr-2" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os tipos</SelectItem>
-            <SelectItem value="entrada">Entrada</SelectItem>
-            <SelectItem value="saida">Saída</SelectItem>
-            <SelectItem value="correcao">Correção</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
+
 
       <Card className="p-0 overflow-x-auto">
         <Table>
@@ -199,8 +192,9 @@ function AjustesPage() {
               <TableHead>Produto</TableHead>
               <TableHead>Local</TableHead>
               <TableHead>Lote/Validade</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead className="text-right">Qtd</TableHead>
+              <TableHead className="text-right">Estoque informado</TableHead>
+              <TableHead className="text-right">Diferença</TableHead>
+
               <TableHead>Motivo</TableHead>
               <TableHead>Solicitado por</TableHead>
               {aba !== "pendente" && (
@@ -230,12 +224,17 @@ function AjustesPage() {
                     ? new Date(a.lotes.validade + "T00:00:00").toLocaleDateString("pt-BR")
                     : "—"}
                 </TableCell>
-                <TableCell>
-                  <Badge variant="outline">{AJUSTE_TIPO_LABEL[a.tipo]}</Badge>
-                </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {a.quantidade} {a.produtos?.unidade_medida ?? ""}
                 </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {a.saldo_antes != null
+                    ? `${Number(a.saldo_depois ?? a.quantidade) - Number(a.saldo_antes) > 0 ? "+" : ""}${
+                        Number(a.saldo_depois ?? a.quantidade) - Number(a.saldo_antes)
+                      }`
+                    : "—"}
+                </TableCell>
+
                 <TableCell className="text-muted-foreground text-xs max-w-[220px]">
                   {a.motivo ?? "—"}
                   {a.decisao_motivo ? (
@@ -324,18 +323,11 @@ function AjustesPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
-                <Label>Tipo</Label>
-                <Select value={tipo} onValueChange={(v) => setTipo(v as AjusteTipo)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="entrada">Entrada</SelectItem>
-                    <SelectItem value="saida">Saída</SelectItem>
-                    <SelectItem value="correcao">Correção (saldo final)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Estoque do sistema</Label>
+                <Input value={produtoId ? String(saldoSistema) : ""} readOnly disabled />
               </div>
               <div className="grid gap-1.5">
-                <Label>Quantidade</Label>
+                <Label>Estoque atual contado</Label>
                 <Input
                   type="number"
                   min="0"
@@ -345,6 +337,16 @@ function AjustesPage() {
                 />
               </div>
             </div>
+
+            {produtoId && diferenca !== null && (
+              <p className="text-sm">
+                Diferença calculada:{" "}
+                <strong className={diferenca < 0 ? "text-destructive" : ""}>
+                  {diferenca > 0 ? "+" : ""}{diferenca} {produtoSel?.unidade_medida ?? ""}
+                </strong>{" "}
+                — estoque final ficará <strong>{informado}</strong>.
+              </p>
+            )}
 
             <div className="grid gap-1.5">
               <Label>Local de estoque</Label>
@@ -358,7 +360,7 @@ function AjustesPage() {
               </Select>
             </div>
 
-            {tipo !== "entrada" && (
+            {(diferenca === null || diferenca < 0) && (
               <div className="grid gap-1.5">
                 <Label>Lote / validade (opcional)</Label>
                 <Select value={loteId} onValueChange={setLoteId} disabled={!produtoId}>
@@ -378,6 +380,7 @@ function AjustesPage() {
                 </Select>
               </div>
             )}
+
 
             <div className="grid gap-1.5">
               <Label>Motivo</Label>
