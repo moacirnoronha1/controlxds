@@ -192,8 +192,9 @@ function AjustesPage() {
               <TableHead>Produto</TableHead>
               <TableHead>Local</TableHead>
               <TableHead>Lote/Validade</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead className="text-right">Qtd</TableHead>
+              <TableHead className="text-right">Estoque informado</TableHead>
+              <TableHead className="text-right">Diferença</TableHead>
+
               <TableHead>Motivo</TableHead>
               <TableHead>Solicitado por</TableHead>
               {aba !== "pendente" && (
