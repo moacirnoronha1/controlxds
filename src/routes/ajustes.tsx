@@ -224,12 +224,17 @@ function AjustesPage() {
                     ? new Date(a.lotes.validade + "T00:00:00").toLocaleDateString("pt-BR")
                     : "—"}
                 </TableCell>
-                <TableCell>
-                  <Badge variant="outline">{AJUSTE_TIPO_LABEL[a.tipo]}</Badge>
-                </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {a.quantidade} {a.produtos?.unidade_medida ?? ""}
                 </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {a.saldo_antes != null
+                    ? `${Number(a.saldo_depois ?? a.quantidade) - Number(a.saldo_antes) > 0 ? "+" : ""}${
+                        Number(a.saldo_depois ?? a.quantidade) - Number(a.saldo_antes)
+                      }`
+                    : "—"}
+                </TableCell>
+
                 <TableCell className="text-muted-foreground text-xs max-w-[220px]">
                   {a.motivo ?? "—"}
                   {a.decisao_motivo ? (
