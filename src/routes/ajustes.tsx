@@ -72,13 +72,12 @@ function AjustesPage() {
 
   const [aba, setAba] = useState<AjusteStatus>("pendente");
   const [busca, setBusca] = useState("");
-  const [filtroTipo, setFiltroTipo] = useState<"todos" | AjusteTipo>("todos");
 
   const [open, setOpen] = useState(false);
   const [produtoId, setProdutoId] = useState("");
   const [localId, setLocalId] = useState("");
   const [loteId, setLoteId] = useState("");
-  const [tipo, setTipo] = useState<AjusteTipo>("correcao");
+  const tipo: AjusteTipo = "correcao";
   const [quantidade, setQuantidade] = useState("");
   const [motivo, setMotivo] = useState("");
 
@@ -88,15 +87,20 @@ function AjustesPage() {
   const lotes = useLotes(produtoId || undefined);
   const lotesDisponiveis = (lotes.data ?? []).filter((l) => Number(l.saldo) > 0);
 
+  const produtoSel = (produtos.data ?? []).find((p) => p.id === produtoId);
+  const saldoSistema = Number(produtoSel?.estoque_atual ?? 0);
+  const informado = Number(quantidade);
+  const diferenca = Number.isFinite(informado) && quantidade !== "" ? informado - saldoSistema : null;
+
   const lista = useMemo(() => {
     const q = busca.trim().toLowerCase();
     return (ajustes.data ?? []).filter(
       (a) =>
         a.status === aba &&
-        (filtroTipo === "todos" || a.tipo === filtroTipo) &&
         (!q || (a.produtos?.nome ?? "").toLowerCase().includes(q)),
     );
-  }, [ajustes.data, aba, filtroTipo, busca]);
+  }, [ajustes.data, aba, busca]);
+
 
   const pendentes = (ajustes.data ?? []).filter((a) => a.status === "pendente").length;
 
