@@ -223,7 +223,7 @@ function AvariasPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Avarias</h1>
           <p className="text-sm text-muted-foreground">
-            Registre produtos vencidos, quebrados, danificados ou perdidos, separando chegada e pós-chegada.
+            Registre avarias na chegada, depois da chegada e produtos que não chegaram (não entregues).
           </p>
         </div>
         {podeCriar && (
@@ -593,7 +593,9 @@ function NovaAvariaDialog({
           <DialogDescription>
             {momento === "na_chegada"
               ? "Na chegada: não dá baixa no estoque; abre pendência com o barco/transportadora."
-              : "Depois da chegada: baixa apenas do lote selecionado."}
+              : momento === "nao_chegou"
+                ? "Produto não chegou: não entra nem dá baixa no estoque; abre pendência com o barco/transportadora."
+                : "Depois da chegada: baixa apenas do lote selecionado."}
           </DialogDescription>
         </DialogHeader>
 
@@ -604,8 +606,9 @@ function NovaAvariaDialog({
               <Select value={momento} onValueChange={(v) => setMomento(v as Momento)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="na_chegada">Na chegada</SelectItem>
-                  <SelectItem value="depois_chegada">Depois da chegada</SelectItem>
+                  <SelectItem value="na_chegada">Avaria na chegada</SelectItem>
+                  <SelectItem value="depois_chegada">Avaria depois da chegada</SelectItem>
+                  <SelectItem value="nao_chegou">Produto não chegou</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -625,7 +628,7 @@ function NovaAvariaDialog({
                 </SelectContent>
               </Select>
             </div>
-            {momento === "na_chegada" ? (
+            {momento !== "depois_chegada" ? (
               <div className="space-y-1">
                 <Label>Local de estoque</Label>
                 <Select value={localId || "none"} onValueChange={(v) => setLocalId(v === "none" ? "" : v)}>
@@ -679,7 +682,7 @@ function NovaAvariaDialog({
           <div className="grid sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label>Tipo de avaria</Label>
-              <Select value={tipo} onValueChange={(v) => setTipo(v as Tipo)}>
+              <Select value={tipo} onValueChange={(v) => setTipo(v as Tipo)} disabled={momento === "nao_chegou"}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.keys(TIPO_LABEL) as Tipo[]).map((t) => (
@@ -694,7 +697,43 @@ function NovaAvariaDialog({
             </div>
           </div>
 
-          {momento === "na_chegada" ? (
+          {momento === "nao_chegou" ? (
+            <>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label>Barco / Transportadora *</Label>
+                  <Input value={barco} onChange={(e) => setBarco(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label>Nº do manifesto</Label>
+                  <Input value={manifesto} onChange={(e) => setManifesto(e.target.value)} />
+                </div>
+              </div>
+              <div className="grid sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label>Quantidade prevista *</Label>
+                  <Input type="number" inputMode="decimal" value={qtdPrevista} onChange={(e) => setQtdPrevista(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label>Quantidade recebida</Label>
+                  <Input type="number" inputMode="decimal" value={qtdRecebida} onChange={(e) => setQtdRecebida(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label>Não entregue</Label>
+                  <div className="h-9 px-3 flex items-center rounded-md border border-border bg-muted/40 text-sm tabular-nums">
+                    {naoEntregue}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label>Valor estimado (R$)</Label>
+                <Input type="number" inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                O produto não entregue <b>não entra e não dá baixa</b> no estoque. Fica como pendência contra o barco/transportadora.
+              </p>
+            </>
+          ) : momento === "na_chegada" ? (
             <>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -787,7 +826,7 @@ function DetalheDialog({
           <DialogTitle>{avaria.produtos?.nome ?? "Avaria"}</DialogTitle>
           <DialogDescription>
             {avaria.data} · {TIPO_LABEL[avaria.tipo]} ·{" "}
-            {avaria.momento === "na_chegada" ? "Na chegada" : "Depois da chegada"}
+            {MOMENTO_LABEL[avaria.momento]}
           </DialogDescription>
         </DialogHeader>
 
@@ -795,7 +834,15 @@ function DetalheDialog({
           <div className="grid sm:grid-cols-2 gap-3">
             <Info label="Local" value={avaria.locais_estoque?.nome ?? "—"} />
             <Info label="Responsável" value={avaria.responsavel ?? "—"} />
-            {avaria.momento === "na_chegada" ? (
+            {avaria.momento === "nao_chegou" ? (
+              <>
+                <Info label="Barco/Transp." value={avaria.barco ?? "—"} />
+                <Info label="Manifesto" value={avaria.manifesto ?? "—"} />
+                <Info label="Prevista" value={String(avaria.quantidade_prevista ?? 0)} />
+                <Info label="Recebida" value={String(avaria.quantidade_recebida ?? 0)} />
+                <Info label="Não entregue" value={String(avaria.quantidade)} />
+              </>
+            ) : avaria.momento === "na_chegada" ? (
               <>
                 <Info label="Barco/Transp." value={avaria.barco ?? "—"} />
                 <Info label="Manifesto" value={avaria.manifesto ?? "—"} />
@@ -832,7 +879,7 @@ function DetalheDialog({
             )}
           </div>
 
-          {avaria.momento === "na_chegada" && (
+          {avaria.momento !== "depois_chegada" && (
             <div>
               <div className="text-xs text-muted-foreground mb-2">Tratativa com o barco/transportadora</div>
               <div className="grid sm:grid-cols-2 gap-2">
