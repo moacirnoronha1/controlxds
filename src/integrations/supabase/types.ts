@@ -117,6 +117,7 @@ export type Database = {
           quantidade: number
           quantidade_aproveitada: number | null
           quantidade_avariada: number | null
+          quantidade_prevista: number | null
           quantidade_recebida: number | null
           responsavel: string | null
           status: Database["public"]["Enums"]["avaria_status"]
@@ -147,6 +148,7 @@ export type Database = {
           quantidade?: number
           quantidade_aproveitada?: number | null
           quantidade_avariada?: number | null
+          quantidade_prevista?: number | null
           quantidade_recebida?: number | null
           responsavel?: string | null
           status?: Database["public"]["Enums"]["avaria_status"]
@@ -177,6 +179,7 @@ export type Database = {
           quantidade?: number
           quantidade_aproveitada?: number | null
           quantidade_avariada?: number | null
+          quantidade_prevista?: number | null
           quantidade_recebida?: number | null
           responsavel?: string | null
           status?: Database["public"]["Enums"]["avaria_status"]
@@ -1109,9 +1112,10 @@ export type Database = {
       ajuste_status: "pendente" | "aprovado" | "recusado"
       ajuste_tipo: "entrada" | "saida" | "correcao"
       app_role: "admin" | "estoquista" | "leitor"
-      avaria_momento: "na_chegada" | "depois_chegada"
+      avaria_momento: "na_chegada" | "depois_chegada" | "nao_chegou"
       avaria_status:
         | "pendente"
+        | "comunicado"
         | "em_analise"
         | "aprovado"
         | "recusado"
@@ -1124,6 +1128,7 @@ export type Database = {
         | "perda_operacional"
         | "divergencia_contagem"
         | "outro"
+        | "nao_entregue"
       emprestimo_status: "pendente" | "devolvido" | "atrasado"
       emprestimo_tipo: "emprestamos" | "tomamos_emprestado"
       inventario_status: "aberto" | "em_conferencia" | "fechado"
@@ -1262,9 +1267,10 @@ export const Constants = {
       ajuste_status: ["pendente", "aprovado", "recusado"],
       ajuste_tipo: ["entrada", "saida", "correcao"],
       app_role: ["admin", "estoquista", "leitor"],
-      avaria_momento: ["na_chegada", "depois_chegada"],
+      avaria_momento: ["na_chegada", "depois_chegada", "nao_chegou"],
       avaria_status: [
         "pendente",
+        "comunicado",
         "em_analise",
         "aprovado",
         "recusado",
@@ -1278,6 +1284,7 @@ export const Constants = {
         "perda_operacional",
         "divergencia_contagem",
         "outro",
+        "nao_entregue",
       ],
       emprestimo_status: ["pendente", "devolvido", "atrasado"],
       emprestimo_tipo: ["emprestamos", "tomamos_emprestado"],
