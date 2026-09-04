@@ -93,6 +93,104 @@ export type Database = {
           },
         ]
       }
+      amostragem_itens: {
+        Row: {
+          amostragem_id: string
+          categoria: string | null
+          contagem_fisica: number | null
+          created_at: string
+          diferenca: number | null
+          estoque_sistema: number
+          id: string
+          local_nome: string | null
+          observacao: string | null
+          produto_id: string
+          updated_at: string
+        }
+        Insert: {
+          amostragem_id: string
+          categoria?: string | null
+          contagem_fisica?: number | null
+          created_at?: string
+          diferenca?: number | null
+          estoque_sistema?: number
+          id?: string
+          local_nome?: string | null
+          observacao?: string | null
+          produto_id: string
+          updated_at?: string
+        }
+        Update: {
+          amostragem_id?: string
+          categoria?: string | null
+          contagem_fisica?: number | null
+          created_at?: string
+          diferenca?: number | null
+          estoque_sistema?: number
+          id?: string
+          local_nome?: string | null
+          observacao?: string | null
+          produto_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "amostragem_itens_amostragem_id_fkey"
+            columns: ["amostragem_id"]
+            isOneToOne: false
+            referencedRelation: "amostragens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "amostragem_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      amostragens: {
+        Row: {
+          created_at: string
+          data: string
+          fechado_em: string | null
+          id: string
+          local_id: string | null
+          observacao: string | null
+          responsavel: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: string
+          fechado_em?: string | null
+          id?: string
+          local_id?: string | null
+          observacao?: string | null
+          responsavel?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          fechado_em?: string | null
+          id?: string
+          local_id?: string | null
+          observacao?: string | null
+          responsavel?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "amostragens_local_id_fkey"
+            columns: ["local_id"]
+            isOneToOne: false
+            referencedRelation: "locais_estoque"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       avarias: {
         Row: {
           barco: string | null
