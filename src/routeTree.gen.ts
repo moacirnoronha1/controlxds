@@ -24,6 +24,7 @@ import { Route as EmprestimosRouteImport } from './routes/emprestimos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AvariasRouteImport } from './routes/avarias'
 import { Route as AprovacoesRouteImport } from './routes/aprovacoes'
+import { Route as AmostragemRouteImport } from './routes/amostragem'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as IndexRouteImport } from './routes/index'
@@ -105,6 +106,11 @@ const AprovacoesRoute = AprovacoesRouteImport.update({
   path: '/aprovacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AmostragemRoute = AmostragemRouteImport.update({
+  id: '/amostragem',
+  path: '/amostragem',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlertasRoute = AlertasRouteImport.update({
   id: '/alertas',
   path: '/alertas',
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/alertas': typeof AlertasRoute
+  '/amostragem': typeof AmostragemRoute
   '/aprovacoes': typeof AprovacoesRoute
   '/avarias': typeof AvariasRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/alertas': typeof AlertasRoute
+  '/amostragem': typeof AmostragemRoute
   '/aprovacoes': typeof AprovacoesRoute
   '/avarias': typeof AvariasRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/alertas': typeof AlertasRoute
+  '/amostragem': typeof AmostragemRoute
   '/aprovacoes': typeof AprovacoesRoute
   '/avarias': typeof AvariasRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -204,6 +213,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/alertas'
+    | '/amostragem'
     | '/aprovacoes'
     | '/avarias'
     | '/configuracoes'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/alertas'
+    | '/amostragem'
     | '/aprovacoes'
     | '/avarias'
     | '/configuracoes'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/alertas'
+    | '/amostragem'
     | '/aprovacoes'
     | '/avarias'
     | '/configuracoes'
@@ -271,6 +283,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AjustesRoute: typeof AjustesRoute
   AlertasRoute: typeof AlertasRoute
+  AmostragemRoute: typeof AmostragemRoute
   AprovacoesRoute: typeof AprovacoesRoute
   AvariasRoute: typeof AvariasRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
@@ -397,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AprovacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/amostragem': {
+      id: '/amostragem'
+      path: '/amostragem'
+      fullPath: '/amostragem'
+      preLoaderRoute: typeof AmostragemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alertas': {
       id: '/alertas'
       path: '/alertas'
@@ -439,6 +459,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AjustesRoute: AjustesRoute,
   AlertasRoute: AlertasRoute,
+  AmostragemRoute: AmostragemRoute,
   AprovacoesRoute: AprovacoesRoute,
   AvariasRoute: AvariasRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,

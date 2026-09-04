@@ -17,6 +17,7 @@ import {
   ShieldAlert,
   SlidersHorizontal,
   Gauge,
+  Dices,
 } from "lucide-react";
 
 import {
@@ -58,6 +59,7 @@ const items: Item[] = [
   { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: READ_OP },
   { title: "Indicadores", url: "/indicadores", icon: Gauge, roles: READ_OP },
   { title: "Inventário", url: "/inventario", icon: ClipboardCheck, roles: OP },
+  { title: "Amostragem", url: "/amostragem", icon: Dices, roles: OP },
   { title: "Ajustes", url: "/ajustes", icon: SlidersHorizontal, roles: OP },
   { title: "Aprovações", url: "/aprovacoes", icon: ClipboardCheck, roles: ["mestre", "lider"] },
 
