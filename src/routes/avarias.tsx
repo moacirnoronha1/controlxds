@@ -28,9 +28,9 @@ export const Route = createFileRoute("/avarias")({
   component: AvariasPage,
 });
 
-type Momento = "na_chegada" | "depois_chegada";
-type Tipo = "vencido" | "quebrado" | "danificado" | "perda_operacional" | "divergencia_contagem" | "outro";
-type Status = "pendente" | "em_analise" | "aprovado" | "recusado" | "descontado" | "resolvido";
+type Momento = "na_chegada" | "depois_chegada" | "nao_chegou";
+type Tipo = "nao_entregue" | "vencido" | "quebrado" | "danificado" | "perda_operacional" | "divergencia_contagem" | "outro";
+type Status = "pendente" | "comunicado" | "em_analise" | "aprovado" | "recusado" | "descontado" | "resolvido";
 
 type Avaria = {
   id: string;
@@ -43,6 +43,7 @@ type Avaria = {
   quantidade: number;
   barco: string | null;
   manifesto: string | null;
+  quantidade_prevista: number | null;
   quantidade_recebida: number | null;
   quantidade_avariada: number | null;
   quantidade_aproveitada: number | null;
@@ -63,7 +64,14 @@ type Avaria = {
   locais_estoque?: { nome: string } | null;
 };
 
+const MOMENTO_LABEL: Record<Momento, string> = {
+  na_chegada: "Avaria na chegada",
+  depois_chegada: "Avaria depois da chegada",
+  nao_chegou: "Produto não chegou",
+};
+
 const TIPO_LABEL: Record<Tipo, string> = {
+  nao_entregue: "Não entregue",
   vencido: "Vencido",
   quebrado: "Quebrado",
   danificado: "Danificado",
@@ -74,7 +82,8 @@ const TIPO_LABEL: Record<Tipo, string> = {
 
 const STATUS_LABEL: Record<Status, string> = {
   pendente: "Pendente",
-  em_analise: "Em análise",
+  comunicado: "Comunicado ao barco/transportadora",
+  em_analise: "Aguardando análise",
   aprovado: "Aprovado",
   recusado: "Recusado",
   descontado: "Descontado",
@@ -83,6 +92,7 @@ const STATUS_LABEL: Record<Status, string> = {
 
 const STATUS_VARIANT: Record<Status, "default" | "secondary" | "outline" | "destructive"> = {
   pendente: "secondary",
+  comunicado: "default",
   em_analise: "default",
   aprovado: "default",
   recusado: "destructive",
@@ -144,6 +154,7 @@ function AvariasPage() {
       aguardandoDesconto: rows.filter((r) => r.status === "aprovado").length,
       recusadas: rows.filter((r) => r.status === "recusado").length,
       depoisChegada: rows.filter((r) => r.momento === "depois_chegada").length,
+      naoChegou: rows.filter((r) => r.momento === "nao_chegou" && r.status !== "resolvido" && r.status !== "recusado").length,
     };
   }, [rows]);
 
@@ -167,7 +178,7 @@ function AvariasPage() {
         b.qtd += 1; b.valor += Number(r.valor_estimado) || 0;
         porBarco.set(r.barco, b);
       }
-      if (r.momento === "na_chegada" && (r.status === "aprovado" || r.status === "em_analise")) {
+      if (r.momento !== "depois_chegada" && (r.status === "aprovado" || r.status === "em_analise" || r.status === "comunicado")) {
         pendenteDesconto += Number(r.valor_estimado) || 0;
       }
     }
@@ -223,12 +234,13 @@ function AvariasPage() {
       </div>
 
       {/* Alertas */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <AlertaCard label="Chegada — pendentes" value={alertas.chegadaPendentes} tone="warn" />
         <AlertaCard label="Em análise" value={alertas.emAnalise} tone="info" />
         <AlertaCard label="Aguardando desconto" value={alertas.aguardandoDesconto} tone="info" />
         <AlertaCard label="Recusadas" value={alertas.recusadas} tone="danger" />
         <AlertaCard label="Depois da chegada" value={alertas.depoisChegada} tone="muted" />
+        <AlertaCard label="Produto não chegou" value={alertas.naoChegou} tone="danger" />
       </div>
 
       <Tabs defaultValue="lista">
@@ -324,9 +336,13 @@ function AvariasPage() {
                       <TableCell className="font-medium">{r.produtos?.nome ?? "—"}</TableCell>
                       <TableCell className="text-muted-foreground">{r.locais_estoque?.nome ?? "—"}</TableCell>
                       <TableCell>
-                        {r.momento === "na_chegada"
-                          ? <Badge variant="outline">Na chegada</Badge>
-                          : <Badge variant="secondary">Pós-chegada</Badge>}
+                        {r.momento === "na_chegada" ? (
+                          <Badge variant="outline">Na chegada</Badge>
+                        ) : r.momento === "nao_chegou" ? (
+                          <Badge variant="destructive">Não chegou</Badge>
+                        ) : (
+                          <Badge variant="secondary">Pós-chegada</Badge>
+                        )}
                       </TableCell>
                       <TableCell>{TIPO_LABEL[r.tipo]}</TableCell>
                       <TableCell className="text-right tabular-nums">
@@ -476,6 +492,7 @@ function NovaAvariaDialog({
   const [qtdRecebida, setQtdRecebida] = useState<string>("");
   const [qtdAvariada, setQtdAvariada] = useState<string>("");
   const [qtdAproveitada, setQtdAproveitada] = useState<string>("");
+  const [qtdPrevista, setQtdPrevista] = useState<string>("");
   const [valor, setValor] = useState<string>("");
   const [observacao, setObservacao] = useState("");
   const [responsavel, setResponsavel] = useState(defaultResponsavel);
@@ -492,10 +509,23 @@ function NovaAvariaDialog({
 
   // Reset lote quando troca produto ou momento
   useEffect(() => { setLoteId(""); }, [produtoId, momento]);
+  useEffect(() => {
+    if (momento === "nao_chegou") setTipo("nao_entregue");
+    else if (tipo === "nao_entregue") setTipo("quebrado");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [momento]);
+
+  const naoEntregue = Math.max(0, Number(qtdPrevista || 0) - Number(qtdRecebida || 0));
 
   async function save() {
     if (!produtoId) { toast.error("Selecione o produto"); return; }
-    if (momento === "na_chegada") {
+    if (momento === "nao_chegou") {
+      const prev = Number(qtdPrevista);
+      if (!(prev > 0)) { toast.error("Informe a quantidade prevista"); return; }
+      if (Number(qtdRecebida || 0) > prev) { toast.error("Recebida não pode ser maior que a prevista"); return; }
+      if (!(naoEntregue > 0)) { toast.error("Quantidade não entregue deve ser maior que zero"); return; }
+      if (!barco.trim()) { toast.error("Informe o barco/transportadora"); return; }
+    } else if (momento === "na_chegada") {
       const rec = Number(qtdRecebida), avr = Number(qtdAvariada);
       if (!(rec > 0)) { toast.error("Informe a quantidade recebida"); return; }
       if (!(avr > 0)) { toast.error("Informe a quantidade avariada"); return; }
@@ -512,6 +542,7 @@ function NovaAvariaDialog({
     setBusy(true);
     try {
       const isDepois = momento === "depois_chegada";
+      const isNaoChegou = momento === "nao_chegou";
       const valorCalc = valor
         ? Number(valor)
         : isDepois && loteSelecionado?.custo_unitario != null
@@ -524,10 +555,11 @@ function NovaAvariaDialog({
         momento,
         tipo,
         motivo: motivo || null,
-        quantidade: isDepois ? Number(quantidade) : Number(qtdAvariada) || 0,
-        barco: momento === "na_chegada" ? (barco || null) : null,
-        manifesto: momento === "na_chegada" ? (manifesto || null) : null,
-        quantidade_recebida: momento === "na_chegada" ? Number(qtdRecebida) : null,
+        quantidade: isNaoChegou ? naoEntregue : isDepois ? Number(quantidade) : Number(qtdAvariada) || 0,
+        barco: isDepois ? null : (barco || null),
+        manifesto: isDepois ? null : (manifesto || null),
+        quantidade_prevista: isNaoChegou ? Number(qtdPrevista) : null,
+        quantidade_recebida: isNaoChegou ? Number(qtdRecebida || 0) : momento === "na_chegada" ? Number(qtdRecebida) : null,
         quantidade_avariada: momento === "na_chegada" ? Number(qtdAvariada) : null,
         quantidade_aproveitada: momento === "na_chegada" ? (qtdAproveitada ? Number(qtdAproveitada) : 0) : null,
         valor_estimado: valorCalc,
@@ -538,9 +570,11 @@ function NovaAvariaDialog({
       const { error } = await supabase.from("avarias" as never).insert(payload as never);
       if (error) throw error;
       toast.success(
-        momento === "na_chegada"
-          ? "Avaria na chegada registrada (pendência aberta com o barco)"
-          : "Avaria registrada e baixa aplicada no lote selecionado"
+        isNaoChegou
+          ? "Produto não entregue registrado (pendência aberta com o barco)"
+          : momento === "na_chegada"
+            ? "Avaria na chegada registrada (pendência aberta com o barco)"
+            : "Avaria registrada e baixa aplicada no lote selecionado"
       );
       onSaved();
       onClose();
