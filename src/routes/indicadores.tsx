@@ -265,7 +265,7 @@ function IndicadoresPage() {
   );
 
   const avariasPendentes = avariasFiltradas.filter(
-    (a) => a.status === "pendente" || a.status === "em_analise",
+    (a) => a.status === "pendente" || a.status === "em_analise" || a.status === "comunicado",
   ).length;
 
   const avariasPorBarco = useMemo(() => {
