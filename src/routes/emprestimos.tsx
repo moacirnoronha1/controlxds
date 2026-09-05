@@ -20,7 +20,7 @@ import {
   Tabs, TabsList, TabsTrigger,
 } from "@/components/ui/tabs";
 import { Plus, ArrowLeftRight, ArrowRightLeft, CheckCircle2, Trash2 } from "lucide-react";
-import { useProdutos } from "@/lib/estoque";
+import { useProdutos, useLocais, useLotes } from "@/lib/estoque";
 import {
   useEmprestimos, useCriarEmprestimo, useDevolverEmprestimo, useDeleteEmprestimo,
   type EmprestimoTipo, type EmprestimoStatus,
@@ -60,6 +60,7 @@ function EmprestimosPage() {
   const criar = useCriarEmprestimo();
   const devolver = useDevolverEmprestimo();
   const remover = useDeleteEmprestimo();
+  const locais = useLocais();
 
   const [open, setOpen] = useState(false);
   const [filtro, setFiltro] = useState<Filtro>("todos");
@@ -67,6 +68,8 @@ function EmprestimosPage() {
   const [tipo, setTipo] = useState<EmprestimoTipo>("emprestamos");
   const [produtoId, setProdutoId] = useState<string>("");
   const [produtoNome, setProdutoNome] = useState("");
+  const [localId, setLocalId] = useState<string>("");
+  const [loteId, setLoteId] = useState<string>("");
   const [quantidade, setQuantidade] = useState("");
   const [unidade, setUnidade] = useState("");
   const [origem, setOrigem] = useState("");
@@ -74,6 +77,7 @@ function EmprestimosPage() {
   const [dataEmp, setDataEmp] = useState(() => new Date().toISOString().slice(0, 10));
   const [previsao, setPrevisao] = useState("");
   const [observacao, setObservacao] = useState("");
+  const lotes = useLotes(produtoId || undefined);
 
   const lista = useMemo(() => {
     const rows = emp.data ?? [];
@@ -85,6 +89,8 @@ function EmprestimosPage() {
     setTipo("emprestamos");
     setProdutoId("");
     setProdutoNome("");
+    setLocalId("");
+    setLoteId("");
     setQuantidade("");
     setUnidade("");
     setOrigem("");
@@ -97,22 +103,35 @@ function EmprestimosPage() {
   async function salvar() {
     const q = Number(quantidade);
     if (!user?.nome) return;
-    if (!produtoNome.trim() || !q || q <= 0) return;
+    if (!produtoId) {
+      toast.error("Selecione o produto do catálogo");
+      return;
+    }
+    if (!q || q <= 0) {
+      toast.error("Informe a quantidade");
+      return;
+    }
+    if (!localId) {
+      toast.error("Selecione o local de estoque");
+      return;
+    }
     if (!previsao) {
       toast.error("Informe a previsão de devolução");
       return;
     }
     await criar.mutateAsync({
       tipo,
-      produto_id: produtoId || null,
+      produto_id: produtoId,
       produto_nome: upper(produtoNome.trim()),
       quantidade: q,
       unidade_medida: unidade.trim() || null,
+      local_id: localId,
+      lote_id: tipo === "emprestamos" ? loteId || null : null,
       origem: origem.trim() || null,
       destino: destino.trim() || null,
-      responsavel: user?.nome ?? null,
+      responsavel: user.nome,
       data_emprestimo: dataEmp,
-      previsao_devolucao: previsao || null,
+      previsao_devolucao: previsao,
       observacao: observacao.trim() || null,
     });
     setOpen(false);
@@ -121,10 +140,12 @@ function EmprestimosPage() {
 
   function onProdutoChange(id: string) {
     setProdutoId(id);
+    setLoteId("");
     const p = produtos.data?.find((x) => x.id === id);
     if (p) {
       setProdutoNome(p.nome);
       setUnidade(p.unidade_medida);
+      if (p.local_padrao_id) setLocalId(p.local_padrao_id);
     }
   }
 
@@ -156,7 +177,7 @@ function EmprestimosPage() {
               </Tabs>
 
               <div className="grid gap-2">
-                <Label>Produto do catálogo (opcional)</Label>
+                <Label>Produto do catálogo <span className="text-destructive">*</span></Label>
                 <Select value={produtoId} onValueChange={onProdutoChange}>
                   <SelectTrigger><SelectValue placeholder="Selecione um produto cadastrado" /></SelectTrigger>
                   <SelectContent>
@@ -166,7 +187,7 @@ function EmprestimosPage() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Ou digite abaixo se o item não está no catálogo.
+                  O empréstimo movimenta o estoque, por isso o item precisa estar cadastrado.
                 </p>
               </div>
 
@@ -189,6 +210,42 @@ function EmprestimosPage() {
                 <div className="grid gap-2">
                   <Label>Responsável (usuário logado)</Label>
                   <Input value={user?.nome ?? ""} readOnly disabled />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label>Local de estoque <span className="text-destructive">*</span></Label>
+                  <Select value={localId} onValueChange={setLocalId}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o local" /></SelectTrigger>
+                    <SelectContent>
+                      {(locais.data ?? []).filter((l) => l.ativo).map((l) => (
+                        <SelectItem key={l.id} value={l.id}>{l.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Lote {tipo === "emprestamos" ? "(opcional — senão usa validade mais próxima)" : "(gerado automaticamente)"}</Label>
+                  <Select
+                    value={loteId}
+                    onValueChange={setLoteId}
+                    disabled={tipo !== "emprestamos" || !produtoId}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Automático (FEFO)" /></SelectTrigger>
+                    <SelectContent>
+                      {(lotes.data ?? [])
+                        .filter((l) => Number(l.saldo) > 0 && (!localId || l.local_id === localId))
+                        .map((l) => (
+                          <SelectItem key={l.id} value={l.id}>
+                            {l.validade
+                              ? new Date(l.validade + "T00:00:00").toLocaleDateString("pt-BR")
+                              : "sem validade"}{" "}
+                            · saldo {l.saldo}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -226,7 +283,7 @@ function EmprestimosPage() {
             </div>
             <DialogFooter>
               <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-              <Button onClick={salvar} disabled={criar.isPending || !previsao}>Registrar</Button>
+              <Button onClick={salvar} disabled={criar.isPending || !previsao || !produtoId || !localId}>Registrar</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -303,7 +360,11 @@ function EmprestimosPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() =>
-                          devolver.mutate({ id: e.id, data: new Date().toISOString().slice(0, 10) })
+                          devolver.mutate({
+                            id: e.id,
+                            data: new Date().toISOString().slice(0, 10),
+                            responsavel: user?.nome ?? null,
+                          })
                         }
                         title="Marcar como devolvido"
                       >

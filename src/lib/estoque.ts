@@ -79,16 +79,31 @@ export async function findProdutoByCodigo(codigo: string): Promise<ScanMatch | n
   return null;
 }
 
-export type MovTipo = "entrada" | "saida" | "ajuste_entrada" | "ajuste_saida";
+export type MovTipo =
+  | "entrada"
+  | "saida"
+  | "ajuste_entrada"
+  | "ajuste_saida"
+  | "emprestimo_entrada"
+  | "emprestimo_saida";
 
 /** Ajuste de inventário: não é consumo, não entra em médias, relatórios de saída nem no mapa OUT. */
 export function isAjusteInventario(tipo: MovTipo) {
   return tipo === "ajuste_entrada" || tipo === "ajuste_saida";
 }
 
-export function labelMovTipo(tipo: MovTipo) {
+/** Empréstimo: afeta apenas o saldo. Não é consumo nem compra. */
+export function isEmprestimo(tipo: MovTipo) {
+  return tipo === "emprestimo_entrada" || tipo === "emprestimo_saida";
+}
+
+export function labelMovTipo(tipo: MovTipo, observacao?: string | null) {
   if (tipo === "ajuste_entrada") return "AJUSTE DE INVENTÁRIO (+)";
   if (tipo === "ajuste_saida") return "AJUSTE DE INVENTÁRIO (−)";
+  if (isEmprestimo(tipo)) {
+    if ((observacao ?? "").toUpperCase().includes("DEVOLUÇÃO")) return "DEVOLUÇÃO DE EMPRÉSTIMO";
+    return tipo === "emprestimo_entrada" ? "EMPRÉSTIMO RECEBIDO" : "EMPRÉSTIMO CONCEDIDO";
+  }
   return tipo === "entrada" ? "ENTRADA" : "SAÍDA";
 }
 
