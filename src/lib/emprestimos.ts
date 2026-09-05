@@ -20,6 +20,8 @@ export type Emprestimo = {
   data_devolucao: string | null;
   observacao: string | null;
   status: EmprestimoStatus;
+  local_id: string | null;
+  lote_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -50,28 +52,51 @@ export function useEmprestimos() {
   });
 }
 
+function invalidarEstoque(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: ["emprestimos"] });
+  qc.invalidateQueries({ queryKey: ["produtos"] });
+  qc.invalidateQueries({ queryKey: ["lotes"] });
+  qc.invalidateQueries({ queryKey: ["movimentacoes"] });
+}
+
 export function useCriarEmprestimo() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (p: {
       tipo: EmprestimoTipo;
-      produto_id?: string | null;
+      produto_id: string;
       produto_nome: string;
       quantidade: number;
       unidade_medida?: string | null;
+      local_id: string;
+      lote_id?: string | null;
       origem?: string | null;
       destino?: string | null;
-      responsavel?: string | null;
+      responsavel: string;
       data_emprestimo: string;
-      previsao_devolucao?: string | null;
+      previsao_devolucao: string;
       observacao?: string | null;
     }) => {
-      const { error } = await supabase.from("emprestimos").insert(p);
+      const { error } = await supabase.rpc("registrar_emprestimo", {
+        _tipo: p.tipo,
+        _produto_id: p.produto_id,
+        _produto_nome: p.produto_nome,
+        _quantidade: p.quantidade,
+        _unidade_medida: p.unidade_medida ?? null,
+        _local_id: p.local_id,
+        _lote_id: p.lote_id ?? null,
+        _origem: p.origem ?? null,
+        _destino: p.destino ?? null,
+        _responsavel: p.responsavel,
+        _data_emprestimo: p.data_emprestimo,
+        _previsao_devolucao: p.previsao_devolucao,
+        _observacao: p.observacao ?? null,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["emprestimos"] });
-      toast.success("Empréstimo registrado");
+      invalidarEstoque(qc);
+      toast.success("Empréstimo registrado e estoque atualizado");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -80,16 +105,17 @@ export function useCriarEmprestimo() {
 export function useDevolverEmprestimo() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: { id: string; data: string }) => {
-      const { error } = await supabase
-        .from("emprestimos")
-        .update({ status: "devolvido", data_devolucao: p.data })
-        .eq("id", p.id);
+    mutationFn: async (p: { id: string; data: string; responsavel?: string | null }) => {
+      const { error } = await supabase.rpc("devolver_emprestimo", {
+        _id: p.id,
+        _data: p.data,
+        _responsavel: p.responsavel ?? null,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["emprestimos"] });
-      toast.success("Devolução registrada");
+      invalidarEstoque(qc);
+      toast.success("Devolução registrada e estoque atualizado");
     },
     onError: (e: Error) => toast.error(e.message),
   });
