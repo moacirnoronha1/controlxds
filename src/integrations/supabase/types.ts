@@ -316,6 +316,8 @@ export type Database = {
           data_emprestimo: string
           destino: string | null
           id: string
+          local_id: string | null
+          lote_id: string | null
           observacao: string | null
           origem: string | null
           previsao_devolucao: string | null
@@ -334,6 +336,8 @@ export type Database = {
           data_emprestimo?: string
           destino?: string | null
           id?: string
+          local_id?: string | null
+          lote_id?: string | null
           observacao?: string | null
           origem?: string | null
           previsao_devolucao?: string | null
@@ -352,6 +356,8 @@ export type Database = {
           data_emprestimo?: string
           destino?: string | null
           id?: string
+          local_id?: string | null
+          lote_id?: string | null
           observacao?: string | null
           origem?: string | null
           previsao_devolucao?: string | null
@@ -365,6 +371,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "emprestimos_local_id_fkey"
+            columns: ["local_id"]
+            isOneToOne: false
+            referencedRelation: "locais_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emprestimos_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "emprestimos_produto_id_fkey"
             columns: ["produto_id"]
@@ -1132,6 +1152,31 @@ export type Database = {
         }
         Returns: string
       }
+      devolver_emprestimo: {
+        Args: { _data: string; _id: string; _responsavel: string }
+        Returns: undefined
+      }
+      emprestimo_baixar: {
+        Args: {
+          _local_id: string
+          _lote_id: string
+          _observacao: string
+          _produto_id: string
+          _quantidade: number
+          _responsavel: string
+        }
+        Returns: undefined
+      }
+      emprestimo_entrar: {
+        Args: {
+          _local_id: string
+          _observacao: string
+          _produto_id: string
+          _quantidade: number
+          _responsavel: string
+        }
+        Returns: string
+      }
       excluir_usuario: {
         Args: { _id: string; _token: string }
         Returns: undefined
@@ -1194,6 +1239,24 @@ export type Database = {
       recusar_produto_solicitacao: {
         Args: { _motivo: string; _responsavel: string; _solicitacao_id: string }
         Returns: undefined
+      }
+      registrar_emprestimo: {
+        Args: {
+          _data_emprestimo: string
+          _destino: string
+          _local_id: string
+          _lote_id: string
+          _observacao: string
+          _origem: string
+          _previsao_devolucao: string
+          _produto_id: string
+          _produto_nome: string
+          _quantidade: number
+          _responsavel: string
+          _tipo: Database["public"]["Enums"]["emprestimo_tipo"]
+          _unidade_medida: string
+        }
+        Returns: string
       }
       registrar_saida_fefo: {
         Args: {
