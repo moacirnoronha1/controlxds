@@ -87,6 +87,18 @@ function ProdutosPage() {
     );
   }, [produtos, q, cat]);
 
+  const linhasPdf = useMemo(
+    () =>
+      montarLinhas(
+        produtos.filter((p) => cat === "all" || p.categoria === cat),
+        locais,
+        minimos,
+      ),
+    [produtos, locais, minimos, cat],
+  );
+  const catLabel = cat === "all" ? "Todas" : cat;
+
+
   function openNew() {
     const defaultLocal = locais.find((l) => l.nome === "Estoque Principal") ?? locais[0];
     setEditing({
