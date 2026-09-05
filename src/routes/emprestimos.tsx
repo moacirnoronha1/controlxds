@@ -61,7 +61,6 @@ function EmprestimosPage() {
   const devolver = useDevolverEmprestimo();
   const remover = useDeleteEmprestimo();
   const locais = useLocais();
-  const lotes = useLotes(produtoId || undefined);
 
   const [open, setOpen] = useState(false);
   const [filtro, setFiltro] = useState<Filtro>("todos");
@@ -78,6 +77,7 @@ function EmprestimosPage() {
   const [dataEmp, setDataEmp] = useState(() => new Date().toISOString().slice(0, 10));
   const [previsao, setPrevisao] = useState("");
   const [observacao, setObservacao] = useState("");
+  const lotes = useLotes(produtoId || undefined);
 
   const lista = useMemo(() => {
     const rows = emp.data ?? [];

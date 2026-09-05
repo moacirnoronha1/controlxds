@@ -82,15 +82,15 @@ export function useCriarEmprestimo() {
         _produto_id: p.produto_id,
         _produto_nome: p.produto_nome,
         _quantidade: p.quantidade,
-        _unidade_medida: p.unidade_medida ?? null,
+        _unidade_medida: p.unidade_medida ?? undefined,
         _local_id: p.local_id,
-        _lote_id: p.lote_id ?? null,
-        _origem: p.origem ?? null,
-        _destino: p.destino ?? null,
+        _lote_id: p.lote_id ?? undefined,
+        _origem: p.origem ?? undefined,
+        _destino: p.destino ?? undefined,
         _responsavel: p.responsavel,
         _data_emprestimo: p.data_emprestimo,
         _previsao_devolucao: p.previsao_devolucao,
-        _observacao: p.observacao ?? null,
+        _observacao: p.observacao ?? undefined,
       });
       if (error) throw error;
     },
@@ -109,7 +109,7 @@ export function useDevolverEmprestimo() {
       const { error } = await supabase.rpc("devolver_emprestimo", {
         _id: p.id,
         _data: p.data,
-        _responsavel: p.responsavel ?? null,
+        _responsavel: p.responsavel ?? undefined,
       });
       if (error) throw error;
     },
