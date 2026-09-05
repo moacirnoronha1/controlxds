@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Printer, Download } from "lucide-react";
 import {
   CATEGORIAS,
   UNIDADES,
@@ -43,6 +43,7 @@ import { Card } from "@/components/ui/card";
 import { ImportProdutos } from "@/components/import-produtos";
 import { useAuth, can } from "@/hooks/use-auth";
 import { useCriarSolicitacaoProduto } from "@/lib/produto-solicitacoes";
+import { montarLinhas, baixarEstoquePDF, imprimirEstoquePDF } from "@/lib/estoque-pdf";
 
 export const Route = createFileRoute("/produtos")({
   component: ProdutosPage,
@@ -86,6 +87,18 @@ function ProdutosPage() {
         p.nome.toLowerCase().includes(q.toLowerCase()),
     );
   }, [produtos, q, cat]);
+
+  const linhasPdf = useMemo(
+    () =>
+      montarLinhas(
+        produtos.filter((p) => cat === "all" || p.categoria === cat),
+        locais,
+        minimos,
+      ),
+    [produtos, locais, minimos, cat],
+  );
+  const catLabel = cat === "all" ? "Todas" : cat;
+
 
   function openNew() {
     const defaultLocal = locais.find((l) => l.nome === "Estoque Principal") ?? locais[0];
@@ -156,15 +169,32 @@ function ProdutosPage() {
               : "Cadastre e gerencie seus insumos."}
           </p>
         </div>
-        {(canEdit || canRequest) && (
-          <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={() => imprimirEstoquePDF(linhasPdf, displayName ?? "", catLabel)}
+          >
+            <Printer className="h-4 w-4 mr-1" />
+            Imprimir Estoque Atual
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            title="Baixar PDF"
+            onClick={() => baixarEstoquePDF(linhasPdf, displayName ?? "", catLabel)}
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+          {(canEdit || canRequest) && (
+            <>
             {canEdit && <ImportProdutos />}
             <Button onClick={openNew}>
               <Plus className="h-4 w-4 mr-1" />
               {soliciting ? "Solicitar produto" : "Novo produto"}
             </Button>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
 
 
