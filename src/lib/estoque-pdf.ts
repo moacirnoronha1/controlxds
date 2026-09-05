@@ -22,7 +22,7 @@ export function montarLinhas(
     .filter((p) => p.ativo)
     .map((p) => {
       const info = minimos.get(p.id);
-      const minimo = info?.minimoEfetivo ?? Number(p.estoque_minimo) || 0;
+      const minimo = info?.minimoEfetivo ?? (Number(p.estoque_minimo) || 0);
       const atual = Number(p.estoque_atual) || 0;
       const sugestao = Math.max(0, Math.ceil(minimo - atual));
       const baixo = atual <= minimo;
