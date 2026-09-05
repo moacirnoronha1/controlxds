@@ -197,7 +197,7 @@ function Dashboard() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={isAjusteInventario(m.tipo) ? "outline" : m.tipo === "entrada" ? "default" : "secondary"}>
-                      {labelMovTipo(m.tipo)}
+                      {labelMovTipo(m.tipo, m.observacao)}
                     </Badge>
                   </TableCell>
                   <TableCell>{m.produtos?.nome ?? "—"}</TableCell>
