@@ -84,7 +84,7 @@ export function useCriarEmprestimo() {
         _quantidade: p.quantidade,
         _unidade_medida: p.unidade_medida ?? "",
         _local_id: p.local_id,
-        _lote_id: (p.lote_id ?? undefined) as string,
+        _lote_id: (p.lote_id ?? null) as unknown as string,
         _origem: p.origem ?? "",
         _destino: p.destino ?? "",
         _responsavel: p.responsavel,
