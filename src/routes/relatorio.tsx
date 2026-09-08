@@ -205,13 +205,14 @@ function RelatorioPage() {
           <TableBody>
             {filtradas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={17} className="text-center text-muted-foreground py-8">
                   Nenhum produto encontrado.
                 </TableCell>
               </TableRow>
             ) : (
               filtradas.map(({ p, m5, m10, m15, m20, m30, previsao, sugestao, minimoAuto, reposicao }) => {
                 const n = nivel(m30);
+                const c = indicadores.get(p.id);
                 return (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">
