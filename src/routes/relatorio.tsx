@@ -194,6 +194,11 @@ function RelatorioPage() {
               <TableHead className="text-right">Repor até o mínimo</TableHead>
               <TableHead className="text-right">Previsão</TableHead>
               <TableHead className="text-right">Sugestão compra (30d)</TableHead>
+              <TableHead className="text-right">Último custo</TableHead>
+              <TableHead className="text-right">Custo médio pond.</TableHead>
+              <TableHead className="text-right">Menor custo</TableHead>
+              <TableHead className="text-right">Maior custo</TableHead>
+              <TableHead className="text-right">Variação</TableHead>
               <TableHead>Consumo</TableHead>
             </TableRow>
           </TableHeader>
