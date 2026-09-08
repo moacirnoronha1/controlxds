@@ -13,7 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TrendingUp, DollarSign, MapPin, Package } from "lucide-react";
+import { TrendingUp, DollarSign, MapPin, Package, AlertTriangle } from "lucide-react";
+import { useCustosPorProduto, fmtMoeda, fmtVariacao } from "@/lib/custos";
 
 export const Route = createFileRoute("/relatorio")({
   component: RelatorioPage,
