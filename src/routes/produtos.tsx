@@ -308,6 +308,16 @@ function ProdutosPage() {
                     )}
                   </TableCell>
                   <TableCell>
+                    <div className="flex gap-1 justify-end">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title="Histórico de custo"
+                        onClick={() => setCustoProduto(p)}
+                      >
+                        <DollarSign className="h-4 w-4" />
+                      </Button>
+                    </div>
                     {canEdit || canRequest ? (
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" onClick={() => openEdit(p)}>
