@@ -280,6 +280,24 @@ function ProdutosPage() {
                       <span className="ml-1 text-xs">(+{p.dias_seguranca}d)</span>
                     )}
                   </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 hover:underline"
+                      onClick={() => setCustoProduto(p)}
+                      title="Ver histórico de custo"
+                    >
+                      {custo?.alerta && <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />}
+                      {fmtMoeda(custo?.ultimo ?? null)}
+                      {custo?.variacao != null && (
+                        <span className={
+                          "text-xs " + (custo.variacao > 0 ? "text-destructive" : "text-emerald-500")
+                        }>
+                          {fmtVariacao(custo.variacao)}
+                        </span>
+                      )}
+                    </button>
+                  </TableCell>
                   <TableCell>
                     {baixo ? (
                       <Badge variant="destructive">Baixo</Badge>
