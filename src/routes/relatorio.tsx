@@ -13,7 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TrendingUp, DollarSign, MapPin, Package } from "lucide-react";
+import { TrendingUp, DollarSign, MapPin, Package, AlertTriangle } from "lucide-react";
+import { useCustosPorProduto, fmtMoeda, fmtVariacao } from "@/lib/custos";
 
 export const Route = createFileRoute("/relatorio")({
   component: RelatorioPage,
@@ -25,6 +26,7 @@ function RelatorioPage() {
   const { data: movs = [] } = useMovimentacoes();
   const { data: lotes = [] } = useLotes();
   const [search, setSearch] = useState("");
+  const { indicadores } = useCustosPorProduto();
   const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
 
   const linhas = useMemo(() => {
@@ -192,19 +194,25 @@ function RelatorioPage() {
               <TableHead className="text-right">Repor até o mínimo</TableHead>
               <TableHead className="text-right">Previsão</TableHead>
               <TableHead className="text-right">Sugestão compra (30d)</TableHead>
+              <TableHead className="text-right">Último custo</TableHead>
+              <TableHead className="text-right">Custo médio pond.</TableHead>
+              <TableHead className="text-right">Menor custo</TableHead>
+              <TableHead className="text-right">Maior custo</TableHead>
+              <TableHead className="text-right">Variação</TableHead>
               <TableHead>Consumo</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtradas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={17} className="text-center text-muted-foreground py-8">
                   Nenhum produto encontrado.
                 </TableCell>
               </TableRow>
             ) : (
               filtradas.map(({ p, m5, m10, m15, m20, m30, previsao, sugestao, minimoAuto, reposicao }) => {
                 const n = nivel(m30);
+                const c = indicadores.get(p.id);
                 return (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">
@@ -251,6 +259,22 @@ function RelatorioPage() {
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{fmtMoeda(c?.ultimo ?? null)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fmtMoeda(c?.medioPonderado ?? null)}</TableCell>
+                    <TableCell className="text-right tabular-nums text-emerald-500">{fmtMoeda(c?.menor ?? null)}</TableCell>
+                    <TableCell className="text-right tabular-nums text-destructive">{fmtMoeda(c?.maior ?? null)}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      <span
+                        className={
+                          "inline-flex items-center gap-1 " +
+                          (c?.variacao == null ? "" : c.variacao > 0 ? "text-destructive" : "text-emerald-500")
+                        }
+                        title={c?.alerta ? "Atenção: custo deste produto teve variação alta." : undefined}
+                      >
+                        {c?.alerta && <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />}
+                        {fmtVariacao(c?.variacao ?? null)}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={n.cls}>

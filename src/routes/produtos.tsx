@@ -27,7 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Search, Printer, Download } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Printer, Download, DollarSign, AlertTriangle } from "lucide-react";
+import { HistoricoCustoDialog } from "@/components/historico-custo";
+import { useCustosPorProduto, fmtMoeda, fmtVariacao } from "@/lib/custos";
 import {
   CATEGORIAS,
   UNIDADES,
@@ -78,6 +80,8 @@ function ProdutosPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<Produto> | null>(null);
   const { data: movs = [] } = useMovimentacoes();
+  const { indicadores } = useCustosPorProduto();
+  const [custoProduto, setCustoProduto] = useState<Produto | null>(null);
   const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
 
   const filtered = useMemo(() => {
@@ -232,27 +236,29 @@ function ProdutosPage() {
               <TableHead className="text-right">Estoque</TableHead>
               <TableHead className="text-right">Mínimo manual</TableHead>
               <TableHead className="text-right">Mínimo sugerido</TableHead>
+              <TableHead className="text-right">Último custo</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[100px]" />
+              <TableHead className="w-[140px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   Carregando...
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   Nenhum produto. Clique em "Novo produto" para começar.
                 </TableCell>
               </TableRow>
             )}
             {filtered.map((p) => {
               const info = minimos.get(p.id);
+              const custo = indicadores.get(p.id);
               const baixo = info?.baixo ?? p.estoque_atual <= p.estoque_minimo;
               return (
                 <TableRow key={p.id}>
@@ -274,6 +280,24 @@ function ProdutosPage() {
                       <span className="ml-1 text-xs">(+{p.dias_seguranca}d)</span>
                     )}
                   </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 hover:underline"
+                      onClick={() => setCustoProduto(p)}
+                      title="Ver histórico de custo"
+                    >
+                      {custo?.alerta && <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />}
+                      {fmtMoeda(custo?.ultimo ?? null)}
+                      {custo?.variacao != null && (
+                        <span className={
+                          "text-xs " + (custo.variacao > 0 ? "text-destructive" : "text-emerald-500")
+                        }>
+                          {fmtVariacao(custo.variacao)}
+                        </span>
+                      )}
+                    </button>
+                  </TableCell>
                   <TableCell>
                     {baixo ? (
                       <Badge variant="destructive">Baixo</Badge>
@@ -284,20 +308,26 @@ function ProdutosPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {canEdit || canRequest ? (
-                      <div className="flex gap-1 justify-end">
-                        <Button size="icon" variant="ghost" onClick={() => openEdit(p)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDelete(p)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    ) : null}
+                    <div className="flex gap-1 justify-end">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title="Histórico de custo"
+                        onClick={() => setCustoProduto(p)}
+                      >
+                        <DollarSign className="h-4 w-4" />
+                      </Button>
+                      {(canEdit || canRequest) && (
+                        <>
+                          <Button size="icon" variant="ghost" onClick={() => openEdit(p)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" onClick={() => handleDelete(p)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
 
                 </TableRow>
@@ -306,6 +336,12 @@ function ProdutosPage() {
           </TableBody>
         </Table>
       </Card>
+
+      <HistoricoCustoDialog
+        produto={custoProduto}
+        open={!!custoProduto}
+        onOpenChange={(v) => { if (!v) setCustoProduto(null); }}
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
