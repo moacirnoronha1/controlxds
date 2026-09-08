@@ -80,6 +80,8 @@ function ProdutosPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<Produto> | null>(null);
   const { data: movs = [] } = useMovimentacoes();
+  const { indicadores } = useCustosPorProduto();
+  const [custoProduto, setCustoProduto] = useState<Produto | null>(null);
   const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
 
   const filtered = useMemo(() => {
