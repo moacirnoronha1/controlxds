@@ -26,6 +26,7 @@ function RelatorioPage() {
   const { data: movs = [] } = useMovimentacoes();
   const { data: lotes = [] } = useLotes();
   const [search, setSearch] = useState("");
+  const { indicadores } = useCustosPorProduto();
   const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
 
   const linhas = useMemo(() => {
