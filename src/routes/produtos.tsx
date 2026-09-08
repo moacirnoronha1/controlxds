@@ -27,7 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Search, Printer, Download } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Printer, Download, DollarSign, AlertTriangle } from "lucide-react";
+import { HistoricoCustoDialog } from "@/components/historico-custo";
+import { useCustosPorProduto, fmtMoeda, fmtVariacao } from "@/lib/custos";
 import {
   CATEGORIAS,
   UNIDADES,
