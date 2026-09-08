@@ -259,6 +259,22 @@ function RelatorioPage() {
                         <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
+                    <TableCell className="text-right tabular-nums">{fmtMoeda(c?.ultimo ?? null)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fmtMoeda(c?.medioPonderado ?? null)}</TableCell>
+                    <TableCell className="text-right tabular-nums text-emerald-500">{fmtMoeda(c?.menor ?? null)}</TableCell>
+                    <TableCell className="text-right tabular-nums text-destructive">{fmtMoeda(c?.maior ?? null)}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      <span
+                        className={
+                          "inline-flex items-center gap-1 " +
+                          (c?.variacao == null ? "" : c.variacao > 0 ? "text-destructive" : "text-emerald-500")
+                        }
+                        title={c?.alerta ? "Atenção: custo deste produto teve variação alta." : undefined}
+                      >
+                        {c?.alerta && <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />}
+                        {fmtVariacao(c?.variacao ?? null)}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={n.cls}>
                         {n.label}
