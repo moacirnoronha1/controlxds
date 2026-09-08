@@ -337,6 +337,12 @@ function ProdutosPage() {
         </Table>
       </Card>
 
+      <HistoricoCustoDialog
+        produto={custoProduto}
+        open={!!custoProduto}
+        onOpenChange={(v) => { if (!v) setCustoProduto(null); }}
+      />
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
