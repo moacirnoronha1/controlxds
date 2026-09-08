@@ -236,6 +236,7 @@ function ProdutosPage() {
               <TableHead className="text-right">Estoque</TableHead>
               <TableHead className="text-right">Mínimo manual</TableHead>
               <TableHead className="text-right">Mínimo sugerido</TableHead>
+              <TableHead className="text-right">Último custo</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[100px]" />
             </TableRow>
