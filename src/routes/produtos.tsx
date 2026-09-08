@@ -258,6 +258,7 @@ function ProdutosPage() {
             )}
             {filtered.map((p) => {
               const info = minimos.get(p.id);
+              const custo = indicadores.get(p.id);
               const baixo = info?.baixo ?? p.estoque_atual <= p.estoque_minimo;
               return (
                 <TableRow key={p.id}>
