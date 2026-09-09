@@ -59,11 +59,13 @@ function novoItem(): ItemDraft {
 const ItemRequisicao = memo(function ItemRequisicao({
   item,
   produtos,
+  produtosSelecionados,
   onChange,
   onRemove,
 }: {
   item: ItemDraft;
   produtos: Produto[];
+  produtosSelecionados: Set<string>;
   onChange: (id: string, patch: Partial<Omit<ItemDraft, "id">>) => void;
   onRemove: (id: string) => void;
 }) {
@@ -77,7 +79,11 @@ const ItemRequisicao = memo(function ItemRequisicao({
           <SelectTrigger><SelectValue placeholder="Produto" /></SelectTrigger>
           <SelectContent>
             {produtos.map((produto) => (
-              <SelectItem key={produto.id} value={produto.id}>
+              <SelectItem
+                key={produto.id}
+                value={produto.id}
+                disabled={produto.id !== item.produto_id && produtosSelecionados.has(produto.id)}
+              >
                 {produto.nome} ({produto.estoque_atual} {produto.unidade_medida})
               </SelectItem>
             ))}
@@ -195,6 +201,11 @@ function RequisicoesPage() {
     [produtos.data],
   );
 
+  const produtosSelecionados = useMemo(
+    () => new Set(itens.map((item) => item.produto_id).filter(Boolean)),
+    [itens],
+  );
+
   const atualizarItem = useCallback((id: string, patch: Partial<Omit<ItemDraft, "id">>) => {
     setItens((atuais) => atuais.map((item) => item.id === id ? { ...item, ...patch } : item));
   }, []);
@@ -235,6 +246,10 @@ function RequisicoesPage() {
     if (!requisitante.trim()) { toast.error("Requisitante não identificado."); return; }
     if (!setor) { toast.error("Selecione o destino / setor."); return; }
     if (validos.length === 0) { toast.error("Adicione ao menos um item com quantidade."); return; }
+    if (new Set(validos.map((item) => item.produto_id)).size !== validos.length) {
+      toast.error("O mesmo produto não pode aparecer duas vezes na requisição.");
+      return;
+    }
 
     salvandoRef.current = true;
     try {
@@ -317,6 +332,7 @@ function RequisicoesPage() {
                         key={it.id}
                         item={it}
                         produtos={produtos.data ?? []}
+                        produtosSelecionados={produtosSelecionados}
                         onChange={atualizarItem}
                         onRemove={removerItem}
                       />
