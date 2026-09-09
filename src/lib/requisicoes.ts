@@ -173,12 +173,15 @@ export function useLiberarRequisicao() {
       responsavel: string;
       liberacoes: Record<string, number>;
     }) => {
+      const total = Object.values(p.liberacoes).reduce((s, n) => s + (Number(n) || 0), 0);
+      if (!p.responsavel.trim()) throw new Error("Selecione o responsável pela liberação");
+      if (total <= 0) throw new Error("Informe ao menos um item com quantidade liberada");
       const { error } = await supabase.rpc("liberar_requisicao", {
         _requisicao_id: p.id,
         _responsavel: p.responsavel,
         _liberacoes: p.liberacoes,
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message);
     },
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: ["requisicoes"] });
@@ -188,9 +191,14 @@ export function useLiberarRequisicao() {
       qc.invalidateQueries({ queryKey: ["lotes"] });
       toast.success("Requisição liberada, estoque baixado (FEFO)");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error, v) => {
+      // nada foi alterado no banco: a liberação roda em uma única transação
+      qc.invalidateQueries({ queryKey: ["requisicao", v.id] });
+      toast.error(e.message || "Não foi possível liberar a requisição");
+    },
   });
 }
+
 
 export function useCancelarRequisicao() {
   const qc = useQueryClient();
