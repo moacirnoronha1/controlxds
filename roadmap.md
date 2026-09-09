@@ -5,3 +5,5 @@
 - [x] Estabilizar criação de requisições grandes (30–50+ itens, rascunho, envio único e feedback)
 
 Concluído em 01/09/2026.
+
+- [ ] Corrigir liberação quando quantidade informada é igual ao saldo disponível.
