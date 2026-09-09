@@ -6,4 +6,4 @@
 
 Concluído em 01/09/2026.
 
-- [ ] Corrigir liberação quando quantidade informada é igual ao saldo disponível.
+- [x] Corrigir liberação quando quantidade informada é igual ao saldo disponível.
