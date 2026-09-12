@@ -10,3 +10,4 @@ Concluído em 01/09/2026.
 
 - [x] Permitir ajuste auditado dos itens de requisições pendentes por Estoquista, Líder e Mestre.
 - [x] Permitir edição auditada de entradas/lotes, ajustando estoque apenas pela diferença de quantidade.
+- [x] Corrigir seleção e baixa por lote nas avarias, incluindo estoque legado sem lote.
