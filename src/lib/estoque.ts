@@ -46,6 +46,16 @@ export type Lote = {
   locais_estoque?: { nome: string } | null;
 };
 
+export type EntradaAlteracao = {
+  id: string;
+  lote_id: string;
+  dados_antes: Record<string, unknown>;
+  dados_depois: Record<string, unknown>;
+  alterado_por: string;
+  cargo: string;
+  created_at: string;
+};
+
 export type ScanMatch = {
   produto: Produto;
   tipo_codigo: "unidade" | "caixa";
@@ -317,6 +327,54 @@ export function useCriarEntradaLote() {
       toast.success("Entrada registrada");
     },
     onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useEditarEntradaLote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (e: {
+      lote_id: string;
+      quantidade: number;
+      validade: string | null;
+      custo_unitario: number | null;
+      fornecedor: string;
+      observacao: string;
+    }) => {
+      const { error } = await supabase.rpc("editar_entrada_lote", {
+        _lote_id: e.lote_id,
+        _quantidade: e.quantidade,
+        _validade: e.validade as unknown as string,
+        _custo_unitario: e.custo_unitario as unknown as number,
+        _fornecedor: e.fornecedor,
+        _observacao: e.observacao,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["produtos"] });
+      qc.invalidateQueries({ queryKey: ["movimentacoes"] });
+      qc.invalidateQueries({ queryKey: ["lotes"] });
+      qc.invalidateQueries({ queryKey: ["entrada-alteracoes"] });
+      toast.success("Entrada atualizada");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useEntradaAlteracoes(loteId?: string) {
+  return useQuery({
+    queryKey: ["entrada-alteracoes", loteId],
+    enabled: !!loteId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("entrada_alteracoes")
+        .select("*")
+        .eq("lote_id", loteId!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as EntradaAlteracao[];
+    },
   });
 }
 
