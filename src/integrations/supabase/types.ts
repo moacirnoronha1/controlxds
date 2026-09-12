@@ -394,6 +394,44 @@ export type Database = {
           },
         ]
       }
+      entrada_alteracoes: {
+        Row: {
+          alterado_por: string
+          cargo: Database["public"]["Enums"]["user_cargo"]
+          created_at: string
+          dados_antes: Json
+          dados_depois: Json
+          id: string
+          lote_id: string
+        }
+        Insert: {
+          alterado_por: string
+          cargo: Database["public"]["Enums"]["user_cargo"]
+          created_at?: string
+          dados_antes: Json
+          dados_depois: Json
+          id?: string
+          lote_id: string
+        }
+        Update: {
+          alterado_por?: string
+          cargo?: Database["public"]["Enums"]["user_cargo"]
+          created_at?: string
+          dados_antes?: Json
+          dados_depois?: Json
+          id?: string
+          lote_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entrada_alteracoes_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventario_itens: {
         Row: {
           contado_em: string | null
@@ -828,6 +866,73 @@ export type Database = {
         }
         Relationships: []
       }
+      requisicao_alteracoes: {
+        Row: {
+          acao: string
+          alterado_por: string
+          cargo: Database["public"]["Enums"]["user_cargo"]
+          created_at: string
+          id: string
+          item_id: string | null
+          observacao: string
+          produto_novo_id: string | null
+          produto_original_id: string | null
+          quantidade_nova: number | null
+          quantidade_original: number | null
+          requisicao_id: string
+        }
+        Insert: {
+          acao: string
+          alterado_por: string
+          cargo: Database["public"]["Enums"]["user_cargo"]
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          observacao: string
+          produto_novo_id?: string | null
+          produto_original_id?: string | null
+          quantidade_nova?: number | null
+          quantidade_original?: number | null
+          requisicao_id: string
+        }
+        Update: {
+          acao?: string
+          alterado_por?: string
+          cargo?: Database["public"]["Enums"]["user_cargo"]
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          observacao?: string
+          produto_novo_id?: string | null
+          produto_original_id?: string | null
+          quantidade_nova?: number | null
+          quantidade_original?: number | null
+          requisicao_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requisicao_alteracoes_produto_novo_id_fkey"
+            columns: ["produto_novo_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requisicao_alteracoes_produto_original_id_fkey"
+            columns: ["produto_original_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requisicao_alteracoes_requisicao_id_fkey"
+            columns: ["requisicao_id"]
+            isOneToOne: false
+            referencedRelation: "requisicoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       requisicao_itens: {
         Row: {
           codigo: string | null
@@ -1154,6 +1259,21 @@ export type Database = {
       }
       devolver_emprestimo: {
         Args: { _data: string; _id: string; _responsavel: string }
+        Returns: undefined
+      }
+      editar_entrada_lote: {
+        Args: {
+          _custo_unitario: number
+          _fornecedor: string
+          _lote_id: string
+          _observacao: string
+          _quantidade: number
+          _validade: string
+        }
+        Returns: undefined
+      }
+      editar_itens_requisicao: {
+        Args: { _itens: Json; _observacao: string; _requisicao_id: string }
         Returns: undefined
       }
       emprestimo_baixar: {
