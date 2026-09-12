@@ -23,6 +23,9 @@ import {
   useCriarEntradaLote,
   useRegistrarSaidaFefo,
   useLotes,
+  useEditarEntradaLote,
+  useEntradaAlteracoes,
+  type Lote,
 } from "@/lib/estoque";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -41,6 +44,10 @@ import { useAuth, can } from "@/hooks/use-auth";
 import { Card as InfoCard } from "@/components/ui/card";
 import { ShieldAlert } from "lucide-react";
 import { ImportXmlNfe } from "@/components/import-xml-nfe";
+import {
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { History, Pencil } from "lucide-react";
 
 type Props = { tipo: "entrada" | "saida" };
 
@@ -52,7 +59,14 @@ export function MovForm({ tipo }: Props) {
   const entrada = useCriarEntradaLote();
   const saida = useRegistrarSaidaFefo();
   const pending = tipo === "entrada" ? entrada.isPending : saida.isPending;
-  const movs = useMovimentacoes(15);
+  const movs = useMovimentacoes(tipo === "entrada" ? undefined : 15);
+  const { data: todosLotes = [] } = useLotes();
+  const editarEntrada = useEditarEntradaLote();
+  const [loteEditando, setLoteEditando] = useState<Lote | null>(null);
+  const alteracoesEntrada = useEntradaAlteracoes(loteEditando?.id);
+  const [edicao, setEdicao] = useState({
+    quantidade: "", validade: "", custo_unitario: "", fornecedor: "", observacao: "",
+  });
 
   const [form, setForm] = useState({
     produto_id: "",
@@ -142,7 +156,32 @@ export function MovForm({ tipo }: Props) {
   const dataBR = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
 
   const recentes = (movs.data ?? []).filter((m) => m.tipo === tipo).slice(0, 8);
+  const entradas = (movs.data ?? []).filter((m) => m.tipo === "entrada");
   const title = tipo === "entrada" ? "Registrar entrada" : "Registrar saída";
+
+  function abrirEdicao(lote: Lote) {
+    setLoteEditando(lote);
+    setEdicao({
+      quantidade: String(lote.quantidade_inicial),
+      validade: lote.validade ?? "",
+      custo_unitario: lote.custo_unitario == null ? "" : String(lote.custo_unitario),
+      fornecedor: lote.fornecedor ?? "",
+      observacao: lote.observacao ?? "",
+    });
+  }
+
+  async function salvarEdicao() {
+    if (!loteEditando) return;
+    await editarEntrada.mutateAsync({
+      lote_id: loteEditando.id,
+      quantidade: Number(edicao.quantidade),
+      validade: edicao.validade || null,
+      custo_unitario: edicao.custo_unitario ? Number(edicao.custo_unitario) : null,
+      fornecedor: edicao.fornecedor,
+      observacao: edicao.observacao,
+    });
+    setLoteEditando(null);
+  }
 
   if (!allowed) {
     return (
@@ -158,6 +197,57 @@ export function MovForm({ tipo }: Props) {
 
   return (
     <div className="space-y-6">
+      <Dialog open={!!loteEditando} onOpenChange={(open) => { if (!open && !editarEntrada.isPending) setLoteEditando(null); }}>
+        <DialogContent className="max-w-xl max-h-[90dvh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Editar entrada</DialogTitle></DialogHeader>
+          {loteEditando && (
+            <div className="grid gap-4">
+              <div className="rounded-md border p-3 text-sm">
+                <p className="font-medium">{loteEditando.produtos?.nome}</p>
+                <p className="text-muted-foreground">{loteEditando.locais_estoque?.nome} · saldo atual {loteEditando.saldo} {loteEditando.produtos?.unidade_medida}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label>Quantidade da entrada</Label>
+                  <Input type="number" min="0.000001" step="any" value={edicao.quantidade} onChange={(e) => setEdicao({ ...edicao, quantidade: e.target.value })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Custo unitário (R$)</Label>
+                  <Input type="number" min="0" step="0.01" value={edicao.custo_unitario} onChange={(e) => setEdicao({ ...edicao, custo_unitario: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label>Validade do lote</Label>
+                <Input type="date" value={edicao.validade} onChange={(e) => setEdicao({ ...edicao, validade: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Fornecedor</Label>
+                <Input value={edicao.fornecedor} onChange={(e) => setEdicao({ ...edicao, fornecedor: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Observação</Label>
+                <Textarea rows={2} value={edicao.observacao} onChange={(e) => setEdicao({ ...edicao, observacao: e.target.value })} />
+              </div>
+              <div className="rounded-md border">
+                <div className="px-3 py-2 border-b text-sm font-medium flex items-center gap-2"><History className="h-4 w-4" /> Histórico de edições</div>
+                {(alteracoesEntrada.data ?? []).map((alteracao) => (
+                  <div key={alteracao.id} className="p-3 border-b last:border-b-0 text-xs">
+                    <p>{alteracao.alterado_por} · {new Date(alteracao.created_at).toLocaleString("pt-BR")}</p>
+                    <p className="text-muted-foreground">Quantidade: {String(alteracao.dados_antes.quantidade ?? "—")} → {String(alteracao.dados_depois.quantidade ?? "—")} · Custo: {String(alteracao.dados_antes.custo_unitario ?? "—")} → {String(alteracao.dados_depois.custo_unitario ?? "—")}</p>
+                  </div>
+                ))}
+                {(alteracoesEntrada.data ?? []).length === 0 && <p className="p-3 text-xs text-muted-foreground">Nenhuma edição registrada.</p>}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setLoteEditando(null)} disabled={editarEntrada.isPending}>Cancelar</Button>
+            <Button onClick={salvarEdicao} disabled={editarEntrada.isPending || Number(edicao.quantidade) <= 0}>
+              {editarEntrada.isPending ? "Salvando..." : "Salvar correção"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <AlertDialog open={!!avisoValidade} onOpenChange={(v) => { if (!v) setAvisoValidade(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -315,7 +405,7 @@ export function MovForm({ tipo }: Props) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Últimas {tipo}s</CardTitle>
+            <CardTitle className="text-base">{tipo === "entrada" ? "Entradas cadastradas" : `Últimas ${tipo}s`}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -325,10 +415,13 @@ export function MovForm({ tipo }: Props) {
                   <TableHead>Produto</TableHead>
                   <TableHead>Local</TableHead>
                   <TableHead className="text-right">Qtd</TableHead>
+                  {tipo === "entrada" && <TableHead className="w-12" />}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentes.map((m) => (
+                {(tipo === "entrada" ? entradas : recentes).map((m) => {
+                  const lote = todosLotes.find((item) => item.id === m.lote_id);
+                  return (
                   <TableRow key={m.id}>
                     <TableCell className="text-xs text-muted-foreground">
                       {new Date(m.data_movimentacao).toLocaleString("pt-BR")}
@@ -340,11 +433,19 @@ export function MovForm({ tipo }: Props) {
                     <TableCell className="text-right tabular-nums">
                       {m.quantidade} {m.produtos?.unidade_medida}
                     </TableCell>
+                    {tipo === "entrada" && (
+                      <TableCell>
+                        <Button type="button" variant="ghost" size="icon" aria-label="Editar entrada" disabled={!lote} onClick={() => lote && abrirEdicao(lote)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
-                ))}
-                {recentes.length === 0 && (
+                  );
+                })}
+                {(tipo === "entrada" ? entradas : recentes).length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-6">
+                    <TableCell colSpan={tipo === "entrada" ? 5 : 4} className="text-center text-muted-foreground py-6">
                       Sem registros.
                     </TableCell>
                   </TableRow>
