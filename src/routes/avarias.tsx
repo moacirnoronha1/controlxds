@@ -48,6 +48,7 @@ type Avaria = {
   data: string;
   produto_id: string;
   local_id: string | null;
+  lote_id: string | null;
   momento: Momento;
   tipo: Tipo;
   motivo: string | null;
