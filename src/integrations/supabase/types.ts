@@ -1360,6 +1360,20 @@ export type Database = {
         Args: { _motivo: string; _responsavel: string; _solicitacao_id: string }
         Returns: undefined
       }
+      registrar_avaria_pos_chegada: {
+        Args: {
+          _data: string
+          _local_id: string
+          _lote_id: string
+          _motivo: string
+          _observacao: string
+          _produto_id: string
+          _quantidade: number
+          _tipo: Database["public"]["Enums"]["avaria_tipo"]
+          _valor_estimado: number
+        }
+        Returns: string
+      }
       registrar_emprestimo: {
         Args: {
           _data_emprestimo: string
