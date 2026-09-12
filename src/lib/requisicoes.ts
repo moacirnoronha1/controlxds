@@ -139,21 +139,22 @@ export function useRequisicao(id: string | undefined) {
     queryKey: ["requisicao", id],
     enabled: !!id,
     queryFn: async () => {
+      if (!id) throw new Error("Requisição não informada");
       const { data: req, error } = await supabase
         .from("requisicoes")
         .select("*")
-        .eq("id", id!)
+        .eq("id", id)
         .maybeSingle();
       if (error) throw error;
       const { data: itens, error: e2 } = await supabase
         .from("requisicao_itens")
         .select("*, produtos(nome, unidade_medida, codigo_barras)")
-        .eq("requisicao_id", id!);
+        .eq("requisicao_id", id);
       if (e2) throw e2;
       const { data: historico, error: e3 } = await supabase
         .from("requisicao_alteracoes")
         .select("*, produto_original:produtos!requisicao_alteracoes_produto_original_id_fkey(nome), produto_novo:produtos!requisicao_alteracoes_produto_novo_id_fkey(nome)")
-        .eq("requisicao_id", id!)
+        .eq("requisicao_id", id)
         .order("created_at", { ascending: false });
       if (e3) throw e3;
       return {

@@ -351,9 +351,10 @@ function RequisicaoDetalhe() {
                 <span className="text-xs text-muted-foreground">{new Date(alteracao.created_at).toLocaleString("pt-BR")}</span>
               </div>
               <p>
-                {alteracao.produto_original?.nome ?? "—"}
+                {alteracao.acao === "inclusao"
+                  ? alteracao.produto_novo?.nome ?? "—"
+                  : alteracao.produto_original?.nome ?? "—"}
                 {alteracao.acao === "substituicao" ? ` → ${alteracao.produto_novo?.nome ?? "—"}` : ""}
-                {alteracao.acao === "inclusao" ? alteracao.produto_novo?.nome ?? "—" : ""}
                 {alteracao.quantidade_original != null || alteracao.quantidade_nova != null
                   ? ` · ${alteracao.quantidade_original ?? "—"} → ${alteracao.quantidade_nova ?? "—"}`
                   : ""}

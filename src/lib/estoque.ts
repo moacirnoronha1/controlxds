@@ -367,10 +367,11 @@ export function useEntradaAlteracoes(loteId?: string) {
     queryKey: ["entrada-alteracoes", loteId],
     enabled: !!loteId,
     queryFn: async () => {
+      if (!loteId) throw new Error("Entrada não informada");
       const { data, error } = await supabase
         .from("entrada_alteracoes")
         .select("*")
-        .eq("lote_id", loteId!)
+        .eq("lote_id", loteId)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as EntradaAlteracao[];
