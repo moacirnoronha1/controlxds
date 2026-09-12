@@ -25,6 +25,16 @@ import { Plus, ShieldAlert, Filter, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/avarias")({
+  head: () => ({
+    meta: [
+      { title: "Avarias | GX Control" },
+      { name: "description", content: "Registro e acompanhamento de avarias do estoque GX Control." },
+      { property: "og:title", content: "Avarias | GX Control" },
+      { property: "og:description", content: "Registro e acompanhamento de avarias do estoque GX Control." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AvariasPage,
 });
 
@@ -572,7 +582,7 @@ function NovaAvariaDialog({
           _data: data,
           _produto_id: produtoId,
           _local_id: loteSelecionado?.local_id ?? localId,
-          _lote_id: usandoEstoqueSemLote ? null : loteId,
+          _lote_id: (usandoEstoqueSemLote ? null : loteId) as unknown as string,
           _tipo: tipo,
           _quantidade: Number(quantidade),
           _motivo: motivo,
