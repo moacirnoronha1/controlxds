@@ -73,6 +73,7 @@ type Avaria = {
   created_at: string;
   produtos?: { nome: string; unidade_medida: string } | null;
   locais_estoque?: { nome: string } | null;
+  lotes?: { validade: string | null; custo_unitario: number | null } | null;
 };
 
 const MOMENTO_LABEL: Record<Momento, string> = {
@@ -138,7 +139,7 @@ function AvariasPage() {
     queryFn: async (): Promise<Avaria[]> => {
       const { data, error } = await supabase
         .from("avarias" as never)
-        .select("*, produtos(nome, unidade_medida), locais_estoque(nome)")
+        .select("*, produtos(nome, unidade_medida), locais_estoque(nome), lotes(validade, custo_unitario)")
         .order("data", { ascending: false });
       if (error) throw error;
       return (data ?? []) as unknown as Avaria[];
@@ -929,7 +930,18 @@ function DetalheDialog({
                 <Info label="Aproveitada" value={String(avaria.quantidade_aproveitada ?? 0)} />
               </>
             ) : (
-              <Info label="Quantidade" value={String(avaria.quantidade)} />
+              <>
+                <Info label="Quantidade" value={String(avaria.quantidade)} />
+                <Info label="Lote" value={avaria.lote_id ?? "—"} />
+                <Info
+                  label="Validade do lote"
+                  value={avaria.lotes?.validade ? new Date(avaria.lotes.validade).toLocaleDateString("pt-BR") : "Sem validade"}
+                />
+                <Info
+                  label="Custo unitário"
+                  value={avaria.lotes?.custo_unitario != null ? formatBRL(Number(avaria.lotes.custo_unitario)) : "—"}
+                />
+              </>
             )}
             <Info label="Valor estimado" value={avaria.valor_estimado != null ? formatBRL(Number(avaria.valor_estimado)) : "—"} />
             <Info label="Motivo" value={avaria.motivo ?? "—"} />
