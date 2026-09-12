@@ -586,7 +586,7 @@ function NovaAvariaDialog({
           _tipo: tipo,
           _quantidade: Number(quantidade),
           _motivo: motivo,
-          _valor_estimado: valorCalc,
+          _valor_estimado: valorCalc as unknown as number,
           _observacao: observacao,
         });
         if (error) throw error;
