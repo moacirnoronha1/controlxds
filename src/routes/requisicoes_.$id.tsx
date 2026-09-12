@@ -169,11 +169,14 @@ function RequisicaoDetalhe() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(editando ? itensEditados : itens).map((it, i) => (
-              <TableRow key={it.id}>
+            {(editando ? itensEditados : itens).map((it, i) => {
+              const itemEditado = "quantidade" in it ? it : null;
+              const itemOriginal = "quantidade_solicitada" in it ? it : null;
+              return (
+              <TableRow key={it.id ?? `novo-${i}`}>
                 <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                 <TableCell className="font-mono text-xs">
-                  {editando ? (produtos.data ?? []).find((p) => p.id === it.produto_id)?.codigo_barras ?? "—" : it.codigo || it.produtos?.codigo_barras || "—"}
+                  {editando ? (produtos.data ?? []).find((p) => p.id === it.produto_id)?.codigo_barras ?? "—" : itemOriginal?.codigo || itemOriginal?.produtos?.codigo_barras || "—"}
                 </TableCell>
                 <TableCell>
                   {editando ? (
@@ -190,17 +193,17 @@ function RequisicaoDetalhe() {
                         ))}
                       </SelectContent>
                     </Select>
-                  ) : it.produtos?.nome}
+                  ) : itemOriginal?.produtos?.nome}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {editando ? (
                     <Input
                       type="number" min="0.000001" step="any"
                       className="w-28 ml-auto text-right"
-                      value={it.quantidade}
+                      value={itemEditado?.quantidade ?? ""}
                       onChange={(event) => setItensEditados((atuais) => atuais.map((x, index) => index === i ? { ...x, quantidade: event.target.value } : x))}
                     />
-                  ) : `${it.quantidade_solicitada} ${it.produtos?.unidade_medida ?? ""}`}
+                  ) : `${itemOriginal?.quantidade_solicitada ?? 0} ${itemOriginal?.produtos?.unidade_medida ?? ""}`}
                 </TableCell>
                 <TableCell className="text-right">
                   {editando ? (
@@ -215,19 +218,20 @@ function RequisicaoDetalhe() {
                     <Input
                       type="number" min="0" step="any"
                       className="w-28 ml-auto text-right"
-                      value={liberacoes[it.id] ?? ""}
+                      value={itemOriginal ? liberacoes[itemOriginal.id] ?? "" : ""}
                       onChange={(e) =>
-                        setLiberacoes((s) => ({ ...s, [it.id]: e.target.value }))
+                        itemOriginal && setLiberacoes((s) => ({ ...s, [itemOriginal.id]: e.target.value }))
                       }
                     />
                   ) : (
                     <span className="tabular-nums">
-                      {it.quantidade_liberada ?? 0} {it.produtos?.unidade_medida}
+                      {itemOriginal?.quantidade_liberada ?? 0} {itemOriginal?.produtos?.unidade_medida}
                     </span>
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </Card>
