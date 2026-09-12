@@ -11,20 +11,33 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, CheckCircle2, XCircle, Printer } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, Printer, Pencil, Plus, Trash2, History } from "lucide-react";
 import {
   useRequisicao, useResponsaveis, useLiberarRequisicao, useCancelarRequisicao,
+  useEditarItensRequisicao,
 } from "@/lib/requisicoes";
+import { useProdutos } from "@/lib/estoque";
 import { gerarRequisicaoPDF } from "@/lib/requisicao-pdf";
 import { useAuth, can } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/requisicoes_/$id")({
   component: RequisicaoDetalhe,
+  head: () => ({
+    meta: [
+      { title: "Análise de Requisição | GX Control" },
+      { name: "description", content: "Analise, ajuste e libere itens de uma requisição do GX Control." },
+      { property: "og:title", content: "Análise de Requisição | GX Control" },
+      { property: "og:description", content: "Análise e liberação de requisições de estoque." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
 });
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
@@ -40,8 +53,13 @@ function RequisicaoDetalhe() {
   const responsaveis = useResponsaveis();
   const liberar = useLiberarRequisicao();
   const cancelar = useCancelarRequisicao();
+  const editar = useEditarItensRequisicao();
+  const produtos = useProdutos();
   const [respSelecionado, setRespSelecionado] = useState("");
   const [liberacoes, setLiberacoes] = useState<Record<string, string>>({});
+  const [editando, setEditando] = useState(false);
+  const [observacaoAlteracao, setObservacaoAlteracao] = useState("");
+  const [itensEditados, setItensEditados] = useState<Array<{ id?: string; produto_id: string; quantidade: string }>>([]);
 
   useEffect(() => {
     if (q.data?.itens) {
@@ -53,11 +71,39 @@ function RequisicaoDetalhe() {
     }
   }, [q.data?.requisicao?.id]);
 
+  useEffect(() => {
+    if (!editando && q.data?.itens) {
+      setItensEditados(q.data.itens.map((item) => ({
+        id: item.id,
+        produto_id: item.produto_id,
+        quantidade: String(item.quantidade_solicitada),
+      })));
+    }
+  }, [q.data?.itens, editando]);
+
   if (q.isLoading) return <p className="text-muted-foreground">Carregando...</p>;
   if (!q.data?.requisicao) return <p className="text-muted-foreground">Requisição não encontrada.</p>;
 
   const { requisicao: r, itens } = q.data;
   const podeAgir = r.status === "pendente" && podeLiberar;
+  const selecionados = new Set(itensEditados.map((item) => item.produto_id).filter(Boolean));
+
+  async function salvarAlteracoes() {
+    const validos = itensEditados.filter((item) => item.produto_id && Number(item.quantidade) > 0);
+    if (validos.length === 0) return;
+    if (new Set(validos.map((item) => item.produto_id)).size !== validos.length) return;
+    await editar.mutateAsync({
+      requisicao_id: r.id,
+      observacao: observacaoAlteracao,
+      itens: validos.map((item) => ({
+        ...(item.id ? { id: item.id } : {}),
+        produto_id: item.produto_id,
+        quantidade: Number(item.quantidade),
+      })),
+    });
+    setEditando(false);
+    setObservacaoAlteracao("");
+  }
 
   function payloadLiberacoes(): Record<string, number> {
     const out: Record<string, number> = {};
@@ -102,6 +148,15 @@ function RequisicaoDetalhe() {
         )}
       </Card>
 
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-semibold">Itens da requisição</h2>
+        {podeAgir && !editando && (
+          <Button variant="outline" size="sm" onClick={() => setEditando(true)}>
+            <Pencil className="h-4 w-4 mr-1" /> Ajustar itens
+          </Button>
+        )}
+      </div>
+
       <Card className="p-0 overflow-hidden">
         <Table>
           <TableHeader>
@@ -114,35 +169,101 @@ function RequisicaoDetalhe() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {itens.map((it, i) => (
-              <TableRow key={it.id}>
+            {(editando ? itensEditados : itens).map((it, i) => {
+              const itemEditado = "quantidade" in it ? it : null;
+              const itemOriginal = "quantidade_solicitada" in it ? it : null;
+              return (
+              <TableRow key={it.id ?? `novo-${i}`}>
                 <TableCell className="text-muted-foreground">{i + 1}</TableCell>
-                <TableCell className="font-mono text-xs">{it.codigo || it.produtos?.codigo_barras || "—"}</TableCell>
-                <TableCell>{it.produtos?.nome}</TableCell>
+                <TableCell className="font-mono text-xs">
+                  {editando ? (produtos.data ?? []).find((p) => p.id === it.produto_id)?.codigo_barras ?? "—" : itemOriginal?.codigo || itemOriginal?.produtos?.codigo_barras || "—"}
+                </TableCell>
+                <TableCell>
+                  {editando ? (
+                    <Select
+                      value={it.produto_id}
+                      onValueChange={(produto_id) => setItensEditados((atuais) => atuais.map((x, index) => index === i ? { ...x, produto_id } : x))}
+                    >
+                      <SelectTrigger className="min-w-52"><SelectValue placeholder="Selecione o produto" /></SelectTrigger>
+                      <SelectContent>
+                        {(produtos.data ?? []).filter((p) => p.ativo).map((p) => (
+                          <SelectItem key={p.id} value={p.id} disabled={p.id !== it.produto_id && selecionados.has(p.id)}>
+                            {p.nome} ({p.estoque_atual} {p.unidade_medida})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : itemOriginal?.produtos?.nome}
+                </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {it.quantidade_solicitada} {it.produtos?.unidade_medida}
+                  {editando ? (
+                    <Input
+                      type="number" min="0.000001" step="any"
+                      className="w-28 ml-auto text-right"
+                      value={itemEditado?.quantidade ?? ""}
+                      onChange={(event) => setItensEditados((atuais) => atuais.map((x, index) => index === i ? { ...x, quantidade: event.target.value } : x))}
+                    />
+                  ) : `${itemOriginal?.quantidade_solicitada ?? 0} ${itemOriginal?.produtos?.unidade_medida ?? ""}`}
                 </TableCell>
                 <TableCell className="text-right">
-                  {podeAgir ? (
+                  {editando ? (
+                    <Button
+                      type="button" variant="ghost" size="icon" aria-label="Excluir item"
+                      disabled={itensEditados.length === 1}
+                      onClick={() => setItensEditados((atuais) => atuais.filter((_, index) => index !== i))}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  ) : podeAgir ? (
                     <Input
                       type="number" min="0" step="any"
                       className="w-28 ml-auto text-right"
-                      value={liberacoes[it.id] ?? ""}
+                      value={itemOriginal ? liberacoes[itemOriginal.id] ?? "" : ""}
                       onChange={(e) =>
-                        setLiberacoes((s) => ({ ...s, [it.id]: e.target.value }))
+                        itemOriginal && setLiberacoes((s) => ({ ...s, [itemOriginal.id]: e.target.value }))
                       }
                     />
                   ) : (
                     <span className="tabular-nums">
-                      {it.quantidade_liberada ?? 0} {it.produtos?.unidade_medida}
+                      {itemOriginal?.quantidade_liberada ?? 0} {itemOriginal?.produtos?.unidade_medida}
                     </span>
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </Card>
+
+      {editando && (
+        <Card className="p-4 space-y-4">
+          <Button
+            type="button" variant="outline" size="sm"
+            onClick={() => setItensEditados((atuais) => [...atuais, { produto_id: "", quantidade: "" }])}
+          >
+            <Plus className="h-4 w-4 mr-1" /> Adicionar produto
+          </Button>
+          <div className="grid gap-2">
+            <Label>Observação da alteração</Label>
+            <Textarea
+              value={observacaoAlteracao}
+              onChange={(event) => setObservacaoAlteracao(event.target.value)}
+              placeholder="Explique o motivo da correção"
+              rows={2}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setEditando(false)} disabled={editar.isPending}>Cancelar</Button>
+            <Button
+              onClick={salvarAlteracoes}
+              disabled={editar.isPending || !observacaoAlteracao.trim() || itensEditados.some((item) => !item.produto_id || Number(item.quantidade) <= 0) || selecionados.size !== itensEditados.length}
+            >
+              {editar.isPending ? "Salvando..." : "Salvar alterações"}
+            </Button>
+          </div>
+        </Card>
+      )}
 
       <div className="flex flex-wrap gap-2 items-end">
         <Button variant="outline" onClick={() => gerarRequisicaoPDF(r, itens)}>
@@ -219,6 +340,32 @@ function RequisicaoDetalhe() {
           </>
         )}
       </div>
+
+      <section className="space-y-3">
+        <h2 className="font-semibold flex items-center gap-2"><History className="h-4 w-4" /> Histórico de alterações</h2>
+        <Card className="divide-y">
+          {(q.data.historico ?? []).map((alteracao) => (
+            <div key={alteracao.id} className="p-4 text-sm space-y-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-medium capitalize">{alteracao.acao}</span>
+                <span className="text-xs text-muted-foreground">{new Date(alteracao.created_at).toLocaleString("pt-BR")}</span>
+              </div>
+              <p>
+                {alteracao.acao === "inclusao"
+                  ? alteracao.produto_novo?.nome ?? "—"
+                  : alteracao.produto_original?.nome ?? "—"}
+                {alteracao.acao === "substituicao" ? ` → ${alteracao.produto_novo?.nome ?? "—"}` : ""}
+                {alteracao.quantidade_original != null || alteracao.quantidade_nova != null
+                  ? ` · ${alteracao.quantidade_original ?? "—"} → ${alteracao.quantidade_nova ?? "—"}`
+                  : ""}
+              </p>
+              <p className="text-muted-foreground">{alteracao.observacao}</p>
+              <p className="text-xs text-muted-foreground">{alteracao.alterado_por} · {alteracao.cargo}</p>
+            </div>
+          ))}
+          {(q.data.historico ?? []).length === 0 && <p className="p-4 text-sm text-muted-foreground">Nenhuma alteração registrada.</p>}
+        </Card>
+      </section>
     </div>
   );
 }

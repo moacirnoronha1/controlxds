@@ -30,6 +30,23 @@ export type RequisicaoItem = {
   produtos?: { nome: string; unidade_medida: string; codigo_barras: string | null } | null;
 };
 
+export type RequisicaoAlteracao = {
+  id: string;
+  requisicao_id: string;
+  item_id: string | null;
+  acao: "inclusao" | "exclusao" | "substituicao" | "quantidade";
+  produto_original_id: string | null;
+  produto_novo_id: string | null;
+  quantidade_original: number | null;
+  quantidade_nova: number | null;
+  observacao: string;
+  alterado_por: string;
+  cargo: string;
+  created_at: string;
+  produto_original?: { nome: string } | null;
+  produto_novo?: { nome: string } | null;
+};
+
 export type Setor = { id: string; nome: string; ativo: boolean };
 export type Responsavel = { id: string; nome: string; cargo: string | null; ativo: boolean };
 
@@ -122,19 +139,54 @@ export function useRequisicao(id: string | undefined) {
     queryKey: ["requisicao", id],
     enabled: !!id,
     queryFn: async () => {
+      if (!id) throw new Error("Requisição não informada");
       const { data: req, error } = await supabase
         .from("requisicoes")
         .select("*")
-        .eq("id", id!)
+        .eq("id", id)
         .maybeSingle();
       if (error) throw error;
       const { data: itens, error: e2 } = await supabase
         .from("requisicao_itens")
         .select("*, produtos(nome, unidade_medida, codigo_barras)")
-        .eq("requisicao_id", id!);
+        .eq("requisicao_id", id);
       if (e2) throw e2;
-      return { requisicao: req as Requisicao, itens: (itens ?? []) as unknown as RequisicaoItem[] };
+      const { data: historico, error: e3 } = await supabase
+        .from("requisicao_alteracoes")
+        .select("*, produto_original:produtos!requisicao_alteracoes_produto_original_id_fkey(nome), produto_novo:produtos!requisicao_alteracoes_produto_novo_id_fkey(nome)")
+        .eq("requisicao_id", id)
+        .order("created_at", { ascending: false });
+      if (e3) throw e3;
+      return {
+        requisicao: req as Requisicao,
+        itens: (itens ?? []) as unknown as RequisicaoItem[],
+        historico: (historico ?? []) as unknown as RequisicaoAlteracao[],
+      };
     },
+  });
+}
+
+export function useEditarItensRequisicao() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (p: {
+      requisicao_id: string;
+      observacao: string;
+      itens: { id?: string; produto_id: string; quantidade: number }[];
+    }) => {
+      const { error } = await supabase.rpc("editar_itens_requisicao", {
+        _requisicao_id: p.requisicao_id,
+        _itens: p.itens,
+        _observacao: p.observacao,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ["requisicao", variables.requisicao_id] });
+      qc.invalidateQueries({ queryKey: ["requisicoes"] });
+      toast.success("Itens da requisição atualizados");
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 }
 
