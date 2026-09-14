@@ -1346,7 +1346,6 @@ export type Database = {
         Args: { _inventario_id: string }
         Returns: undefined
       }
-      gx_mestre_atual: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
