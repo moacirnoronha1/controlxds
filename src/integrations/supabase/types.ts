@@ -193,6 +193,8 @@ export type Database = {
       }
       avarias: {
         Row: {
+          arquivado_em: string | null
+          arquivado_por: string | null
           barco: string | null
           chk_aguardando: boolean
           chk_aprovado: boolean
@@ -203,6 +205,7 @@ export type Database = {
           chk_registrada: boolean
           chk_resolvido: boolean
           created_at: string
+          dado_teste: boolean
           data: string
           id: string
           local_id: string | null
@@ -224,6 +227,8 @@ export type Database = {
           valor_estimado: number | null
         }
         Insert: {
+          arquivado_em?: string | null
+          arquivado_por?: string | null
           barco?: string | null
           chk_aguardando?: boolean
           chk_aprovado?: boolean
@@ -234,6 +239,7 @@ export type Database = {
           chk_registrada?: boolean
           chk_resolvido?: boolean
           created_at?: string
+          dado_teste?: boolean
           data?: string
           id?: string
           local_id?: string | null
@@ -255,6 +261,8 @@ export type Database = {
           valor_estimado?: number | null
         }
         Update: {
+          arquivado_em?: string | null
+          arquivado_por?: string | null
           barco?: string | null
           chk_aguardando?: boolean
           chk_aprovado?: boolean
@@ -265,6 +273,7 @@ export type Database = {
           chk_registrada?: boolean
           chk_resolvido?: boolean
           created_at?: string
+          dado_teste?: boolean
           data?: string
           id?: string
           local_id?: string | null
@@ -311,7 +320,10 @@ export type Database = {
       }
       emprestimos: {
         Row: {
+          arquivado_em: string | null
+          arquivado_por: string | null
           created_at: string
+          dado_teste: boolean
           data_devolucao: string | null
           data_emprestimo: string
           destino: string | null
@@ -331,7 +343,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          arquivado_em?: string | null
+          arquivado_por?: string | null
           created_at?: string
+          dado_teste?: boolean
           data_devolucao?: string | null
           data_emprestimo?: string
           destino?: string | null
@@ -351,7 +366,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          arquivado_em?: string | null
+          arquivado_por?: string | null
           created_at?: string
+          dado_teste?: boolean
           data_devolucao?: string | null
           data_emprestimo?: string
           destino?: string | null
@@ -491,9 +509,12 @@ export type Database = {
       }
       inventarios: {
         Row: {
+          arquivado_em: string | null
+          arquivado_por: string | null
           categoria: string | null
           created_at: string
           criado_por: string | null
+          dado_teste: boolean
           fechado_em: string | null
           fechado_por: string | null
           id: string
@@ -505,9 +526,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          arquivado_em?: string | null
+          arquivado_por?: string | null
           categoria?: string | null
           created_at?: string
           criado_por?: string | null
+          dado_teste?: boolean
           fechado_em?: string | null
           fechado_por?: string | null
           id?: string
@@ -519,9 +543,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          arquivado_em?: string | null
+          arquivado_por?: string | null
           categoria?: string | null
           created_at?: string
           criado_por?: string | null
+          dado_teste?: boolean
           fechado_em?: string | null
           fechado_por?: string | null
           id?: string
@@ -980,8 +1007,11 @@ export type Database = {
       }
       requisicoes: {
         Row: {
+          arquivado_em: string | null
+          arquivado_por: string | null
           cancelada_em: string | null
           created_at: string
+          dado_teste: boolean
           data: string
           extra: boolean
           id: string
@@ -995,8 +1025,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          arquivado_em?: string | null
+          arquivado_por?: string | null
           cancelada_em?: string | null
           created_at?: string
+          dado_teste?: boolean
           data?: string
           extra?: boolean
           id?: string
@@ -1010,8 +1043,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          arquivado_em?: string | null
+          arquivado_por?: string | null
           cancelada_em?: string | null
           created_at?: string
+          dado_teste?: boolean
           data?: string
           extra?: boolean
           id?: string
@@ -1176,6 +1212,7 @@ export type Database = {
         Args: { _responsavel: string; _solicitacao_id: string }
         Returns: undefined
       }
+      arquivar_dados_antigos: { Args: { _dias?: number }; Returns: Json }
       atualizar_usuario: {
         Args: {
           _ativo: boolean
@@ -1224,8 +1261,11 @@ export type Database = {
           _setor: string
         }
         Returns: {
+          arquivado_em: string | null
+          arquivado_por: string | null
           cancelada_em: string | null
           created_at: string
+          dado_teste: boolean
           data: string
           extra: boolean
           id: string
@@ -1306,6 +1346,7 @@ export type Database = {
         Args: { _inventario_id: string }
         Returns: undefined
       }
+      gx_mestre_atual: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1322,6 +1363,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      limpar_dados_teste_seguros: { Args: never; Returns: Json }
       listar_usuarios: {
         Args: { _token: string }
         Returns: {
@@ -1402,6 +1444,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      resumo_uso_banco: { Args: never; Returns: Json }
     }
     Enums: {
       ajuste_status: "pendente" | "aprovado" | "recusado"
