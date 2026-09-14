@@ -1,9 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,15 +22,26 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, KeyRound, RotateCcw, Building2, UserCog, Plus, Trash2, MapPin } from "lucide-react";
+import { AlertTriangle, Archive, Database, HardDrive, KeyRound, Loader2, RotateCcw, Building2, UserCog, Plus, Trash2, MapPin, RefreshCw } from "lucide-react";
 import {
   useSetores, useSaveSetor, useDeleteSetor,
   useResponsaveis, useSaveResponsavel, useDeleteResponsavel,
 } from "@/lib/requisicoes";
 import { useLocais, useSaveLocal, useDeleteLocal } from "@/lib/estoque";
+import { useArchiveOldData, useCleanTestData, useDatabaseUsage } from "@/lib/database-usage";
 
 export const Route = createFileRoute("/configuracoes")({
   component: ConfigPage,
+  head: () => ({
+    meta: [
+      { title: "Configurações e Uso do Banco | GX Control" },
+      { name: "description", content: "Configurações, monitoramento e manutenção segura do GX Control." },
+      { property: "og:title", content: "Configurações e Uso do Banco | GX Control" },
+      { property: "og:description", content: "Monitoramento e manutenção segura dos dados do GX Control." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
 });
 
 const PASS_KEY = "xica:reset_password";
@@ -131,7 +147,7 @@ function ConfigPage() {
       <SetoresCard />
       <ResponsaveisCard />
 
-
+      <DatabaseUsageCard />
 
       <Card className="p-5 space-y-4">
         <div className="flex items-center gap-2">
@@ -238,6 +254,167 @@ function ConfigPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+const TABLE_LABELS: Record<string, string> = {
+  movimentacoes: "Movimentações",
+  inventario_itens: "Itens de inventário",
+  requisicao_itens: "Itens de requisição",
+  produtos: "Produtos",
+  lotes: "Lotes",
+  requisicoes: "Requisições",
+  inventarios: "Inventários",
+  emprestimos: "Empréstimos",
+  avarias: "Avarias",
+  entrada_alteracoes: "Histórico de entradas",
+  requisicao_alteracoes: "Histórico de requisições",
+  notas_fiscais: "Notas fiscais",
+  sessoes: "Sessões",
+};
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+}
+
+function DatabaseUsageCard() {
+  const usage = useDatabaseUsage();
+  const archive = useArchiveOldData();
+  const clean = useCleanTestData();
+  const [confirmAction, setConfirmAction] = useState<"archive" | "clean" | null>(null);
+
+  const archivableTotal = useMemo(
+    () => Object.values(usage.data?.arquivaveis ?? {}).reduce((sum, value) => sum + Number(value), 0),
+    [usage.data],
+  );
+  const testTotal = useMemo(
+    () => Object.values(usage.data?.testes_elegiveis ?? {}).reduce((sum, value) => sum + Number(value), 0),
+    [usage.data],
+  );
+  const duplicateTotal = useMemo(
+    () => Object.values(usage.data?.duplicidades_suspeitas ?? {}).reduce((sum, value) => sum + Number(value), 0),
+    [usage.data],
+  );
+  const referenceBytes = 500 * 1024 * 1024;
+  const estimatedPercent = Math.min(100, ((usage.data?.database_bytes ?? 0) / referenceBytes) * 100);
+  const level = estimatedPercent >= 90 ? "critical" : estimatedPercent >= 75 ? "warning" : "normal";
+
+  async function confirm() {
+    if (confirmAction === "archive") await archive.mutateAsync();
+    if (confirmAction === "clean") await clean.mutateAsync();
+    setConfirmAction(null);
+  }
+
+  return (
+    <Card className="p-5 space-y-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <Database className="h-5 w-5 text-primary mt-0.5" />
+          <div>
+            <h2 className="font-semibold">Uso do Banco</h2>
+            <p className="text-xs text-muted-foreground">Monitoramento, arquivamento e limpeza protegida.</p>
+          </div>
+        </div>
+        <Button size="icon" variant="ghost" aria-label="Atualizar uso do banco" onClick={() => usage.refetch()} disabled={usage.isFetching}>
+          <RefreshCw className={`h-4 w-4 ${usage.isFetching ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
+
+      {usage.isLoading && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando uso do banco...</div>}
+      {usage.isError && <p className="text-sm text-destructive">Não foi possível consultar o uso. Entre novamente com o perfil Mestre.</p>}
+
+      {usage.data && (
+        <>
+          <div className="grid sm:grid-cols-3 gap-3">
+            <div className="rounded-md border p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground"><HardDrive className="h-3.5 w-3.5" />Tamanho atual</div>
+              <div className="text-xl font-semibold mt-1">{formatBytes(usage.data.database_bytes)}</div>
+            </div>
+            <div className="rounded-md border p-3">
+              <div className="text-xs text-muted-foreground">Prontos para arquivar</div>
+              <div className="text-xl font-semibold mt-1">{archivableTotal}</div>
+            </div>
+            <div className="rounded-md border p-3">
+              <div className="text-xs text-muted-foreground">Duplicidades suspeitas</div>
+              <div className="text-xl font-semibold mt-1">{duplicateTotal}</div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>Faixa preventiva de 500 MB</span>
+              <Badge variant={level === "critical" ? "destructive" : level === "warning" ? "secondary" : "outline"}>
+                {level === "critical" ? "Crítico" : level === "warning" ? "Atenção" : "Normal"}
+              </Badge>
+            </div>
+            <Progress value={estimatedPercent} />
+            <p className="text-xs text-muted-foreground">
+              Esta faixa é preventiva. Se chegar a 90% ou o serviço informar falta de espaço, aumente a capacidade do banco antes de limpar dados reais.
+            </p>
+          </div>
+
+          {duplicateTotal > 0 && (
+            <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
+              Há {duplicateTotal} duplicidade(s) suspeita(s). Elas foram apenas sinalizadas e não serão removidas automaticamente.
+            </div>
+          )}
+
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader><TableRow><TableHead>Tabela</TableHead><TableHead className="text-right">Registros</TableHead><TableHead className="text-right">Espaço</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {usage.data.tabelas.map((table) => (
+                  <TableRow key={table.tabela}>
+                    <TableCell>{TABLE_LABELS[table.tabela] ?? table.tabela}</TableCell>
+                    <TableCell className="text-right tabular-nums">{table.registros.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell className="text-right tabular-nums">{formatBytes(table.bytes)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div className="rounded-md border p-4 space-y-3">
+              <div><div className="font-medium">Arquivar dados antigos</div><p className="text-xs text-muted-foreground">Move concluídos há mais de 180 dias para “Arquivados”. Não exclui históricos nem movimentações.</p></div>
+              <Button variant="outline" onClick={() => setConfirmAction("archive")} disabled={archive.isPending}>
+                <Archive className="h-4 w-4 mr-2" />Arquivar {archivableTotal} registro(s)
+              </Button>
+            </div>
+            <div className="rounded-md border p-4 space-y-3">
+              <div><div className="font-medium">Limpeza segura de testes</div><p className="text-xs text-muted-foreground">Remove somente dados marcados como teste e sem qualquer efeito no estoque.</p></div>
+              <Button variant="outline" onClick={() => setConfirmAction("clean")} disabled={clean.isPending || testTotal === 0}>
+                <Trash2 className="h-4 w-4 mr-2" />Limpar {testTotal} registro(s)
+              </Button>
+            </div>
+          </div>
+
+          <div className="text-xs text-muted-foreground">Arquivos no banco: não encontrados. XMLs são processados sem salvar o arquivo e PDFs são gerados no dispositivo.</div>
+        </>
+      )}
+
+      <AlertDialog open={confirmAction !== null} onOpenChange={(openDialog) => { if (!openDialog) setConfirmAction(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmAction === "archive" ? "Arquivar dados antigos?" : "Limpar dados de teste?"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmAction === "archive"
+                ? "Os registros concluídos há mais de 180 dias sairão das listas principais, mas continuarão acessíveis em Arquivados. Saldos e movimentações não serão alterados."
+                : "Somente registros explicitamente marcados como teste e sem efeito no estoque serão removidos. Dados reais serão bloqueados."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={archive.isPending || clean.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={(event) => { event.preventDefault(); void confirm(); }} disabled={archive.isPending || clean.isPending}>
+              {(archive.isPending || clean.isPending) ? "Processando..." : "Confirmar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Card>
   );
 }
 
