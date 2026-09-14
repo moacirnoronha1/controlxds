@@ -54,7 +54,8 @@ type Filtro = "todos" | EmprestimoTipo;
 
 function EmprestimosPage() {
   const { user } = useAuth();
-  const emp = useEmprestimos();
+  const [arquivados, setArquivados] = useState(false);
+  const emp = useEmprestimos(arquivados);
 
   const produtos = useProdutos();
   const criar = useCriarEmprestimo();
@@ -296,6 +297,11 @@ function EmprestimosPage() {
           <TabsTrigger value="tomamos_emprestado">Tomamos emprestado</TabsTrigger>
         </TabsList>
       </Tabs>
+
+      <div className="flex items-center gap-2">
+        <Button variant={!arquivados ? "secondary" : "ghost"} size="sm" onClick={() => setArquivados(false)}>Ativos</Button>
+        <Button variant={arquivados ? "secondary" : "ghost"} size="sm" onClick={() => setArquivados(true)}>Arquivados</Button>
+      </div>
 
       <Card className="p-0 overflow-hidden">
         <Table>

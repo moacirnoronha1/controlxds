@@ -41,7 +41,8 @@ function InventarioListPage() {
   const podeExcluir = can(role, "manageProducts");
   const [mes, setMes] = useState<string>("");
   const [filtroCat, setFiltroCat] = useState<string>("todas");
-  const { data: invs = [], isLoading } = useInventarios(mes || undefined, filtroCat === "todas" ? undefined : filtroCat);
+  const [arquivados, setArquivados] = useState(false);
+  const { data: invs = [], isLoading } = useInventarios(mes || undefined, filtroCat === "todas" ? undefined : filtroCat, arquivados);
   const excluir = useExcluirInventario();
   const [openNew, setOpenNew] = useState(false);
 
@@ -76,6 +77,11 @@ function InventarioListPage() {
             </Dialog>
           )}
         </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Button variant={!arquivados ? "secondary" : "ghost"} size="sm" onClick={() => setArquivados(false)}>Ativos</Button>
+        <Button variant={arquivados ? "secondary" : "ghost"} size="sm" onClick={() => setArquivados(true)}>Arquivados</Button>
       </div>
 
       <div className="rounded-md border bg-card overflow-x-auto">

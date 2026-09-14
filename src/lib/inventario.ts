@@ -18,6 +18,9 @@ export type Inventario = {
   fechado_em: string | null;
   created_at: string;
   updated_at: string;
+  arquivado_em: string | null;
+  arquivado_por: string | null;
+  dado_teste: boolean;
 };
 
 export type InventarioItem = {
@@ -45,11 +48,12 @@ export const TIPO_LABEL: Record<InventarioTipo, string> = {
   completo: "Completo",
 };
 
-export function useInventarios(mes?: string, categoria?: string) {
+export function useInventarios(mes?: string, categoria?: string, arquivados = false) {
   return useQuery({
-    queryKey: ["inventarios", mes ?? "all", categoria ?? "all"],
+    queryKey: ["inventarios", mes ?? "all", categoria ?? "all", arquivados ? "arquivados" : "ativos"],
     queryFn: async () => {
       let q = supabase.from("inventarios").select("*").order("created_at", { ascending: false });
+      q = arquivados ? q.not("arquivado_em", "is", null) : q.is("arquivado_em", null);
       if (mes) {
         const [y, m] = mes.split("-").map(Number);
         const start = new Date(y, m - 1, 1).toISOString().slice(0, 10);
@@ -57,7 +61,7 @@ export function useInventarios(mes?: string, categoria?: string) {
         q = q.gte("referencia", start).lt("referencia", end);
       }
       if (categoria) q = q.eq("categoria", categoria);
-      const { data, error } = await q;
+      const { data, error } = await q.limit(500);
       if (error) throw error;
       return data as Inventario[];
     },

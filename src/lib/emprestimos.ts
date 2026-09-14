@@ -24,17 +24,22 @@ export type Emprestimo = {
   lote_id: string | null;
   created_at: string;
   updated_at: string;
+  arquivado_em: string | null;
+  arquivado_por: string | null;
+  dado_teste: boolean;
 };
 
-export function useEmprestimos() {
+export function useEmprestimos(arquivados = false) {
   return useQuery({
-    queryKey: ["emprestimos"],
+    queryKey: ["emprestimos", arquivados ? "arquivados" : "ativos"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("emprestimos")
         .select("*")
         .order("data_emprestimo", { ascending: false })
         .order("created_at", { ascending: false });
+      query = arquivados ? query.not("arquivado_em", "is", null) : query.is("arquivado_em", null);
+      const { data, error } = await query.limit(500);
       if (error) throw error;
       // Marcar atrasados no cliente (sem alterar no banco)
       const hoje = new Date().toISOString().slice(0, 10);

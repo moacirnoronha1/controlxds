@@ -18,6 +18,9 @@ export type Requisicao = {
   liberada_em: string | null;
   cancelada_em: string | null;
   created_at: string;
+  arquivado_em: string | null;
+  arquivado_por: string | null;
+  dado_teste: boolean;
 };
 
 export type RequisicaoItem = {
@@ -120,14 +123,16 @@ export function useDeleteResponsavel() {
   });
 }
 
-export function useRequisicoes() {
+export function useRequisicoes(arquivadas = false) {
   return useQuery({
-    queryKey: ["requisicoes"],
+    queryKey: ["requisicoes", arquivadas ? "arquivadas" : "ativas"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("requisicoes")
         .select("*")
         .order("numero", { ascending: false });
+      query = arquivadas ? query.not("arquivado_em", "is", null) : query.is("arquivado_em", null);
+      const { data, error } = await query.limit(500);
       if (error) throw error;
       return data as Requisicao[];
     },
