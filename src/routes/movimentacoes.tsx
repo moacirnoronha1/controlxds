@@ -26,7 +26,7 @@ export const Route = createFileRoute("/movimentacoes")({
 });
 
 function MovsPage() {
-  const { data: movs = [] } = useMovimentacoes();
+  const { data: movs = [] } = useMovimentacoes(500);
   const [q, setQ] = useState("");
   const [tipo, setTipo] = useState("all");
 
@@ -49,7 +49,7 @@ function MovsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Movimentações</h1>
-        <p className="text-sm text-muted-foreground">Histórico completo de entradas e saídas.</p>
+        <p className="text-sm text-muted-foreground">Últimas 500 entradas e saídas. Use os filtros para localizar registros.</p>
       </div>
 
       <div className="flex flex-wrap gap-2">

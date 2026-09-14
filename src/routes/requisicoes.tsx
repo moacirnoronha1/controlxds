@@ -122,7 +122,8 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
 function RequisicoesPage() {
   const { user, role } = useAuth();
   const isRequisitante = role === "requisitante";
-  const reqs = useRequisicoes();
+  const [arquivadas, setArquivadas] = useState(false);
+  const reqs = useRequisicoes(arquivadas);
   const setores = useSetores();
   const produtos = useProdutos();
   const criar = useCriarRequisicao();
@@ -384,6 +385,11 @@ function RequisicoesPage() {
         <Checkbox checked={soExtras} onCheckedChange={(v) => setSoExtras(v === true)} />
         Mostrar apenas requisições extras / fora do horário
       </label>
+
+      <div className="flex items-center gap-2">
+        <Button variant={!arquivadas ? "secondary" : "ghost"} size="sm" onClick={() => setArquivadas(false)}>Ativas</Button>
+        <Button variant={arquivadas ? "secondary" : "ghost"} size="sm" onClick={() => setArquivadas(true)}>Arquivadas</Button>
+      </div>
 
       <Card className="p-0 overflow-hidden">
         <Table>

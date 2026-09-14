@@ -234,15 +234,15 @@ export function useLotes(produtoId?: string) {
   });
 }
 
-export function useMovimentacoes(limit?: number) {
+export function useMovimentacoes(limit = 500) {
   return useQuery({
-    queryKey: ["movimentacoes", limit ?? "all"],
+    queryKey: ["movimentacoes", limit],
     queryFn: async () => {
       let q = supabase
         .from("movimentacoes")
         .select("*, produtos(nome, unidade_medida), locais_estoque(nome)")
         .order("data_movimentacao", { ascending: false });
-      if (limit) q = q.limit(limit);
+      q = q.limit(limit);
       const { data, error } = await q;
       if (error) throw error;
       return data as Movimentacao[];

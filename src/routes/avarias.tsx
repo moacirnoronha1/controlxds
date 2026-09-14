@@ -72,6 +72,9 @@ type Avaria = {
   observacao: string | null;
   status: Status;
   created_at: string;
+  arquivado_em: string | null;
+  arquivado_por: string | null;
+  dado_teste: boolean;
   produtos?: { nome: string; unidade_medida: string } | null;
   locais_estoque?: { nome: string } | null;
   lotes?: { validade: string | null; custo_unitario: number | null } | null;
@@ -118,6 +121,7 @@ function AvariasPage() {
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [viewing, setViewing] = useState<Avaria | null>(null);
+  const [arquivadas, setArquivadas] = useState(false);
 
   const [fProduto, setFProduto] = useState("all");
   const [fLocal, setFLocal] = useState("all");
@@ -135,13 +139,15 @@ function AvariasPage() {
   const { data: locais = [] } = useLocais();
 
   const { data: rows = [], isLoading } = useQuery({
-    queryKey: ["avarias"],
+    queryKey: ["avarias", arquivadas ? "arquivadas" : "ativas"],
     enabled: podeVer,
     queryFn: async (): Promise<Avaria[]> => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("avarias" as never)
         .select("*, produtos(nome, unidade_medida), locais_estoque(nome), lotes(validade, custo_unitario)")
         .order("data", { ascending: false });
+      query = arquivadas ? query.not("arquivado_em", "is", null) : query.is("arquivado_em", null);
+      const { data, error } = await query.limit(500);
       if (error) throw error;
       return (data ?? []) as unknown as Avaria[];
     },
@@ -263,6 +269,10 @@ function AvariasPage() {
         </TabsList>
 
         <TabsContent value="lista" className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Button variant={!arquivadas ? "secondary" : "ghost"} size="sm" onClick={() => setArquivadas(false)}>Ativas</Button>
+            <Button variant={arquivadas ? "secondary" : "ghost"} size="sm" onClick={() => setArquivadas(true)}>Arquivadas</Button>
+          </div>
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-3 text-sm font-medium text-muted-foreground">
               <Filter className="h-4 w-4" /> Filtros
