@@ -30,6 +30,16 @@ import { toast } from "sonner";
 
 
 export const Route = createFileRoute("/emprestimos")({
+  head: () => ({
+    meta: [
+      { title: "Empréstimos | GX Control" },
+      { name: "description", content: "Controle de empréstimos e devoluções do estoque no GX Control." },
+      { property: "og:title", content: "Empréstimos | GX Control" },
+      { property: "og:description", content: "Controle de empréstimos e devoluções do estoque no GX Control." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: EmprestimosPage,
 });
 
@@ -51,6 +61,7 @@ const TIPO_LABEL: Record<EmprestimoTipo, string> = {
 };
 
 type Filtro = "todos" | EmprestimoTipo;
+const TODOS_OS_LOTES = "todos-os-lotes";
 
 function EmprestimosPage() {
   const { user } = useAuth();
@@ -79,6 +90,21 @@ function EmprestimosPage() {
   const [previsao, setPrevisao] = useState("");
   const [observacao, setObservacao] = useState("");
   const lotes = useLotes(produtoId || undefined);
+  const produtoSelecionado = produtos.data?.find((p) => p.id === produtoId) ?? null;
+  const lotesDoLocal = useMemo(
+    () => (lotes.data ?? []).filter((l) => Number(l.saldo) > 0 && l.local_id === localId),
+    [lotes.data, localId],
+  );
+  const saldoLotesLocal = useMemo(
+    () => lotesDoLocal.reduce((total, lote) => total + (Number(lote.saldo) || 0), 0),
+    [lotesDoLocal],
+  );
+  const saldoTodosLotes = useMemo(
+    () => (lotes.data ?? []).reduce((total, lote) => total + Math.max(0, Number(lote.saldo) || 0), 0),
+    [lotes.data],
+  );
+  const saldoSemLote = Math.max(0, Number(produtoSelecionado?.estoque_atual ?? 0) - saldoTodosLotes);
+  const saldoDisponivelLocal = saldoLotesLocal + saldoSemLote;
 
   const lista = useMemo(() => {
     const rows = emp.data ?? [];
@@ -120,6 +146,15 @@ function EmprestimosPage() {
       toast.error("Informe a previsão de devolução");
       return;
     }
+    if (tipo === "emprestamos") {
+      const saldoSelecionado = loteId && loteId !== TODOS_OS_LOTES
+        ? Number(lotesDoLocal.find((l) => l.id === loteId)?.saldo ?? 0)
+        : saldoDisponivelLocal;
+      if (q > saldoSelecionado) {
+        toast.error(`Estoque insuficiente. Disponível: ${saldoSelecionado}, solicitado: ${q}`);
+        return;
+      }
+    }
     await criar.mutateAsync({
       tipo,
       produto_id: produtoId,
@@ -127,7 +162,9 @@ function EmprestimosPage() {
       quantidade: q,
       unidade_medida: unidade.trim() || null,
       local_id: localId,
-      lote_id: tipo === "emprestamos" ? loteId || null : null,
+      lote_id: tipo === "emprestamos" && loteId !== TODOS_OS_LOTES
+        ? loteId || null
+        : null,
       origem: origem.trim() || null,
       destino: destino.trim() || null,
       responsavel: user.nome,
@@ -141,7 +178,7 @@ function EmprestimosPage() {
 
   function onProdutoChange(id: string) {
     setProdutoId(id);
-    setLoteId("");
+    setLoteId(TODOS_OS_LOTES);
     const p = produtos.data?.find((x) => x.id === id);
     if (p) {
       setProdutoNome(p.nome);
@@ -217,7 +254,7 @@ function EmprestimosPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-2">
                   <Label>Local de estoque <span className="text-destructive">*</span></Label>
-                  <Select value={localId} onValueChange={setLocalId}>
+                  <Select value={localId} onValueChange={(value) => { setLocalId(value); setLoteId(TODOS_OS_LOTES); }}>
                     <SelectTrigger><SelectValue placeholder="Selecione o local" /></SelectTrigger>
                     <SelectContent>
                       {(locais.data ?? []).filter((l) => l.ativo).map((l) => (
@@ -227,26 +264,33 @@ function EmprestimosPage() {
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label>Lote {tipo === "emprestamos" ? "(opcional — senão usa validade mais próxima)" : "(gerado automaticamente)"}</Label>
+                  <Label>Lote {tipo === "emprestamos" ? "(saldo somado no local)" : "(gerado automaticamente)"}</Label>
                   <Select
                     value={loteId}
                     onValueChange={setLoteId}
                     disabled={tipo !== "emprestamos" || !produtoId}
                   >
-                    <SelectTrigger><SelectValue placeholder="Automático (FEFO)" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Selecione como baixar" /></SelectTrigger>
                     <SelectContent>
-                      {(lotes.data ?? [])
-                        .filter((l) => Number(l.saldo) > 0 && (!localId || l.local_id === localId))
-                        .map((l) => (
+                      <SelectItem value={TODOS_OS_LOTES}>
+                        Todos os lotes · {saldoDisponivelLocal} disponível
+                      </SelectItem>
+                      {lotesDoLocal.map((l) => (
                           <SelectItem key={l.id} value={l.id}>
                             {l.validade
                               ? new Date(l.validade + "T00:00:00").toLocaleDateString("pt-BR")
                               : "sem validade"}{" "}
-                            · saldo {l.saldo}
+                            · saldo {l.saldo} · {l.locais_estoque?.nome ?? "local selecionado"}
                           </SelectItem>
                         ))}
                     </SelectContent>
                   </Select>
+                  {tipo === "emprestamos" && produtoId && localId && (
+                    <p className="text-xs text-muted-foreground">
+                      Disponível neste local: {saldoDisponivelLocal} {unidade}
+                      {saldoSemLote > 0 ? ` · inclui ${saldoSemLote} sem lote, regularizado automaticamente` : ""}
+                    </p>
+                  )}
                 </div>
               </div>
 
