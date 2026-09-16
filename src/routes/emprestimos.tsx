@@ -62,7 +62,6 @@ const TIPO_LABEL: Record<EmprestimoTipo, string> = {
 
 type Filtro = "todos" | EmprestimoTipo;
 const TODOS_OS_LOTES = "todos-os-lotes";
-const ESTOQUE_SEM_LOTE = "estoque-sem-lote";
 
 function EmprestimosPage() {
   const { user } = useAuth();
@@ -148,11 +147,9 @@ function EmprestimosPage() {
       return;
     }
     if (tipo === "emprestamos") {
-      const saldoSelecionado = loteId && loteId !== TODOS_OS_LOTES && loteId !== ESTOQUE_SEM_LOTE
+      const saldoSelecionado = loteId && loteId !== TODOS_OS_LOTES
         ? Number(lotesDoLocal.find((l) => l.id === loteId)?.saldo ?? 0)
-        : loteId === ESTOQUE_SEM_LOTE
-          ? saldoSemLote
-          : saldoDisponivelLocal;
+        : saldoDisponivelLocal;
       if (q > saldoSelecionado) {
         toast.error(`Estoque insuficiente. Disponível: ${saldoSelecionado}, solicitado: ${q}`);
         return;
@@ -165,7 +162,7 @@ function EmprestimosPage() {
       quantidade: q,
       unidade_medida: unidade.trim() || null,
       local_id: localId,
-      lote_id: tipo === "emprestamos" && loteId !== TODOS_OS_LOTES && loteId !== ESTOQUE_SEM_LOTE
+      lote_id: tipo === "emprestamos" && loteId !== TODOS_OS_LOTES
         ? loteId || null
         : null,
       origem: origem.trim() || null,
@@ -286,17 +283,12 @@ function EmprestimosPage() {
                             · saldo {l.saldo} · {l.locais_estoque?.nome ?? "local selecionado"}
                           </SelectItem>
                         ))}
-                      {saldoSemLote > 0 && (
-                        <SelectItem value={ESTOQUE_SEM_LOTE}>
-                          Estoque sem lote · {saldoSemLote} disponível
-                        </SelectItem>
-                      )}
                     </SelectContent>
                   </Select>
                   {tipo === "emprestamos" && produtoId && localId && (
                     <p className="text-xs text-muted-foreground">
                       Disponível neste local: {saldoDisponivelLocal} {unidade}
-                      {saldoSemLote > 0 ? ` · ${saldoSemLote} sem lote` : ""}
+                      {saldoSemLote > 0 ? ` · inclui ${saldoSemLote} sem lote, regularizado automaticamente` : ""}
                     </p>
                   )}
                 </div>
