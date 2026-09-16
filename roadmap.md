@@ -12,3 +12,4 @@ Concluído em 01/09/2026.
 - [x] Permitir edição auditada de entradas/lotes, ajustando estoque apenas pela diferença de quantidade.
 - [x] Corrigir seleção e baixa por lote nas avarias, incluindo estoque legado sem lote.
 - [x] Otimizar uso do banco, arquivar históricos concluídos e criar painel de monitoramento seguro.
+- [x] Corrigir validação e baixa de empréstimos por produto e local, incluindo estoque sem lote.
