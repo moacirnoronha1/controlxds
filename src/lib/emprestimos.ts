@@ -121,8 +121,8 @@ export function useDevolverEmprestimo() {
         _id: p.id,
         _data: p.data,
         _responsavel: p.responsavel ?? "",
-        _local_id: p.local_id ?? null,
-        _lote_id: p.lote_id ?? null,
+        _local_id: p.local_id ?? undefined,
+        _lote_id: p.lote_id ?? undefined,
       });
       if (error) throw error;
     },
