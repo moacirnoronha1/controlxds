@@ -1298,7 +1298,13 @@ export type Database = {
         Returns: string
       }
       devolver_emprestimo: {
-        Args: { _data: string; _id: string; _responsavel: string }
+        Args: {
+          _data: string
+          _id: string
+          _local_id?: string
+          _lote_id?: string
+          _responsavel: string
+        }
         Returns: undefined
       }
       editar_entrada_lote: {
