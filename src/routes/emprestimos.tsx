@@ -23,7 +23,7 @@ import { Plus, ArrowLeftRight, ArrowRightLeft, CheckCircle2, Trash2 } from "luci
 import { useProdutos, useLocais, useLotes } from "@/lib/estoque";
 import {
   useEmprestimos, useCriarEmprestimo, useDevolverEmprestimo, useDeleteEmprestimo,
-  type EmprestimoTipo, type EmprestimoStatus,
+  type Emprestimo, type EmprestimoTipo, type EmprestimoStatus,
 } from "@/lib/emprestimos";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -75,6 +75,9 @@ function EmprestimosPage() {
   const locais = useLocais();
 
   const [open, setOpen] = useState(false);
+  const [emprestimoDevolucao, setEmprestimoDevolucao] = useState<Emprestimo | null>(null);
+  const [localDevolucao, setLocalDevolucao] = useState("");
+  const [loteDevolucao, setLoteDevolucao] = useState(TODOS_OS_LOTES);
   const [filtro, setFiltro] = useState<Filtro>("todos");
 
   const [tipo, setTipo] = useState<EmprestimoTipo>("emprestamos");
@@ -90,6 +93,20 @@ function EmprestimosPage() {
   const [previsao, setPrevisao] = useState("");
   const [observacao, setObservacao] = useState("");
   const lotes = useLotes(produtoId || undefined);
+  const lotesDevolucao = useLotes(emprestimoDevolucao?.produto_id ?? undefined);
+  const lotesDisponiveisDevolucao = useMemo(
+    () => (lotesDevolucao.data ?? []).filter(
+      (l) => l.local_id === localDevolucao && Number(l.saldo) > 0,
+    ),
+    [lotesDevolucao.data, localDevolucao],
+  );
+  const saldoDevolucao = useMemo(
+    () => lotesDisponiveisDevolucao.reduce(
+      (total, lote) => total + (Number(lote.saldo) || 0),
+      0,
+    ),
+    [lotesDisponiveisDevolucao],
+  );
   const produtoSelecionado = produtos.data?.find((p) => p.id === produtoId) ?? null;
   const lotesDoLocal = useMemo(
     () => (lotes.data ?? []).filter((l) => Number(l.saldo) > 0 && l.local_id === localId),
@@ -185,6 +202,39 @@ function EmprestimosPage() {
       setUnidade(p.unidade_medida);
       if (p.local_padrao_id) setLocalId(p.local_padrao_id);
     }
+  }
+
+  function abrirDevolucao(emprestimo: Emprestimo) {
+    setEmprestimoDevolucao(emprestimo);
+    setLocalDevolucao(emprestimo.local_id ?? "");
+    setLoteDevolucao(TODOS_OS_LOTES);
+  }
+
+  async function confirmarDevolucao() {
+    if (!emprestimoDevolucao || !localDevolucao) {
+      toast.error("Selecione o local da devolução");
+      return;
+    }
+    if (
+      emprestimoDevolucao.tipo === "tomamos_emprestado" &&
+      Number(emprestimoDevolucao.quantidade) > saldoDevolucao
+    ) {
+      toast.error(
+        `Estoque insuficiente no local. Disponível: ${saldoDevolucao}, devolução: ${emprestimoDevolucao.quantidade}`,
+      );
+      return;
+    }
+    await devolver.mutateAsync({
+      id: emprestimoDevolucao.id,
+      data: new Date().toISOString().slice(0, 10),
+      responsavel: user?.nome ?? null,
+      local_id: localDevolucao,
+      lote_id:
+        emprestimoDevolucao.tipo === "tomamos_emprestado" && loteDevolucao !== TODOS_OS_LOTES
+          ? loteDevolucao
+          : null,
+    });
+    setEmprestimoDevolucao(null);
   }
 
   return (
@@ -347,6 +397,74 @@ function EmprestimosPage() {
         <Button variant={arquivados ? "secondary" : "ghost"} size="sm" onClick={() => setArquivados(true)}>Arquivados</Button>
       </div>
 
+      <Dialog
+        open={Boolean(emprestimoDevolucao)}
+        onOpenChange={(value) => {
+          if (!value) setEmprestimoDevolucao(null);
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Registrar devolução</DialogTitle></DialogHeader>
+          {emprestimoDevolucao && (
+            <div className="grid gap-4">
+              <div className="text-sm">
+                <div className="font-medium">{emprestimoDevolucao.produto_nome}</div>
+                <div className="text-muted-foreground">
+                  Quantidade: {emprestimoDevolucao.quantidade} {emprestimoDevolucao.unidade_medida ?? ""}
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label>Local de estoque <span className="text-destructive">*</span></Label>
+                <Select
+                  value={localDevolucao}
+                  onValueChange={(value) => {
+                    setLocalDevolucao(value);
+                    setLoteDevolucao(TODOS_OS_LOTES);
+                  }}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione o local" /></SelectTrigger>
+                  <SelectContent>
+                    {(locais.data ?? []).filter((l) => l.ativo).map((l) => (
+                      <SelectItem key={l.id} value={l.id}>{l.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {emprestimoDevolucao.tipo === "tomamos_emprestado" && (
+                <div className="grid gap-2">
+                  <Label>Lote para baixa</Label>
+                  <Select value={loteDevolucao} onValueChange={setLoteDevolucao} disabled={!localDevolucao}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o lote" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={TODOS_OS_LOTES}>
+                        Usar lotes disponíveis · total {saldoDevolucao}
+                      </SelectItem>
+                      {lotesDisponiveisDevolucao.map((l) => (
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.validade
+                            ? new Date(l.validade + "T00:00:00").toLocaleDateString("pt-BR")
+                            : "sem validade"}{" "}
+                          · saldo {l.saldo} · {l.locais_estoque?.nome ?? "local selecionado"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Apenas lotes com saldo são exibidos. Sem seleção específica, a baixa usa os lotes disponíveis.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEmprestimoDevolucao(null)}>Cancelar</Button>
+            <Button onClick={confirmarDevolucao} disabled={devolver.isPending || !localDevolucao}>
+              Confirmar devolução
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Card className="p-0 overflow-hidden">
         <Table>
           <TableHeader>
@@ -409,13 +527,7 @@ function EmprestimosPage() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() =>
-                          devolver.mutate({
-                            id: e.id,
-                            data: new Date().toISOString().slice(0, 10),
-                            responsavel: user?.nome ?? null,
-                          })
-                        }
+                        onClick={() => abrirDevolucao(e)}
                         title="Marcar como devolvido"
                       >
                         <CheckCircle2 className="h-4 w-4 text-success" />

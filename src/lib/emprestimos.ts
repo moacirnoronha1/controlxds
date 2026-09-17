@@ -110,11 +110,19 @@ export function useCriarEmprestimo() {
 export function useDevolverEmprestimo() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: { id: string; data: string; responsavel?: string | null }) => {
+    mutationFn: async (p: {
+      id: string;
+      data: string;
+      responsavel?: string | null;
+      local_id?: string | null;
+      lote_id?: string | null;
+    }) => {
       const { error } = await supabase.rpc("devolver_emprestimo", {
         _id: p.id,
         _data: p.data,
         _responsavel: p.responsavel ?? "",
+        _local_id: p.local_id ?? null,
+        _lote_id: p.lote_id ?? null,
       });
       if (error) throw error;
     },
