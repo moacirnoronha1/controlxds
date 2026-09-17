@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { upper } from "@/lib/utils";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,6 +107,28 @@ function EmprestimosPage() {
     ),
     [lotesDisponiveisDevolucao],
   );
+  useEffect(() => {
+    if (
+      !emprestimoDevolucao ||
+      emprestimoDevolucao.tipo !== "tomamos_emprestado" ||
+      lotesDevolucao.isLoading
+    ) return;
+
+    const quantidadeDevolver = Number(emprestimoDevolucao.quantidade);
+    if (saldoDevolucao >= quantidadeDevolver) return;
+
+    const saldoPorLocal = new Map<string, number>();
+    for (const lote of lotesDevolucao.data ?? []) {
+      const saldo = Number(lote.saldo) || 0;
+      if (saldo <= 0) continue;
+      saldoPorLocal.set(lote.local_id, (saldoPorLocal.get(lote.local_id) ?? 0) + saldo);
+    }
+    const localComSaldo = [...saldoPorLocal.entries()].find(([, saldo]) => saldo >= quantidadeDevolver);
+    if (localComSaldo && localComSaldo[0] !== localDevolucao) {
+      setLocalDevolucao(localComSaldo[0]);
+      setLoteDevolucao(TODOS_OS_LOTES);
+    }
+  }, [emprestimoDevolucao, localDevolucao, lotesDevolucao.data, lotesDevolucao.isLoading, saldoDevolucao]);
   const produtoSelecionado = produtos.data?.find((p) => p.id === produtoId) ?? null;
   const lotesDoLocal = useMemo(
     () => (lotes.data ?? []).filter((l) => Number(l.saldo) > 0 && l.local_id === localId),
