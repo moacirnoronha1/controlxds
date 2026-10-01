@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
   Gauge,
   Dices,
+  BadgeDollarSign,
 } from "lucide-react";
 
 import {
@@ -56,6 +57,7 @@ const items: Item[] = [
   { title: "Movimentações", url: "/movimentacoes", icon: History, roles: READ_OP },
   { title: "Mapa", url: "/mapa", icon: Grid3x3, roles: READ_OP },
   { title: "Validade e Custo", url: "/validade-custo", icon: CalendarClock, roles: READ_OP },
+  { title: "Central de Preços", url: "/precos", icon: BadgeDollarSign, roles: READ_OP },
   { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: READ_OP },
   { title: "Indicadores", url: "/indicadores", icon: Gauge, roles: READ_OP },
   { title: "Inventário", url: "/inventario", icon: ClipboardCheck, roles: OP },
