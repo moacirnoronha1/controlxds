@@ -25,6 +25,16 @@ function brandedErrorResponse(): Response {
   });
 }
 
+function isRequestAbort(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const value = error as { message?: unknown; code?: unknown; cause?: unknown };
+  return (
+    value.code === "ECONNRESET" ||
+    value.message === "aborted" ||
+    isRequestAbort(value.cause)
+  );
+}
+
 function isCatastrophicSsrErrorBody(body: string, responseStatus: number): boolean {
   let payload: unknown;
   try {
@@ -62,7 +72,11 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
     return response;
   }
 
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
+  const captured = consumeLastCapturedError();
+  if (isRequestAbort(captured)) {
+    return new Response(null, { status: 499, statusText: "Client Closed Request" });
+  }
+  console.error(captured ?? new Error(`h3 swallowed SSR error: ${body}`));
   return brandedErrorResponse();
 }
 
@@ -73,6 +87,9 @@ export default {
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
+      if (request.signal.aborted || isRequestAbort(error)) {
+        return new Response(null, { status: 499, statusText: "Client Closed Request" });
+      }
       console.error(error);
       return brandedErrorResponse();
     }

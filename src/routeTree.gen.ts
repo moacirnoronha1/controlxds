@@ -15,6 +15,7 @@ import { Route as ScanRouteImport } from './routes/scan'
 import { Route as RequisicoesRouteImport } from './routes/requisicoes'
 import { Route as RelatorioRouteImport } from './routes/relatorio'
 import { Route as ProdutosRouteImport } from './routes/produtos'
+import { Route as PrecosRouteImport } from './routes/precos'
 import { Route as MovimentacoesRouteImport } from './routes/movimentacoes'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as InventarioRouteImport } from './routes/inventario'
@@ -59,6 +60,11 @@ const RelatorioRoute = RelatorioRouteImport.update({
 const ProdutosRoute = ProdutosRouteImport.update({
   id: '/produtos',
   path: '/produtos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrecosRoute = PrecosRouteImport.update({
+  id: '/precos',
+  path: '/precos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MovimentacoesRoute = MovimentacoesRouteImport.update({
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
+  '/precos': typeof PrecosRoute
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/requisicoes': typeof RequisicoesRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
+  '/precos': typeof PrecosRoute
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/requisicoes': typeof RequisicoesRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
+  '/precos': typeof PrecosRoute
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/requisicoes': typeof RequisicoesRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/inventario'
     | '/mapa'
     | '/movimentacoes'
+    | '/precos'
     | '/produtos'
     | '/relatorio'
     | '/requisicoes'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/inventario'
     | '/mapa'
     | '/movimentacoes'
+    | '/precos'
     | '/produtos'
     | '/relatorio'
     | '/requisicoes'
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '/inventario'
     | '/mapa'
     | '/movimentacoes'
+    | '/precos'
     | '/produtos'
     | '/relatorio'
     | '/requisicoes'
@@ -293,6 +305,7 @@ export interface RootRouteChildren {
   InventarioRoute: typeof InventarioRoute
   MapaRoute: typeof MapaRoute
   MovimentacoesRoute: typeof MovimentacoesRoute
+  PrecosRoute: typeof PrecosRoute
   ProdutosRoute: typeof ProdutosRoute
   RelatorioRoute: typeof RelatorioRoute
   RequisicoesRoute: typeof RequisicoesRoute
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       path: '/produtos'
       fullPath: '/produtos'
       preLoaderRoute: typeof ProdutosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/precos': {
+      id: '/precos'
+      path: '/precos'
+      fullPath: '/precos'
+      preLoaderRoute: typeof PrecosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/movimentacoes': {
@@ -469,6 +489,7 @@ const rootRouteChildren: RootRouteChildren = {
   InventarioRoute: InventarioRoute,
   MapaRoute: MapaRoute,
   MovimentacoesRoute: MovimentacoesRoute,
+  PrecosRoute: PrecosRoute,
   ProdutosRoute: ProdutosRoute,
   RelatorioRoute: RelatorioRoute,
   RequisicoesRoute: RequisicoesRoute,

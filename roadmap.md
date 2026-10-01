@@ -14,3 +14,4 @@ Concluído em 01/09/2026.
 - [x] Otimizar uso do banco, arquivar históricos concluídos e criar painel de monitoramento seguro.
 - [x] Corrigir validação e baixa de empréstimos por produto e local, incluindo estoque sem lote.
 - [x] Corrigir devolução de empréstimos por produto/local, ignorando lote zerado e permitindo baixa em lotes disponíveis.
+- [x] Criar Central de Preços de Insumos com filtros, resumo e histórico detalhado por entrada.
