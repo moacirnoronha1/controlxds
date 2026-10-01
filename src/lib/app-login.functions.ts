@@ -9,7 +9,7 @@ type LoginInput = { username: string; senha: string };
  * como `authenticated` (as tabelas operacionais exigem autenticação).
  */
 export const loginComSessao = createServerFn({ method: "POST" })
-  .inputValidator((d: LoginInput) => ({
+  .validator((d: LoginInput) => ({
     username: String(d?.username ?? "").trim(),
     senha: String(d?.senha ?? ""),
   }))
