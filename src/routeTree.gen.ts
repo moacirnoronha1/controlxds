@@ -9,111 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ValidadeCustoRouteImport } from './routes/validade-custo'
-import { Route as UsuariosRouteImport } from './routes/usuarios'
-import { Route as ScanRouteImport } from './routes/scan'
-import { Route as RequisicoesRouteImport } from './routes/requisicoes'
-import { Route as RelatorioRouteImport } from './routes/relatorio'
-import { Route as ProdutosRouteImport } from './routes/produtos'
-import { Route as MovimentacoesRouteImport } from './routes/movimentacoes'
-import { Route as MapaRouteImport } from './routes/mapa'
-import { Route as InventarioRouteImport } from './routes/inventario'
-import { Route as IndicadoresRouteImport } from './routes/indicadores'
-import { Route as EntradasRouteImport } from './routes/entradas'
-import { Route as EmprestimosRouteImport } from './routes/emprestimos'
-import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
-import { Route as AvariasRouteImport } from './routes/avarias'
-import { Route as AprovacoesRouteImport } from './routes/aprovacoes'
-import { Route as AmostragemRouteImport } from './routes/amostragem'
-import { Route as AlertasRouteImport } from './routes/alertas'
-import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as RequisicoesIdRouteImport } from './routes/requisicoes_.$id'
+import { Route as AjustesRouteImport } from './routes/ajustes'
+import { Route as AlertasRouteImport } from './routes/alertas'
+import { Route as AmostragemRouteImport } from './routes/amostragem'
+import { Route as AprovacoesRouteImport } from './routes/aprovacoes'
+import { Route as AvariasRouteImport } from './routes/avarias'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as EmprestimosRouteImport } from './routes/emprestimos'
+import { Route as EntradasRouteImport } from './routes/entradas'
+import { Route as IndicadoresRouteImport } from './routes/indicadores'
+import { Route as InventarioRouteImport } from './routes/inventario'
+import { Route as MapaRouteImport } from './routes/mapa'
+import { Route as MovimentacoesRouteImport } from './routes/movimentacoes'
+import { Route as PrecosRouteImport } from './routes/precos'
+import { Route as ProdutosRouteImport } from './routes/produtos'
+import { Route as RelatorioRouteImport } from './routes/relatorio'
+import { Route as RequisicoesRouteImport } from './routes/requisicoes'
+import { Route as ScanRouteImport } from './routes/scan'
+import { Route as UsuariosRouteImport } from './routes/usuarios'
+import { Route as ValidadeCustoRouteImport } from './routes/validade-custo'
 import { Route as InventarioIdRouteImport } from './routes/inventario_.$id'
+import { Route as RequisicoesIdRouteImport } from './routes/requisicoes_.$id'
 
-const ValidadeCustoRoute = ValidadeCustoRouteImport.update({
-  id: '/validade-custo',
-  path: '/validade-custo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UsuariosRoute = UsuariosRouteImport.update({
-  id: '/usuarios',
-  path: '/usuarios',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ScanRoute = ScanRouteImport.update({
-  id: '/scan',
-  path: '/scan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RequisicoesRoute = RequisicoesRouteImport.update({
-  id: '/requisicoes',
-  path: '/requisicoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RelatorioRoute = RelatorioRouteImport.update({
-  id: '/relatorio',
-  path: '/relatorio',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProdutosRoute = ProdutosRouteImport.update({
-  id: '/produtos',
-  path: '/produtos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MovimentacoesRoute = MovimentacoesRouteImport.update({
-  id: '/movimentacoes',
-  path: '/movimentacoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MapaRoute = MapaRouteImport.update({
-  id: '/mapa',
-  path: '/mapa',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InventarioRoute = InventarioRouteImport.update({
-  id: '/inventario',
-  path: '/inventario',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndicadoresRoute = IndicadoresRouteImport.update({
-  id: '/indicadores',
-  path: '/indicadores',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EntradasRoute = EntradasRouteImport.update({
-  id: '/entradas',
-  path: '/entradas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EmprestimosRoute = EmprestimosRouteImport.update({
-  id: '/emprestimos',
-  path: '/emprestimos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
-  id: '/configuracoes',
-  path: '/configuracoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AvariasRoute = AvariasRouteImport.update({
-  id: '/avarias',
-  path: '/avarias',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AprovacoesRoute = AprovacoesRouteImport.update({
-  id: '/aprovacoes',
-  path: '/aprovacoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AmostragemRoute = AmostragemRouteImport.update({
-  id: '/amostragem',
-  path: '/amostragem',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AlertasRoute = AlertasRouteImport.update({
-  id: '/alertas',
-  path: '/alertas',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AjustesRoute = AjustesRouteImport.update({
@@ -121,19 +42,104 @@ const AjustesRoute = AjustesRouteImport.update({
   path: '/ajustes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AlertasRoute = AlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RequisicoesIdRoute = RequisicoesIdRouteImport.update({
-  id: '/requisicoes_/$id',
-  path: '/requisicoes/$id',
+const AmostragemRoute = AmostragemRouteImport.update({
+  id: '/amostragem',
+  path: '/amostragem',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AprovacoesRoute = AprovacoesRouteImport.update({
+  id: '/aprovacoes',
+  path: '/aprovacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvariasRoute = AvariasRouteImport.update({
+  id: '/avarias',
+  path: '/avarias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmprestimosRoute = EmprestimosRouteImport.update({
+  id: '/emprestimos',
+  path: '/emprestimos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntradasRoute = EntradasRouteImport.update({
+  id: '/entradas',
+  path: '/entradas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndicadoresRoute = IndicadoresRouteImport.update({
+  id: '/indicadores',
+  path: '/indicadores',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InventarioRoute = InventarioRouteImport.update({
+  id: '/inventario',
+  path: '/inventario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapaRoute = MapaRouteImport.update({
+  id: '/mapa',
+  path: '/mapa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MovimentacoesRoute = MovimentacoesRouteImport.update({
+  id: '/movimentacoes',
+  path: '/movimentacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrecosRoute = PrecosRouteImport.update({
+  id: '/precos',
+  path: '/precos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProdutosRoute = ProdutosRouteImport.update({
+  id: '/produtos',
+  path: '/produtos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RelatorioRoute = RelatorioRouteImport.update({
+  id: '/relatorio',
+  path: '/relatorio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequisicoesRoute = RequisicoesRouteImport.update({
+  id: '/requisicoes',
+  path: '/requisicoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsuariosRoute = UsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ValidadeCustoRoute = ValidadeCustoRouteImport.update({
+  id: '/validade-custo',
+  path: '/validade-custo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InventarioIdRoute = InventarioIdRouteImport.update({
   id: '/inventario_/$id',
   path: '/inventario/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequisicoesIdRoute = RequisicoesIdRouteImport.update({
+  id: '/requisicoes_/$id',
+  path: '/requisicoes/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
+  '/precos': typeof PrecosRoute
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/requisicoes': typeof RequisicoesRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
+  '/precos': typeof PrecosRoute
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/requisicoes': typeof RequisicoesRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/inventario': typeof InventarioRoute
   '/mapa': typeof MapaRoute
   '/movimentacoes': typeof MovimentacoesRoute
+  '/precos': typeof PrecosRoute
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/requisicoes': typeof RequisicoesRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/inventario'
     | '/mapa'
     | '/movimentacoes'
+    | '/precos'
     | '/produtos'
     | '/relatorio'
     | '/requisicoes'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/inventario'
     | '/mapa'
     | '/movimentacoes'
+    | '/precos'
     | '/produtos'
     | '/relatorio'
     | '/requisicoes'
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '/inventario'
     | '/mapa'
     | '/movimentacoes'
+    | '/precos'
     | '/produtos'
     | '/relatorio'
     | '/requisicoes'
@@ -293,6 +305,7 @@ export interface RootRouteChildren {
   InventarioRoute: typeof InventarioRoute
   MapaRoute: typeof MapaRoute
   MovimentacoesRoute: typeof MovimentacoesRoute
+  PrecosRoute: typeof PrecosRoute
   ProdutosRoute: typeof ProdutosRoute
   RelatorioRoute: typeof RelatorioRoute
   RequisicoesRoute: typeof RequisicoesRoute
@@ -305,123 +318,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/validade-custo': {
-      id: '/validade-custo'
-      path: '/validade-custo'
-      fullPath: '/validade-custo'
-      preLoaderRoute: typeof ValidadeCustoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/usuarios': {
-      id: '/usuarios'
-      path: '/usuarios'
-      fullPath: '/usuarios'
-      preLoaderRoute: typeof UsuariosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/scan': {
-      id: '/scan'
-      path: '/scan'
-      fullPath: '/scan'
-      preLoaderRoute: typeof ScanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/requisicoes': {
-      id: '/requisicoes'
-      path: '/requisicoes'
-      fullPath: '/requisicoes'
-      preLoaderRoute: typeof RequisicoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/relatorio': {
-      id: '/relatorio'
-      path: '/relatorio'
-      fullPath: '/relatorio'
-      preLoaderRoute: typeof RelatorioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/produtos': {
-      id: '/produtos'
-      path: '/produtos'
-      fullPath: '/produtos'
-      preLoaderRoute: typeof ProdutosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/movimentacoes': {
-      id: '/movimentacoes'
-      path: '/movimentacoes'
-      fullPath: '/movimentacoes'
-      preLoaderRoute: typeof MovimentacoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mapa': {
-      id: '/mapa'
-      path: '/mapa'
-      fullPath: '/mapa'
-      preLoaderRoute: typeof MapaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inventario': {
-      id: '/inventario'
-      path: '/inventario'
-      fullPath: '/inventario'
-      preLoaderRoute: typeof InventarioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/indicadores': {
-      id: '/indicadores'
-      path: '/indicadores'
-      fullPath: '/indicadores'
-      preLoaderRoute: typeof IndicadoresRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/entradas': {
-      id: '/entradas'
-      path: '/entradas'
-      fullPath: '/entradas'
-      preLoaderRoute: typeof EntradasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/emprestimos': {
-      id: '/emprestimos'
-      path: '/emprestimos'
-      fullPath: '/emprestimos'
-      preLoaderRoute: typeof EmprestimosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/configuracoes': {
-      id: '/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof ConfiguracoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/avarias': {
-      id: '/avarias'
-      path: '/avarias'
-      fullPath: '/avarias'
-      preLoaderRoute: typeof AvariasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/aprovacoes': {
-      id: '/aprovacoes'
-      path: '/aprovacoes'
-      fullPath: '/aprovacoes'
-      preLoaderRoute: typeof AprovacoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/amostragem': {
-      id: '/amostragem'
-      path: '/amostragem'
-      fullPath: '/amostragem'
-      preLoaderRoute: typeof AmostragemRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/alertas': {
-      id: '/alertas'
-      path: '/alertas'
-      fullPath: '/alertas'
-      preLoaderRoute: typeof AlertasRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ajustes': {
@@ -431,18 +332,130 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AjustesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/alertas': {
+      id: '/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/requisicoes_/$id': {
-      id: '/requisicoes_/$id'
-      path: '/requisicoes/$id'
-      fullPath: '/requisicoes/$id'
-      preLoaderRoute: typeof RequisicoesIdRouteImport
+    '/amostragem': {
+      id: '/amostragem'
+      path: '/amostragem'
+      fullPath: '/amostragem'
+      preLoaderRoute: typeof AmostragemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aprovacoes': {
+      id: '/aprovacoes'
+      path: '/aprovacoes'
+      fullPath: '/aprovacoes'
+      preLoaderRoute: typeof AprovacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avarias': {
+      id: '/avarias'
+      path: '/avarias'
+      fullPath: '/avarias'
+      preLoaderRoute: typeof AvariasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/emprestimos': {
+      id: '/emprestimos'
+      path: '/emprestimos'
+      fullPath: '/emprestimos'
+      preLoaderRoute: typeof EmprestimosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entradas': {
+      id: '/entradas'
+      path: '/entradas'
+      fullPath: '/entradas'
+      preLoaderRoute: typeof EntradasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/indicadores': {
+      id: '/indicadores'
+      path: '/indicadores'
+      fullPath: '/indicadores'
+      preLoaderRoute: typeof IndicadoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inventario': {
+      id: '/inventario'
+      path: '/inventario'
+      fullPath: '/inventario'
+      preLoaderRoute: typeof InventarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mapa': {
+      id: '/mapa'
+      path: '/mapa'
+      fullPath: '/mapa'
+      preLoaderRoute: typeof MapaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/movimentacoes': {
+      id: '/movimentacoes'
+      path: '/movimentacoes'
+      fullPath: '/movimentacoes'
+      preLoaderRoute: typeof MovimentacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/precos': {
+      id: '/precos'
+      path: '/precos'
+      fullPath: '/precos'
+      preLoaderRoute: typeof PrecosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/produtos': {
+      id: '/produtos'
+      path: '/produtos'
+      fullPath: '/produtos'
+      preLoaderRoute: typeof ProdutosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/relatorio': {
+      id: '/relatorio'
+      path: '/relatorio'
+      fullPath: '/relatorio'
+      preLoaderRoute: typeof RelatorioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/requisicoes': {
+      id: '/requisicoes'
+      path: '/requisicoes'
+      fullPath: '/requisicoes'
+      preLoaderRoute: typeof RequisicoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/usuarios': {
+      id: '/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof UsuariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/validade-custo': {
+      id: '/validade-custo'
+      path: '/validade-custo'
+      fullPath: '/validade-custo'
+      preLoaderRoute: typeof ValidadeCustoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inventario_/$id': {
@@ -450,6 +463,13 @@ declare module '@tanstack/react-router' {
       path: '/inventario/$id'
       fullPath: '/inventario/$id'
       preLoaderRoute: typeof InventarioIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/requisicoes_/$id': {
+      id: '/requisicoes_/$id'
+      path: '/requisicoes/$id'
+      fullPath: '/requisicoes/$id'
+      preLoaderRoute: typeof RequisicoesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -469,6 +489,7 @@ const rootRouteChildren: RootRouteChildren = {
   InventarioRoute: InventarioRoute,
   MapaRoute: MapaRoute,
   MovimentacoesRoute: MovimentacoesRoute,
+  PrecosRoute: PrecosRoute,
   ProdutosRoute: ProdutosRoute,
   RelatorioRoute: RelatorioRoute,
   RequisicoesRoute: RequisicoesRoute,
