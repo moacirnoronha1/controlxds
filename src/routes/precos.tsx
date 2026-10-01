@@ -107,10 +107,11 @@ function CentralPrecosPage() {
       .sort((a, b) => a.produto.nome.localeCompare(b.produto.nome, "pt-BR"));
   }, [entradasFiltradas]);
 
-  const historicoAberto = produtoAberto
-    ? entradasFiltradas.filter((entrada) => entrada.produto_id === produtoAberto.id).reverse()
+  const entradasProdutoAberto = produtoAberto
+    ? entradasFiltradas.filter((entrada) => entrada.produto_id === produtoAberto.id)
     : [];
-  const resumoAberto = produtoAberto ? calcularIndicadores(historicoAberto) : null;
+  const historicoAberto = [...entradasProdutoAberto].reverse();
+  const resumoAberto = produtoAberto ? calcularIndicadores(entradasProdutoAberto) : null;
 
   return (
     <div className="space-y-5">
