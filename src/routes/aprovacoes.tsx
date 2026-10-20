@@ -24,6 +24,7 @@ import {
   type ProdutoSolicitacao,
 } from "@/lib/produto-solicitacoes";
 import { toast } from "sonner";
+import { ValidadeAprovacoes } from "@/components/validade-aprovacoes";
 
 export const Route = createFileRoute("/aprovacoes")({
   component: AprovacoesPage,
@@ -202,6 +203,8 @@ function AprovacoesPage() {
           </TableBody>
         </Table>
       </Card>
+
+      <ValidadeAprovacoes status={tab} canApprove={role === "mestre"} />
 
       <Dialog open={!!recusando} onOpenChange={(o) => !o && setRecusando(null)}>
         <DialogContent>
