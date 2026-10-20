@@ -1199,6 +1199,66 @@ export type Database = {
         }
         Relationships: []
       }
+      validade_solicitacoes: {
+        Row: {
+          created_at: string
+          decidido_em: string | null
+          decidido_por: string | null
+          decisao_motivo: string | null
+          id: string
+          lote_id: string
+          motivo: string
+          produto_id: string
+          solicitado_por: string
+          status: Database["public"]["Enums"]["ajuste_status"]
+          validade_antiga: string | null
+          validade_nova: string
+        }
+        Insert: {
+          created_at?: string
+          decidido_em?: string | null
+          decidido_por?: string | null
+          decisao_motivo?: string | null
+          id?: string
+          lote_id: string
+          motivo: string
+          produto_id: string
+          solicitado_por: string
+          status?: Database["public"]["Enums"]["ajuste_status"]
+          validade_antiga?: string | null
+          validade_nova: string
+        }
+        Update: {
+          created_at?: string
+          decidido_em?: string | null
+          decidido_por?: string | null
+          decisao_motivo?: string | null
+          id?: string
+          lote_id?: string
+          motivo?: string
+          produto_id?: string
+          solicitado_por?: string
+          status?: Database["public"]["Enums"]["ajuste_status"]
+          validade_antiga?: string | null
+          validade_nova?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "validade_solicitacoes_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "validade_solicitacoes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1296,6 +1356,10 @@ export type Database = {
           _username: string
         }
         Returns: string
+      }
+      decidir_alteracao_validade: {
+        Args: { _aprovar: boolean; _id: string; _motivo: string }
+        Returns: undefined
       }
       devolver_emprestimo: {
         Args: {
@@ -1450,6 +1514,10 @@ export type Database = {
         Returns: undefined
       }
       resumo_uso_banco: { Args: never; Returns: Json }
+      solicitar_alteracao_validade: {
+        Args: { _lote_id: string; _motivo: string; _validade_nova: string }
+        Returns: string
+      }
     }
     Enums: {
       ajuste_status: "pendente" | "aprovado" | "recusado"

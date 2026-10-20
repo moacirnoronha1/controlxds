@@ -10,6 +10,13 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { CalendarClock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
+import { useSolicitarValidade, useValidadeSolicitacoes } from "@/lib/validade-solicitacoes";
 import { useLotes, useProdutos, useLocais, CATEGORIAS } from "@/lib/estoque";
 
 export const Route = createFileRoute("/validade-custo")({
@@ -37,6 +44,13 @@ const STATUS_BADGE: Record<StatusValidade, { label: string; cls: string }> = {
   sem_validade: { label: "Sem validade", cls: "bg-muted text-muted-foreground border" },
 };
 
+type Row = {
+  lote: ReturnType<typeof useLotes>["data"] extends (infer T)[] | undefined ? T : never;
+  produto: { nome: string; unidade_medida: string } | undefined;
+  local: string;
+  saldo: number;
+};
+
 function ValidadeCustoPage() {
   const { data: lotes = [], isLoading } = useLotes();
   const { data: produtos = [] } = useProdutos();
@@ -45,6 +59,17 @@ function ValidadeCustoPage() {
   const [cat, setCat] = useState<string>("all");
   const [local, setLocal] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
+  const { role } = useAuth();
+  const podeSolicitar = role === "mestre" || role === "lider" || role === "estoquista";
+  const { data: solicitacoes = [] } = useValidadeSolicitacoes();
+  const pendentes = useMemo(
+    () => new Set(solicitacoes.filter((s) => s.status === "pendente").map((s) => s.lote_id)),
+    [solicitacoes],
+  );
+  const solicitar = useSolicitarValidade();
+  const [editando, setEditando] = useState<Row | null>(null);
+  const [novaValidade, setNovaValidade] = useState("");
+  const [motivo, setMotivo] = useState("");
 
   const produtoById = useMemo(
     () => new Map(produtos.map((p) => [p.id, p])),
@@ -156,14 +181,15 @@ function ValidadeCustoPage() {
               <TableHead className="text-right">Custo total</TableHead>
               <TableHead>Fornecedor</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
             )}
             {!isLoading && rows.length === 0 && (
-              <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nenhum lote encontrado</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Nenhum lote encontrado</TableCell></TableRow>
             )}
             {rows.map((r) => {
               const badge = STATUS_BADGE[r.status];
@@ -192,6 +218,16 @@ function ValidadeCustoPage() {
                     {r.custo == null && (
                       <Badge variant="outline" className="bg-muted text-muted-foreground border">Sem custo</Badge>
                     )}
+                    {pendentes.has(r.lote.id) && (
+                      <Badge variant="secondary">Alteração pendente</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {podeSolicitar && !pendentes.has(r.lote.id) && (
+                      <Button size="sm" variant="outline" onClick={() => { setEditando(r); setNovaValidade(r.lote.validade ?? ""); setMotivo(""); }}>
+                        <CalendarClock className="h-4 w-4 mr-1" /> Alterar validade
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               );
@@ -199,6 +235,42 @@ function ValidadeCustoPage() {
           </TableBody>
         </Table>
       </Card>
+
+      <Dialog open={!!editando} onOpenChange={(o) => { if (!o && !solicitar.isPending) setEditando(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Solicitar alteração de validade</DialogTitle></DialogHeader>
+          {editando && (
+            <div className="grid gap-3">
+              <div className="rounded-md border p-3 text-sm">
+                <p className="font-medium">{editando.produto?.nome}</p>
+                <p className="text-muted-foreground">
+                  {editando.local} · saldo {editando.saldo} · validade atual{" "}
+                  {editando.lote.validade ? new Date(editando.lote.validade + "T00:00:00").toLocaleDateString("pt-BR") : "sem validade"}
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <Label>Nova validade</Label>
+                <Input type="date" value={novaValidade} onChange={(e) => setNovaValidade(e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Motivo</Label>
+                <Textarea rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: data digitada errada na entrada" />
+              </div>
+              <p className="text-xs text-muted-foreground">A alteração só será aplicada após aprovação do Mestre.</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditando(null)}>Cancelar</Button>
+            <Button disabled={solicitar.isPending} onClick={async () => {
+              if (!editando) return;
+              if (!novaValidade) return toast.error("Informe a nova validade");
+              if (!motivo.trim()) return toast.error("Informe o motivo");
+              await solicitar.mutateAsync({ lote_id: editando.lote.id, validade_nova: novaValidade, motivo: motivo.trim() });
+              setEditando(null);
+            }}>Enviar para aprovação</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
