@@ -186,10 +186,10 @@ function ValidadeCustoPage() {
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
             )}
             {!isLoading && rows.length === 0 && (
-              <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nenhum lote encontrado</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Nenhum lote encontrado</TableCell></TableRow>
             )}
             {rows.map((r) => {
               const badge = STATUS_BADGE[r.status];
