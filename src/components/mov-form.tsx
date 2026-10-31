@@ -269,7 +269,7 @@ export function MovForm({ tipo }: Props) {
                 </div>
                 <div className="grid gap-2">
                   <Label>Custo unitário (R$)</Label>
-                  <Input type="number" min="0" step="0.01" value={edicao.custo_unitario} onChange={(e) => setEdicao({ ...edicao, custo_unitario: e.target.value })} />
+                  <Input type="number" min="0" step="any" inputMode="decimal" value={edicao.custo_unitario} onChange={(e) => setEdicao({ ...edicao, custo_unitario: e.target.value })} />
                 </div>
               </div>
               <div className="grid gap-2">
@@ -321,7 +321,7 @@ export function MovForm({ tipo }: Props) {
           <AlertDialogFooter>
             <AlertDialogCancel>Voltar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={async () => { setAvisoValidade(null); await efetivar(); }}
+              onClick={() => { setAvisoValidade(null); void efetivar(); }}
             >
               Confirmar mesmo assim
             </AlertDialogAction>
@@ -349,7 +349,7 @@ export function MovForm({ tipo }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={submit} className="grid gap-4">
+            <form onSubmit={submit} noValidate className="grid gap-4">
               <div className="grid gap-2">
                 <Label>Produto</Label>
                 <Select
@@ -374,6 +374,7 @@ export function MovForm({ tipo }: Props) {
                     type="number"
                     step="any"
                     min="0"
+                    inputMode="decimal"
                     value={form.quantidade}
                     onChange={(e) => setForm({ ...form, quantidade: e.target.value })}
                     required
@@ -414,8 +415,9 @@ export function MovForm({ tipo }: Props) {
                       <Label>Custo unitário (R$)</Label>
                       <Input
                         type="number"
-                        step="0.01"
+                        step="any"
                         min="0"
+                        inputMode="decimal"
                         value={form.custo_unitario}
                         onChange={(e) => setForm({ ...form, custo_unitario: e.target.value })}
                       />
