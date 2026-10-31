@@ -1,4 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
+
+/** Aceita "45,90" ou "45.90". */
+function parseNumero(v: string): number {
+  const s = String(v ?? "").trim().replace(/\s/g, "");
+  if (!s) return NaN;
+  return Number(s.includes(",") ? s.replace(/\./g, "").replace(",", ".") : s);
+}
+
+function novaChave(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+    (Number(c) ^ (Math.random() * 16) >> (Number(c) / 4)).toString(16),
+  );
+}
 import {
   Card,
   CardContent,
@@ -96,6 +111,8 @@ export function MovForm({ tipo }: Props) {
 
   const { data: lotesProduto = [] } = useLotes(form.produto_id || undefined);
   const [avisoValidade, setAvisoValidade] = useState<string | null>(null);
+  const enviandoRef = useRef(false);
+  const tentativaRef = useRef<{ assinatura: string; chave: string } | null>(null);
 
   // Lote existente (com saldo) que vence DEPOIS do lote que está entrando
   const loteMaisNovoEmEstoque = (() => {
@@ -106,51 +123,90 @@ export function MovForm({ tipo }: Props) {
     return candidatos[0] ?? null;
   })();
 
-  const qtd = Number(form.quantidade) || 0;
-  const custoUn = Number(form.custo_unitario) || 0;
+  const qtd = parseNumero(form.quantidade) || 0;
+  const custoUn = parseNumero(form.custo_unitario) || 0;
   const custoTotal = qtd * custoUn;
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!user?.nome) return;
-    if (!form.produto_id || !form.quantidade) return;
+  /** Valida e devolve a mensagem do primeiro problema (nunca falha em silêncio). */
+  function validar(): string | null {
+    if (!user?.nome) return "Sessão sem usuário identificado. Saia e entre novamente.";
+    if (!form.produto_id) return "Selecione o produto.";
+    const q = parseNumero(form.quantidade);
+    if (!Number.isFinite(q) || q <= 0) return "Informe uma quantidade maior que zero.";
+    if (tipo === "entrada") {
+      if (!form.local_id) return "Selecione o local de estoque.";
+      if (form.custo_unitario.trim()) {
+        const c = parseNumero(form.custo_unitario);
+        if (!Number.isFinite(c) || c < 0) return "Custo unitário inválido.";
+      }
+    }
+    return null;
+  }
 
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (enviandoRef.current || pending) return;
+    const problema = validar();
+    if (problema) {
+      toast.error(problema);
+      return;
+    }
     if (tipo === "entrada" && loteMaisNovoEmEstoque) {
       setAvisoValidade(loteMaisNovoEmEstoque.validade!);
       return;
     }
-    await efetivar();
+    void efetivar();
   }
 
   async function efetivar() {
-    if (tipo === "entrada") {
-      if (!form.local_id) return;
-      await entrada.mutateAsync({
-        produto_id: form.produto_id,
-        local_id: form.local_id,
-        quantidade: Number(form.quantidade),
-        validade: form.validade || null,
-        custo_unitario: form.custo_unitario ? Number(form.custo_unitario) : null,
-        fornecedor: form.fornecedor || undefined,
-        observacao: form.observacao || undefined,
-        responsavel: form.responsavel || undefined,
-      });
-    } else {
-      await saida.mutateAsync({
-        produto_id: form.produto_id,
-        local_id: form.local_id || null,
-        quantidade: Number(form.quantidade),
-        responsavel: form.responsavel || undefined,
-        observacao: form.observacao || undefined,
-      });
+    if (enviandoRef.current) return; // bloqueia clique duplo antes do re-render
+    const problema = validar();
+    if (problema) {
+      toast.error(problema);
+      return;
     }
-    setForm({
-      ...form,
-      quantidade: "",
-      observacao: "",
-      validade: "",
-      custo_unitario: "",
-    });
+    enviandoRef.current = true;
+    try {
+      if (tipo === "entrada") {
+        const dados = {
+          produto_id: form.produto_id,
+          local_id: form.local_id,
+          quantidade: parseNumero(form.quantidade),
+          validade: form.validade || null,
+          custo_unitario: form.custo_unitario.trim() ? parseNumero(form.custo_unitario) : null,
+          fornecedor: form.fornecedor || undefined,
+          observacao: form.observacao || undefined,
+          responsavel: form.responsavel || undefined,
+        };
+        // Mesma entrada (mesmos dados) reenviada após falha reaproveita a chave:
+        // o banco devolve o lote já criado em vez de duplicar.
+        const assinatura = JSON.stringify(dados);
+        if (tentativaRef.current?.assinatura !== assinatura) {
+          tentativaRef.current = { assinatura, chave: novaChave() };
+        }
+        await entrada.mutateAsync({ ...dados, chave_idempotencia: tentativaRef.current.chave });
+        tentativaRef.current = null;
+      } else {
+        await saida.mutateAsync({
+          produto_id: form.produto_id,
+          local_id: form.local_id || null,
+          quantidade: parseNumero(form.quantidade),
+          responsavel: form.responsavel || undefined,
+          observacao: form.observacao || undefined,
+        });
+      }
+      setForm((f) => ({
+        ...f,
+        quantidade: "",
+        observacao: "",
+        validade: "",
+        custo_unitario: "",
+      }));
+    } catch {
+      // A mensagem já foi exibida pela mutação; os dados do formulário são mantidos.
+    } finally {
+      enviandoRef.current = false;
+    }
   }
 
   const dataBR = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
