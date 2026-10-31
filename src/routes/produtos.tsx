@@ -513,7 +513,9 @@ function ProdutosPage() {
           )}
           <DialogFooter>
             <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={save.isPending}>Salvar</Button>
+            <Button onClick={handleSave} disabled={save.isPending || solicitar.isPending}>
+              {save.isPending || solicitar.isPending ? "Salvando..." : "Salvar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
