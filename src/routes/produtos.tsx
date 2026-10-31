@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -82,6 +83,8 @@ function ProdutosPage() {
   const { data: movs = [] } = useMovimentacoes();
   const { indicadores } = useCustosPorProduto();
   const [custoProduto, setCustoProduto] = useState<Produto | null>(null);
+  const novoIdRef = useRef<string | null>(null);
+  const salvandoRef = useRef(false);
   const minimos = useMemo(() => calcularMinimos(produtos, movs), [produtos, movs]);
 
   const filtered = useMemo(() => {
@@ -106,6 +109,7 @@ function ProdutosPage() {
 
   function openNew() {
     const defaultLocal = locais.find((l) => l.nome === "Estoque Principal") ?? locais[0];
+    novoIdRef.current = crypto.randomUUID();
     setEditing({
       nome: "",
       categoria: "SECOS",
@@ -122,27 +126,51 @@ function ProdutosPage() {
   }
 
   function openEdit(p: Produto) {
+    novoIdRef.current = null;
     setEditing(p);
     setOpen(true);
   }
 
   async function handleSave() {
-    if (!editing?.nome?.trim()) return;
-    if (soliciting) {
-      const original = editing.id ? produtos.find((p) => p.id === editing.id) : null;
-      await solicitar.mutateAsync({
-        tipo: editing.id ? "edicao" : "inclusao",
-        produto_id: editing.id ?? null,
-        produto_nome: editing.nome.trim().toUpperCase(),
-        dados_antes: original ? payload(original) : null,
-        dados_propostos: payload(editing),
-        solicitado_por: displayName,
-      });
-    } else {
-      await save.mutateAsync(editing as Produto);
+    if (salvandoRef.current) return; // evita clique duplo
+    if (!editing?.nome?.trim()) {
+      toast.error("Informe o nome do produto.");
+      return;
     }
-    setOpen(false);
-    setEditing(null);
+    const nomeNorm = editing.nome.trim().toUpperCase();
+    const repetido = produtos.find(
+      (p) => p.id !== editing.id && p.id !== novoIdRef.current && p.nome.trim().toUpperCase() === nomeNorm,
+    );
+    if (repetido) {
+      toast.error(`Já existe um produto chamado "${repetido.nome}".`);
+      return;
+    }
+    salvandoRef.current = true;
+    try {
+      if (soliciting) {
+        const original = editing.id ? produtos.find((p) => p.id === editing.id) : null;
+        await solicitar.mutateAsync({
+          tipo: editing.id ? "edicao" : "inclusao",
+          produto_id: editing.id ?? null,
+          produto_nome: nomeNorm,
+          dados_antes: original ? payload(original) : null,
+          dados_propostos: payload(editing),
+          solicitado_por: displayName,
+        });
+      } else {
+        await save.mutateAsync({
+          ...(editing as Produto),
+          ...(editing.id ? {} : { _novoId: novoIdRef.current ?? undefined }),
+        });
+      }
+      novoIdRef.current = null;
+      setOpen(false);
+      setEditing(null);
+    } catch {
+      // Erro já exibido; o formulário continua aberto com os dados preenchidos.
+    } finally {
+      salvandoRef.current = false;
+    }
   }
 
   async function handleDelete(p: Produto) {
