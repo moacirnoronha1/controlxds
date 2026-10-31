@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { upper } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { comTempoLimite, mensagemErro } from "@/lib/rede";
 
 
 export type Produto = {
@@ -253,26 +254,41 @@ export function useMovimentacoes(limit = 500) {
 export function useSaveProduto() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: Partial<Produto> & { nome: string }) => {
-      const clean = { ...p, nome: upper(p.nome) };
+    /**
+     * `_novoId`: id gerado pela tela para um produto novo. Mantido entre
+     * tentativas, impede que uma nova tentativa após falha de rede crie o
+     * mesmo produto duas vezes.
+     */
+    mutationFn: async (p: Partial<Produto> & { nome: string; _novoId?: string }) => {
+      const { _novoId, ...rest } = p;
+      const clean = { ...rest, nome: upper(rest.nome) };
       if (clean.categoria) clean.categoria = upper(clean.categoria);
       // estoque_inicial e estoque_atual não são mais editados pelo cadastro
       delete (clean as { estoque_inicial?: number }).estoque_inicial;
       delete (clean as { estoque_atual?: number }).estoque_atual;
 
-      if (p.id) {
-        const { error } = await supabase.from("produtos").update(clean).eq("id", p.id);
-        if (error) throw error;
+      if (rest.id) {
+        const id = rest.id;
+        const { error } = await comTempoLimite((signal) =>
+          supabase.from("produtos").update(clean).eq("id", id).abortSignal(signal),
+        );
+        if (error) throw new Error(mensagemErro(error));
       } else {
-        const { error } = await supabase.from("produtos").insert(clean);
-        if (error) throw error;
+        const novo = _novoId ? { ...clean, id: _novoId } : clean;
+        const { error } = await comTempoLimite((signal) =>
+          supabase.from("produtos").insert(novo).abortSignal(signal),
+        );
+        // Já gravado numa tentativa anterior: não duplica, considera salvo.
+        if (error && !(error.code === "23505" && /produtos_pkey/.test(error.message))) {
+          throw new Error(mensagemErro(error));
+        }
       }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["produtos"] });
       toast.success("Produto salvo");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(mensagemErro(e)),
   });
 }
 
@@ -302,23 +318,30 @@ export type NovaEntradaLote = {
   fornecedor?: string;
   observacao?: string;
   responsavel?: string;
+  /** Mesma chave em novas tentativas = o banco não cria um segundo lote. */
+  chave_idempotencia?: string;
 };
 
 export function useCriarEntradaLote() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (e: NovaEntradaLote) => {
-      const { error } = await supabase.rpc("criar_entrada_lote", {
-        _produto_id: e.produto_id,
-        _local_id: e.local_id,
-        _quantidade: e.quantidade,
-        _validade: (e.validade ?? null) as unknown as string,
-        _custo_unitario: (e.custo_unitario ?? null) as unknown as number,
-        _fornecedor: e.fornecedor ?? "",
-        _observacao: e.observacao ?? "",
-        _responsavel: e.responsavel ?? "",
-      });
-      if (error) throw error;
+      const { error } = await comTempoLimite((signal) =>
+        supabase
+          .rpc("criar_entrada_lote", {
+            _produto_id: e.produto_id,
+            _local_id: e.local_id,
+            _quantidade: e.quantidade,
+            _validade: (e.validade ?? null) as unknown as string,
+            _custo_unitario: (e.custo_unitario ?? null) as unknown as number,
+            _fornecedor: e.fornecedor ?? "",
+            _observacao: e.observacao ?? "",
+            _responsavel: e.responsavel ?? "",
+            ...(e.chave_idempotencia ? { _chave_idempotencia: e.chave_idempotencia } : {}),
+          })
+          .abortSignal(signal),
+      );
+      if (error) throw new Error(mensagemErro(error));
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["produtos"] });
@@ -326,7 +349,7 @@ export function useCriarEntradaLote() {
       qc.invalidateQueries({ queryKey: ["lotes"] });
       toast.success("Entrada registrada");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(mensagemErro(e)),
   });
 }
 
