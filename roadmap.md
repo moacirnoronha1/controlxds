@@ -15,3 +15,4 @@ Concluído em 01/09/2026.
 - [x] Corrigir validação e baixa de empréstimos por produto e local, incluindo estoque sem lote.
 - [x] Corrigir devolução de empréstimos por produto/local, ignorando lote zerado e permitindo baixa em lotes disponíveis.
 - [x] Criar Central de Preços de Insumos com filtros, resumo e histórico detalhado por entrada.
+- [x] Corrigir travamento intermitente no cadastro de produtos e no botão "Registrar entrada" (tempo limite, mensagens claras, sem duplicidade).
