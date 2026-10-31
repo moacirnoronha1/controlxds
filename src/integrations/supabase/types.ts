@@ -587,6 +587,7 @@ export type Database = {
       }
       lotes: {
         Row: {
+          chave_idempotencia: string | null
           created_at: string
           custo_unitario: number | null
           fornecedor: string | null
@@ -600,6 +601,7 @@ export type Database = {
           validade: string | null
         }
         Insert: {
+          chave_idempotencia?: string | null
           created_at?: string
           custo_unitario?: number | null
           fornecedor?: string | null
@@ -613,6 +615,7 @@ export type Database = {
           validade?: string | null
         }
         Update: {
+          chave_idempotencia?: string | null
           created_at?: string
           custo_unitario?: number | null
           fornecedor?: string | null
@@ -1292,6 +1295,7 @@ export type Database = {
       }
       criar_entrada_lote: {
         Args: {
+          _chave_idempotencia?: string
           _custo_unitario: number
           _fornecedor: string
           _local_id: string
