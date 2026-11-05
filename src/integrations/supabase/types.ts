@@ -1289,6 +1289,27 @@ export type Database = {
         }
         Returns: undefined
       }
+      auditoria_estoque: {
+        Args: never
+        Returns: {
+          categoria: string
+          diferenca_inexplicada: number
+          diferenca_lotes: number
+          entradas_pos: number
+          estoque_produto: number
+          inventario_fechado_em: string
+          inventario_id: string
+          inventario_titulo: string
+          nome: string
+          produto_id: string
+          qtd_mov_pos: number
+          saidas_pos: number
+          saldo_esperado: number
+          saldo_inventario: number
+          soma_lotes: number
+          unidade: string
+        }[]
+      }
       cancelar_requisicao: {
         Args: { _requisicao_id: string }
         Returns: undefined
