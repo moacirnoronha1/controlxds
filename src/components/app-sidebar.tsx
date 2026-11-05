@@ -19,6 +19,7 @@ import {
   Gauge,
   Dices,
   BadgeDollarSign,
+  ShieldCheck,
 } from "lucide-react";
 
 import {
