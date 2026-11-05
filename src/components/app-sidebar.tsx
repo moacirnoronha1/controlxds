@@ -58,6 +58,7 @@ const items: Item[] = [
   { title: "Mapa", url: "/mapa", icon: Grid3x3, roles: READ_OP },
   { title: "Validade e Custo", url: "/validade-custo", icon: CalendarClock, roles: READ_OP },
   { title: "Central de Preços", url: "/precos", icon: BadgeDollarSign, roles: READ_OP },
+  { title: "Auditoria de Estoque", url: "/auditoria-estoque", icon: ShieldCheck, roles: ["mestre", "lider"] },
   { title: "Relatório", url: "/relatorio", icon: TrendingUp, roles: READ_OP },
   { title: "Indicadores", url: "/indicadores", icon: Gauge, roles: READ_OP },
   { title: "Inventário", url: "/inventario", icon: ClipboardCheck, roles: OP },
