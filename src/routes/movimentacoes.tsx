@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/movimentacoes")({
 });
 
 function MovsPage() {
-  const { data: movs = [] } = useMovimentacoes(500);
+  const { data: movs = [] } = useMovimentacoes(1500);
   const [q, setQ] = useState("");
   const [tipo, setTipo] = useState("all");
 
@@ -44,12 +45,18 @@ function MovsPage() {
       ),
     [movs, q, tipo],
   );
+  const POR_PAGINA = 50;
+  const [pagina, setPagina] = useState(1);
+  useEffect(() => setPagina(1), [q, tipo]);
+  const totalPaginas = Math.max(1, Math.ceil(filtered.length / POR_PAGINA));
+  const paginaAtual = Math.min(pagina, totalPaginas);
+  const visiveis = filtered.slice((paginaAtual - 1) * POR_PAGINA, paginaAtual * POR_PAGINA);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Movimentações</h1>
-        <p className="text-sm text-muted-foreground">Últimas 500 entradas e saídas. Use os filtros para localizar registros.</p>
+        <p className="text-sm text-muted-foreground">Últimas 1.500 entradas e saídas. Use os filtros para localizar registros.</p>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -88,7 +95,7 @@ function MovsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((m) => (
+            {visiveis.map((m) => (
               <TableRow key={m.id}>
                 <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                   {new Date(m.data_movimentacao).toLocaleString("pt-BR")}
@@ -121,6 +128,13 @@ function MovsPage() {
           </TableBody>
         </Table>
       </Card>
+      <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
+        <span>{filtered.length} registros · Página {paginaAtual} de {totalPaginas}</span>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" disabled={paginaAtual <= 1} onClick={() => setPagina(paginaAtual - 1)}>Anterior</Button>
+          <Button size="sm" variant="outline" disabled={paginaAtual >= totalPaginas} onClick={() => setPagina(paginaAtual + 1)}>Próxima</Button>
+        </div>
+      </div>
     </div>
   );
 }

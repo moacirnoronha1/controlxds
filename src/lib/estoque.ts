@@ -239,14 +239,22 @@ export function useMovimentacoes(limit = 500) {
   return useQuery({
     queryKey: ["movimentacoes", limit],
     queryFn: async () => {
-      let q = supabase
-        .from("movimentacoes")
-        .select("*, produtos(nome, unidade_medida), locais_estoque(nome)")
-        .order("data_movimentacao", { ascending: false });
-      q = q.limit(limit);
-      const { data, error } = await q;
-      if (error) throw error;
-      return data as Movimentacao[];
+      // O servidor devolve no máximo 1.000 linhas por consulta: busca em blocos.
+      const BLOCO = 1000;
+      const todas: Movimentacao[] = [];
+      for (let inicio = 0; inicio < limit; inicio += BLOCO) {
+        const fim = Math.min(inicio + BLOCO, limit) - 1;
+        const { data, error } = await supabase
+          .from("movimentacoes")
+          .select("*, produtos(nome, unidade_medida), locais_estoque(nome)")
+          .order("data_movimentacao", { ascending: false })
+          .order("id", { ascending: false })
+          .range(inicio, fim);
+        if (error) throw error;
+        todas.push(...((data ?? []) as Movimentacao[]));
+        if (!data || data.length < fim - inicio + 1) break;
+      }
+      return todas;
     },
   });
 }
