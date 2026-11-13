@@ -8,7 +8,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Lock, AlertTriangle, CheckCircle2, Save } from "lucide-react";
+import { ArrowLeft, Lock, AlertTriangle, CheckCircle2, Save, FileDown } from "lucide-react";
+import { useLotes } from "@/lib/estoque";
+import { custoMedioAte, analiseFinanceira, SEM_CUSTO } from "@/lib/custos-inventario";
+import { baixarInventarioPdf } from "@/lib/inventario-pdf";
+import { fmtMoeda } from "@/lib/custos";
 import {
   useInventario, useInventarioItens, useAtualizarContagem, useFecharInventario,
   STATUS_LABEL, TIPO_LABEL, type InventarioStatus,
@@ -35,6 +39,12 @@ function InventarioDetailPage() {
   const { data: itens = [], isLoading } = useInventarioItens(id);
   const atualizar = useAtualizarContagem();
   const fechar = useFecharInventario();
+  const { data: lotes = [] } = useLotes();
+  const custos = useMemo(
+    () => (inv ? custoMedioAte(lotes, inv.fechado_em || new Date().toISOString()) : new Map<string, number>()),
+    [lotes, inv],
+  );
+  const fin = useMemo(() => analiseFinanceira(itens, custos), [itens, custos]);
 
   const [contagens, setContagens] = useState<Record<string, string>>({});
   const [obs, setObs] = useState<Record<string, string>>({});
@@ -111,6 +121,9 @@ function InventarioDetailPage() {
             {inv.fechado_em && ` · fechado ${format(new Date(inv.fechado_em), "dd/MM/yy HH:mm", { locale: ptBR })}`}
           </p>
         </div>
+        <Button variant="outline" onClick={() => baixarInventarioPdf(inv, fin.linhas, fin.resumo, STATUS_LABEL[inv.status], TIPO_LABEL[inv.tipo])}>
+          <FileDown className="h-4 w-4 mr-1" /> Exportar PDF
+        </Button>
         {podeFechar && (
           <Button
             onClick={() => {
@@ -133,6 +146,15 @@ function InventarioDetailPage() {
         <Stat label="Líquido" value={fmt(stats.sobra - stats.falta)} />
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Stat label="Sobras (R$)" value={fmtMoeda(fin.resumo.sobra)} tone="ok" />
+        <Stat label="Faltas (R$)" value={fmtMoeda(-fin.resumo.falta)} tone="danger" />
+        <Stat label="Saldo financeiro líquido" value={fmtMoeda(fin.resumo.liquido)} tone={fin.resumo.liquido < 0 ? "danger" : "ok"} />
+      </div>
+      {fin.resumo.semCusto > 0 && (
+        <p className="text-xs text-amber-600 dark:text-amber-400">{fin.resumo.semCusto} divergência(s) com custo não informado — fora dos totais em R$.</p>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-2">
         <Input placeholder="Buscar produto…" value={busca} onChange={(e) => setBusca(e.target.value)} />
         <Button variant={soDiv ? "default" : "outline"} onClick={() => setSoDiv((v) => !v)}>
@@ -148,21 +170,25 @@ function InventarioDetailPage() {
               <TableHead className="text-right">Sistema</TableHead>
               <TableHead className="text-right w-[140px]">Contagem</TableHead>
               <TableHead className="text-right">Diferença</TableHead>
+              <TableHead className="text-right">Custo médio</TableHead>
+              <TableHead className="text-right">Valor da dif.</TableHead>
               <TableHead className="min-w-[180px]">Observação</TableHead>
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
             )}
             {!isLoading && filtrados.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nada para mostrar</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nada para mostrar</TableCell></TableRow>
             )}
             {filtrados.map((it) => {
               const raw = contagens[it.id] ?? "";
               const contado = raw === "" ? null : Number(raw);
               const dif = contado === null || isNaN(contado) ? null : contado - Number(it.estoque_sistema);
+              const custo = custos.get(it.produto_id) ?? null;
+              const valor = dif === null || custo === null ? null : dif * custo;
               return (
                 <TableRow key={it.id}>
                   <TableCell>
@@ -190,6 +216,16 @@ function InventarioDetailPage() {
                     dif !== null && dif < 0 && "text-destructive",
                   )}>
                     {dif === null ? "—" : (dif > 0 ? `+${fmt(dif)}` : fmt(dif))}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs">
+                    {custo === null ? <span className="text-muted-foreground">{SEM_CUSTO}</span> : fmtMoeda(custo)}
+                  </TableCell>
+                  <TableCell className={cn(
+                    "text-right font-mono",
+                    valor !== null && valor > 0 && "text-emerald-600 dark:text-emerald-400",
+                    valor !== null && valor < 0 && "text-destructive",
+                  )}>
+                    {dif === null || dif === 0 ? "—" : valor === null ? <span className="text-xs text-muted-foreground">{SEM_CUSTO}</span> : fmtMoeda(valor)}
                   </TableCell>
                   <TableCell>
                     <Input
