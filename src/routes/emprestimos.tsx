@@ -555,6 +555,7 @@ function EmprestimosPage() {
                         <CheckCircle2 className="h-4 w-4 text-success" />
                       </Button>
                     )}
+                    {e.status === "devolvido" && (
                     <Button
                       size="sm"
                       variant="ghost"
@@ -563,6 +564,7 @@ function EmprestimosPage() {
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
