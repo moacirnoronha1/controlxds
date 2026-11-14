@@ -1,0 +1,41 @@
+CREATE FUNCTION public.followup_usuario() RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT id FROM public.usuarios WHERE auth_user_id = auth.uid() AND ativo LIMIT 1 $$;
+CREATE FUNCTION public.followup_gestor() RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT EXISTS (SELECT 1 FROM public.usuarios WHERE auth_user_id = auth.uid() AND ativo AND cargo IN ('mestre','lider')) $$;
+CREATE FUNCTION public.followup_estoquista() RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT EXISTS (SELECT 1 FROM public.usuarios WHERE auth_user_id = auth.uid() AND ativo AND cargo = 'estoquista') $$;
+REVOKE ALL ON FUNCTION public.followup_usuario(), public.followup_gestor(), public.followup_estoquista() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.followup_usuario(), public.followup_gestor(), public.followup_estoquista() TO authenticated;
+CREATE TABLE public.reunioes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), titulo text NOT NULL CHECK(length(trim(titulo)) > 0), data timestamptz NOT NULL, participantes text NOT NULL DEFAULT '', pauta text NOT NULL DEFAULT '', ata text NOT NULL DEFAULT '', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, UPDATE ON public.reunioes TO authenticated;
+GRANT ALL ON public.reunioes TO service_role;
+ALTER TABLE public.reunioes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY reunioes_gestores ON public.reunioes TO authenticated USING (public.followup_gestor()) WITH CHECK (public.followup_gestor());
+CREATE TABLE public.followup_acoes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), reuniao_id uuid REFERENCES public.reunioes(id), titulo text NOT NULL CHECK(length(trim(titulo)) > 0), responsavel_id uuid NOT NULL REFERENCES public.usuarios(id), responsavel_nome text NOT NULL DEFAULT '', prazo date NOT NULL, prioridade text NOT NULL DEFAULT 'media' CHECK(prioridade IN ('baixa','media','alta')), status text NOT NULL DEFAULT 'pendente' CHECK(status IN ('pendente','em_andamento','concluida')), observacao text NOT NULL DEFAULT '', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, UPDATE ON public.followup_acoes TO authenticated;
+GRANT ALL ON public.followup_acoes TO service_role;
+ALTER TABLE public.followup_acoes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY acoes_gestores ON public.followup_acoes TO authenticated USING(public.followup_gestor()) WITH CHECK(public.followup_gestor());
+CREATE POLICY acoes_atribuidas ON public.followup_acoes FOR SELECT TO authenticated USING(responsavel_id = public.followup_usuario() AND public.followup_estoquista());
+CREATE TABLE public.followup_historico (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), reuniao_id uuid REFERENCES public.reunioes(id), acao_id uuid REFERENCES public.followup_acoes(id), autor text NOT NULL, evento text NOT NULL, antes jsonb, depois jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT ON public.followup_historico TO authenticated;
+GRANT ALL ON public.followup_historico TO service_role;
+ALTER TABLE public.followup_historico ENABLE ROW LEVEL SECURITY;
+CREATE POLICY historico_gestores ON public.followup_historico FOR SELECT TO authenticated USING(public.followup_gestor());
+CREATE POLICY historico_atribuido ON public.followup_historico FOR SELECT TO authenticated USING(public.followup_estoquista() AND acao_id IN (SELECT id FROM public.followup_acoes WHERE responsavel_id = public.followup_usuario()));
+CREATE INDEX followup_acoes_responsavel ON public.followup_acoes(responsavel_id, prazo);
+CREATE INDEX followup_historico_data ON public.followup_historico(created_at DESC);
+CREATE FUNCTION public.followup_responsaveis() RETURNS TABLE(id uuid, nome text) LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT id, nome FROM public.usuarios WHERE ativo AND cargo <> 'requisitante' AND public.followup_gestor() ORDER BY nome $$;
+REVOKE ALL ON FUNCTION public.followup_responsaveis() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.followup_responsaveis() TO authenticated;
+CREATE FUNCTION public.followup_validar() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$ BEGIN
+IF NOT public.followup_gestor() THEN RAISE EXCEPTION 'Apenas Mestre e Líder podem gerenciar.'; END IF;
+NEW.updated_at := now();
+IF TG_TABLE_NAME = 'followup_acoes' THEN
+SELECT nome INTO NEW.responsavel_nome FROM public.usuarios WHERE id = NEW.responsavel_id AND ativo AND cargo <> 'requisitante';
+IF NEW.responsavel_nome IS NULL THEN RAISE EXCEPTION 'Selecione um responsável ativo.'; END IF;
+END IF; RETURN NEW; END $$;
+CREATE FUNCTION public.followup_auditar() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$ DECLARE v_autor text; BEGIN
+SELECT nome INTO v_autor FROM public.usuarios WHERE id = public.followup_usuario();
+INSERT INTO public.followup_historico(reuniao_id,acao_id,autor,evento,antes,depois) VALUES(CASE WHEN TG_TABLE_NAME='reunioes' THEN NEW.id ELSE NULL END,CASE WHEN TG_TABLE_NAME='followup_acoes' THEN NEW.id ELSE NULL END,v_autor,CASE WHEN TG_OP='INSERT' THEN 'Criação' ELSE 'Atualização' END, CASE WHEN TG_OP='UPDATE' THEN to_jsonb(OLD) ELSE NULL END,to_jsonb(NEW)); RETURN NEW; END $$;
+CREATE TRIGGER followup_reuniao_valid BEFORE INSERT OR UPDATE ON public.reunioes FOR EACH ROW EXECUTE FUNCTION public.followup_validar();
+CREATE TRIGGER followup_acao_valid BEFORE INSERT OR UPDATE ON public.followup_acoes FOR EACH ROW EXECUTE FUNCTION public.followup_validar();
+CREATE TRIGGER followup_reuniao_audit AFTER INSERT OR UPDATE ON public.reunioes FOR EACH ROW EXECUTE FUNCTION public.followup_auditar();
+CREATE TRIGGER followup_acao_audit AFTER INSERT OR UPDATE ON public.followup_acoes FOR EACH ROW EXECUTE FUNCTION public.followup_auditar();

@@ -450,6 +450,111 @@ export type Database = {
           },
         ]
       }
+      followup_acoes: {
+        Row: {
+          created_at: string
+          id: string
+          observacao: string
+          prazo: string
+          prioridade: string
+          responsavel_id: string
+          responsavel_nome: string
+          reuniao_id: string | null
+          status: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          observacao?: string
+          prazo: string
+          prioridade?: string
+          responsavel_id: string
+          responsavel_nome?: string
+          reuniao_id?: string | null
+          status?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          observacao?: string
+          prazo?: string
+          prioridade?: string
+          responsavel_id?: string
+          responsavel_nome?: string
+          reuniao_id?: string | null
+          status?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followup_acoes_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followup_acoes_reuniao_id_fkey"
+            columns: ["reuniao_id"]
+            isOneToOne: false
+            referencedRelation: "reunioes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      followup_historico: {
+        Row: {
+          acao_id: string | null
+          antes: Json | null
+          autor: string
+          created_at: string
+          depois: Json
+          evento: string
+          id: string
+          reuniao_id: string | null
+        }
+        Insert: {
+          acao_id?: string | null
+          antes?: Json | null
+          autor: string
+          created_at?: string
+          depois: Json
+          evento: string
+          id?: string
+          reuniao_id?: string | null
+        }
+        Update: {
+          acao_id?: string | null
+          antes?: Json | null
+          autor?: string
+          created_at?: string
+          depois?: Json
+          evento?: string
+          id?: string
+          reuniao_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followup_historico_acao_id_fkey"
+            columns: ["acao_id"]
+            isOneToOne: false
+            referencedRelation: "followup_acoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followup_historico_reuniao_id_fkey"
+            columns: ["reuniao_id"]
+            isOneToOne: false
+            referencedRelation: "reunioes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventario_itens: {
         Row: {
           contado_em: string | null
@@ -1089,6 +1194,39 @@ export type Database = {
         }
         Relationships: []
       }
+      reunioes: {
+        Row: {
+          ata: string
+          created_at: string
+          data: string
+          id: string
+          participantes: string
+          pauta: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          ata?: string
+          created_at?: string
+          data: string
+          id?: string
+          participantes?: string
+          pauta?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          ata?: string
+          created_at?: string
+          data?: string
+          id?: string
+          participantes?: string
+          pauta?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sessoes: {
         Row: {
           created_at: string
@@ -1441,6 +1579,16 @@ export type Database = {
         Args: { _inventario_id: string }
         Returns: undefined
       }
+      followup_estoquista: { Args: never; Returns: boolean }
+      followup_gestor: { Args: never; Returns: boolean }
+      followup_responsaveis: {
+        Args: never
+        Returns: {
+          id: string
+          nome: string
+        }[]
+      }
+      followup_usuario: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
