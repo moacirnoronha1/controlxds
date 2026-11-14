@@ -27,6 +27,7 @@ import { Route as PrecosRouteImport } from './routes/precos'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as RelatorioRouteImport } from './routes/relatorio'
 import { Route as RequisicoesRouteImport } from './routes/requisicoes'
+import { Route as ReunioesRouteImport } from './routes/reunioes'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as ValidadeCustoRouteImport } from './routes/validade-custo'
@@ -123,6 +124,11 @@ const RequisicoesRoute = RequisicoesRouteImport.update({
   path: '/requisicoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReunioesRoute = ReunioesRouteImport.update({
+  id: '/reunioes',
+  path: '/reunioes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
   path: '/scan',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/requisicoes': typeof RequisicoesRoute
+  '/reunioes': typeof ReunioesRoute
   '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
   '/validade-custo': typeof ValidadeCustoRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/requisicoes': typeof RequisicoesRoute
+  '/reunioes': typeof ReunioesRoute
   '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
   '/validade-custo': typeof ValidadeCustoRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/produtos': typeof ProdutosRoute
   '/relatorio': typeof RelatorioRoute
   '/requisicoes': typeof RequisicoesRoute
+  '/reunioes': typeof ReunioesRoute
   '/scan': typeof ScanRoute
   '/usuarios': typeof UsuariosRoute
   '/validade-custo': typeof ValidadeCustoRoute
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/relatorio'
     | '/requisicoes'
+    | '/reunioes'
     | '/scan'
     | '/usuarios'
     | '/validade-custo'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/relatorio'
     | '/requisicoes'
+    | '/reunioes'
     | '/scan'
     | '/usuarios'
     | '/validade-custo'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/relatorio'
     | '/requisicoes'
+    | '/reunioes'
     | '/scan'
     | '/usuarios'
     | '/validade-custo'
@@ -322,6 +334,7 @@ export interface RootRouteChildren {
   ProdutosRoute: typeof ProdutosRoute
   RelatorioRoute: typeof RelatorioRoute
   RequisicoesRoute: typeof RequisicoesRoute
+  ReunioesRoute: typeof ReunioesRoute
   ScanRoute: typeof ScanRoute
   UsuariosRoute: typeof UsuariosRoute
   ValidadeCustoRoute: typeof ValidadeCustoRoute
@@ -457,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RequisicoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reunioes': {
+      id: '/reunioes'
+      path: '/reunioes'
+      fullPath: '/reunioes'
+      preLoaderRoute: typeof ReunioesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scan': {
       id: '/scan'
       path: '/scan'
@@ -514,6 +534,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProdutosRoute: ProdutosRoute,
   RelatorioRoute: RelatorioRoute,
   RequisicoesRoute: RequisicoesRoute,
+  ReunioesRoute: ReunioesRoute,
   ScanRoute: ScanRoute,
   UsuariosRoute: UsuariosRoute,
   ValidadeCustoRoute: ValidadeCustoRoute,
